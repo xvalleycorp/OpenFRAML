@@ -85,6 +85,26 @@ reason code `GATE_FALLBACK_FAILED`.
 Both tables are checked when the gate is built. A missing table, a table without the string output `action`, or a
 rule that sets an unknown action stops the build instead of failing a payment.
 
+## Changing the policy
+
+A bank changes its rules and thresholds often, because fraud patterns change quickly; it does so without a release or
+a restart. The two tables form the gate's policy (`GatePolicy`): the country pack's samples by default, or the bank's
+own tables, kept confidential in a directory of `.stone.json` files with every past version.
+
+1. The change is prepared as a new set of tables and compiled. Compiling checks everything that can be checked
+   before a payment arrives: RuleStone type-checks every rule, and the gate requires both tables and known actions.
+   A policy that fails a check is never built.
+2. A second person approves it. `Approval` names the maker, the checker and the reason; the checker can never be the
+   maker.
+3. `Gate.activate` records the change with the `PolicyAudit`, then swaps the policy in one step. If the audit cannot
+   record the change, the change is not applied. Payments that start from then on use the new policy; a payment
+   already being decided finishes on the policy it started with.
+4. `Gate.rollback` returns to the previous policy in one step, approved and recorded the same way.
+
+Each policy has an id, a SHA-256 hash of its tables' content, and each decision records the version of the table that
+decided it. Backtesting or a shadow run before activation, and an admin API with authenticated makers and checkers,
+are next on the [roadmap](roadmap.md).
+
 ## Records
 
 Every decision produces one `GateRecord`, handed to the record sink before `decide` returns. The sink publishes it
@@ -104,6 +124,8 @@ spent in each step. Like RuleStone's records, it holds no input values: no accou
 | `modelBudget` | 5 ms | The longest the gate waits for a score |
 | `ruleReserve` | 2 ms | Time kept back for the decision table after scoring |
 | `executor` | Virtual threads | Where scoring runs |
+| `policy` | The country pack's samples | The tables to start with, e.g. `GatePolicy.fromDirectory` |
+| `policyAudit` | Log the change | Records every policy change before it takes effect |
 
 ## gRPC service
 
@@ -123,6 +145,7 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 | Environment variable | Default | Purpose |
 | --- | --- | --- |
 | `OPENFRAML_COUNTRY` | `VN` | Country pack |
+| `OPENFRAML_GATE_RULES_DIR` | The pack's samples | Directory of the bank's own `*.stone.json` tables |
 | `OPENFRAML_GATE_PORT` | `9090` | Port |
 | `OPENFRAML_GATE_DEFAULT_BUDGET_MS` | `30` | Budget of a call without a deadline |
 | `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Kept back from the caller's deadline for the reply |

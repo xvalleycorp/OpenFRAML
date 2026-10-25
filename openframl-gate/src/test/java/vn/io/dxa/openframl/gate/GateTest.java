@@ -231,7 +231,7 @@ class GateTest {
         IllegalStateException missing = assertThrows(IllegalStateException.class,
                 () -> Gate.builder(new TestPack("gate_decision.v1")).profiles(profiles)
                         .velocity(new InMemoryVelocityStore()).build());
-        assertEquals("the country pack has no decision table gate_fallback", missing.getMessage());
+        assertEquals("the policy has no decision table gate_fallback", missing.getMessage());
 
         IllegalStateException typo = assertThrows(IllegalStateException.class,
                 () -> Gate.builder(new TestPack("gate_decision_unknown_action.v1", "gate_fallback.v1"))

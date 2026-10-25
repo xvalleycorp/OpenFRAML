@@ -21,7 +21,9 @@ proven before the rest is built. Durations are estimates for a small team and wi
 - [x] Gate Service: gRPC with per-call deadlines (`openframl-gate-server`)
 - [ ] Profiles and durable velocity on Valkey, with an in-process Caffeine cache
 - [ ] Decision records to Kafka (`GateRecordSink`)
-- [ ] Hot reload of decision tables after maker-checker approval
+- [x] Policy changes without a restart: activate and roll back in one step, four-eyes approval, recorded before they
+      take effect (`openframl-gate`)
+- [ ] Admin API for policy changes with authenticated makers and checkers; backtest or shadow run before activation
 - [ ] ONNX Runtime `ScoreProvider`
 - [x] Benchmark: JMH and an open-loop gRPC load test on a synthetic bank (`openframl-benchmark`); first results in
       [Benchmark](benchmark.md)

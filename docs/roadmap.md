@@ -30,6 +30,20 @@ proven before the rest is built. Durations are estimates for a small team and wi
 - [ ] Routing by originating account across gate nodes
 - [ ] The 20,000 TPS target measured on server hardware with Generational ZGC
 
+## Cost and control
+
+A bank weighs a FRAML platform on what it costs to own and on how much of it the bank controls, as much as on its
+features. These items make both measurable and written down; the phase is when each can be done.
+
+| Item | Phase | Content |
+| --- | --- | --- |
+| Cost model (`docs/cost.md`) | 1 | Total cost of ownership by group: licence, servers, operations team, alert handling, rule changes, integration, support; the design choices that lower each, and the costs that remain |
+| Sizing guide | 1 | Nodes per TPS from the server benchmark, with high availability and disaster recovery |
+| Deployment profiles | 2 | Small (batch profiles, no Flink), medium and large, each with its components and team skills |
+| Cost metrics in shadow mode | 3 | Cost per decision, alerts per 1,000 payments, false positive rate, time from a rule proposal to the rule in force |
+| Support model | 3 | What the community covers and what paid support covers |
+| Exit and data ownership | 2 | Rules, cases and decision records exportable in open formats; no part of the platform that only a vendor can run |
+
 ## Upstream issues for RuleStone
 
 OpenFRAML is a demanding RuleStone user for latency and volume. What it needs from RuleStone goes upstream as GitHub

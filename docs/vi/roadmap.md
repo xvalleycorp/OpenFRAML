@@ -31,6 +31,20 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
 - [ ] Định tuyến theo tài khoản gửi giữa các node `gate`
 - [ ] Đo mục tiêu 20.000 TPS trên máy chủ thật với Generational ZGC
 
+## Chi phí và quyền kiểm soát
+
+Ngân hàng đánh giá một nền tảng FRAML theo chi phí sở hữu và mức độ ngân hàng làm chủ được nền tảng, không kém gì theo
+tính năng. Các hạng mục dưới đây giúp đo được và ghi rõ cả hai; cột giai đoạn là thời điểm có thể làm.
+
+| Hạng mục | Giai đoạn | Nội dung |
+| --- | --- | --- |
+| Mô hình chi phí (`docs/cost.md`) | 1 | Tổng chi phí sở hữu theo nhóm: bản quyền, máy chủ, đội vận hành, xử lý cảnh báo, thay đổi rule, tích hợp, hỗ trợ; các lựa chọn thiết kế giúp giảm từng nhóm, và các chi phí vẫn còn |
+| Hướng dẫn tính số máy | 1 | Số node theo TPS từ benchmark trên máy chủ thật, có tính sẵn sàng cao và dự phòng thảm họa |
+| Cấu hình triển khai theo quy mô | 2 | Nhỏ (hồ sơ tính theo lô, không cần Flink), vừa và lớn, mỗi loại kèm thành phần và kỹ năng đội ngũ cần có |
+| Chỉ số chi phí khi chạy shadow | 3 | Chi phí cho mỗi quyết định, số cảnh báo trên 1.000 giao dịch, tỷ lệ báo động giả, thời gian từ lúc đề xuất rule đến khi rule có hiệu lực |
+| Mô hình hỗ trợ | 3 | Cộng đồng hỗ trợ những gì, hỗ trợ trả phí gồm những gì |
+| Rút lui và quyền sở hữu dữ liệu | 2 | Rule, hồ sơ và decision record xuất được ở định dạng mở; không có phần nào của nền tảng mà chỉ nhà cung cấp mới vận hành được |
+
 ## Issue dự kiến gửi RuleStone
 
 OpenFRAML là người dùng khắt khe của RuleStone về độ trễ và khối lượng. Những gì OpenFRAML cần từ RuleStone được gửi

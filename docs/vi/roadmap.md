@@ -23,8 +23,9 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
 - [x] Ghi decision record lên Kafka theo định dạng JSON mở: Kết nối Kafka (`openframl-kafka`)
 - [x] Thay policy không cần khởi động lại: kích hoạt và quay lại trong một bước, hai người duyệt, ghi nhật ký trước
       khi có hiệu lực (`openframl-gate`)
-- [ ] API quản trị cho thay đổi policy, có xác thực người soạn và người duyệt; backtest hoặc chạy shadow trước khi
-      kích hoạt
+- [x] API quản trị cho thay đổi policy, xác thực người soạn và người duyệt bằng mutual TLS, mọi node đều làm theo:
+      service gRPC `PolicyAdmin` và `PolicySync` (`openframl-gate-server`)
+- [ ] Backtest hoặc chạy shadow policy được đề xuất trước khi duyệt
 - [x] `ScoreProvider` chạy ONNX Runtime, hợp đồng của model nằm trong metadata: Chấm điểm ONNX (`openframl-onnx`)
 - [x] Đo hiệu năng: benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp
       (`openframl-benchmark`); kết quả đầu tiên trong [Đo hiệu năng](benchmark.md)

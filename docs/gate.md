@@ -102,8 +102,35 @@ own tables, kept confidential in a directory of `.stone.json` files with every p
 4. `Gate.rollback` returns to the previous policy in one step, approved and recorded the same way.
 
 Each policy has an id, a SHA-256 hash of its tables' content, and each decision records the version of the table that
-decided it. Backtesting or a shadow run before activation, and an admin API with authenticated makers and checkers,
-are next on the [roadmap](roadmap.md).
+decided it. Backtesting or a shadow run before activation is next on the [roadmap](roadmap.md).
+
+### Admin service and every node
+
+With several gate nodes, a change is approved once and every node follows it. The Gate Service serves the
+`PolicyAdmin` gRPC API
+([`openframl/gate/admin/v1/policy_admin.proto`](../openframl-gate-server/src/main/protobuf/openframl/gate/admin/v1/policy_admin.proto))
+on its own port:
+
+1. **Who.** Only over mutual TLS. The caller is the common name of a client certificate issued by the bank's admin
+   CA; the bank lists which names are makers (`OPENFRAML_ADMIN_MAKERS`) and which are checkers
+   (`OPENFRAML_ADMIN_CHECKERS`). A call without a certificate from that CA does not get past the handshake; a name on
+   neither list is refused.
+2. **Propose.** A maker sends the whole policy, every version of every table, with a reason. It is compiled and
+   checked at once, so a checker never reviews a policy that cannot run. The proposal records the policy in force at
+   that moment.
+3. **Review and approve.** A checker reads the proposed tables (`GetPolicyTables`) and approves, naming the policy id
+   they reviewed; the approval fails if it does not match. The maker can never decide their own proposal, even with
+   both roles. A proposal can only be approved while the policy it was made against is still in force: of two
+   changes prepared in parallel, the second must be proposed again on top of the first.
+4. **Every node follows.** The approval is stored in the `PolicyRepository` (`ValkeyPolicyRepository` with Valkey,
+   where the approval is one atomic script). Each node's `PolicySync` reads it every 2 seconds, and at start-up,
+   compiles the tables and puts the policy in force with `Gate.activate`'s guarantees. A node only trusts tables that
+   hash to the approved id: tables changed after approval are refused, and the node stays where it is.
+5. **Roll back.** `ProposeRollback` proposes the policy in force before the last approved change; it is approved like
+   any change.
+
+Whoever can write the repository's keys can change what the gates run: restrict them with Valkey ACLs to the gate
+nodes. Without Valkey, the repository lives in the process, for a single node.
 
 ## Records
 
@@ -222,6 +249,11 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 | `OPENFRAML_GATE_PROFILE_CACHE_SECONDS` | `60` | How long the gate caches a profile |
 | `OPENFRAML_GATE_MODEL` | Not set: rules alone | Path to an ONNX fraud model |
 | `OPENFRAML_GATE_MODEL_BUDGET_MS` | `5` | The longest the gate waits for a score |
+| `OPENFRAML_GATE_POLICY_SYNC_SECONDS` | `2` | How often the node checks for an approved policy |
+| `OPENFRAML_ADMIN_PORT` | Not set: no admin service | Port of the policy admin service, mutual TLS only |
+| `OPENFRAML_ADMIN_TLS_CERT`, `OPENFRAML_ADMIN_TLS_KEY` | Required with the port | The server's certificate chain and PKCS#8 key, PEM |
+| `OPENFRAML_ADMIN_TLS_CLIENT_CA` | Required with the port | The CA that issues admin client certificates |
+| `OPENFRAML_ADMIN_MAKERS`, `OPENFRAML_ADMIN_CHECKERS` | Required with the port | Certificate common names, comma-separated |
 
 Without `OPENFRAML_GATE_VALKEY_URL` the server starts with empty in-memory stores, for trials and benchmarks only.
 The watchlist starts empty until List Screening (`openframl-screen`) loads it. An application can build its own

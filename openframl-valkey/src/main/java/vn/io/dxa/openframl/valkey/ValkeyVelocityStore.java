@@ -5,24 +5,17 @@
 
 package vn.io.dxa.openframl.valkey;
 
-import io.lettuce.core.RedisNoScriptException;
 import io.lettuce.core.ScriptOutputType;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import vn.io.dxa.openframl.gate.VelocitySnapshot;
 import vn.io.dxa.openframl.gate.VelocityStore;
 import vn.io.dxa.openframl.model.AccountRef;
@@ -47,12 +40,11 @@ public final class ValkeyVelocityStore implements VelocityStore {
     static final Duration LONG_WINDOW = Duration.ofHours(24);
     private static final char SEPARATOR = '\u001f';
 
-    private static final String SCRIPT = load("record-attempt.lua");
+    private static final LuaScript SCRIPT = LuaScript.load("record-attempt.lua");
 
     private final RedisAsyncCommands<String, String> commands;
     private final ValkeyLayout layout;
     private final int maxAttemptsPerAccount;
-    private final String sha;
 
     /** Keeps up to 10,000 attempts per account, like the in-memory store. */
     public ValkeyVelocityStore(Valkey valkey) {
@@ -67,7 +59,6 @@ public final class ValkeyVelocityStore implements VelocityStore {
             throw new IllegalArgumentException("maxAttemptsPerAccount must be positive");
         }
         this.maxAttemptsPerAccount = maxAttemptsPerAccount;
-        this.sha = sha1(SCRIPT);
     }
 
     @Override
@@ -76,13 +67,7 @@ public final class ValkeyVelocityStore implements VelocityStore {
         String[] keys = {layout.velocity(event.originator())};
         String[] args = {Long.toString(at), member(event), Long.toString(LONG_WINDOW.toMillis()),
                 Integer.toString(maxAttemptsPerAccount)};
-        List<Object> reply;
-        try {
-            reply = await(commands.<List<Object>>evalsha(sha, ScriptOutputType.MULTI, keys, args));
-        } catch (RedisNoScriptException e) {
-            // First call on this server, or after a restart: send the script itself, which also caches it
-            reply = await(commands.<List<Object>>eval(SCRIPT, ScriptOutputType.MULTI, keys, args));
-        }
+        List<Object> reply = SCRIPT.run(commands, ScriptOutputType.MULTI, keys, args);
         return snapshot(reply, at, event.amount());
     }
 
@@ -124,41 +109,7 @@ public final class ValkeyVelocityStore implements VelocityStore {
         return value instanceof byte[] bytes ? new String(bytes, StandardCharsets.UTF_8) : value.toString();
     }
 
-    static <T> T await(io.lettuce.core.RedisFuture<T> future) {
-        try {
-            return future.get();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("interrupted waiting for Valkey", e);
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof RuntimeException runtime) {
-                throw runtime;
-            }
-            throw new IllegalStateException("Valkey command failed", e.getCause());
-        }
-    }
-
     private static String hash(String value) {
-        return HexFormat.of().formatHex(digest("SHA-256", value), 0, 16);
-    }
-
-    private static String sha1(String value) {
-        return HexFormat.of().formatHex(digest("SHA-1", value));
-    }
-
-    private static byte[] digest(String algorithm, String value) {
-        try {
-            return MessageDigest.getInstance(algorithm).digest(value.getBytes(StandardCharsets.UTF_8));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private static String load(String name) {
-        try (InputStream in = ValkeyVelocityStore.class.getResourceAsStream(name)) {
-            return new String(Objects.requireNonNull(in, name).readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return HexFormat.of().formatHex(LuaScript.digest("SHA-256", value), 0, 16);
     }
 }

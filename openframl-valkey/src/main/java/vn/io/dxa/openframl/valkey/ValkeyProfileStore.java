@@ -81,7 +81,7 @@ public final class ValkeyProfileStore implements ProfileStore {
         }
         RedisFuture<List<KeyValue<String, String>>> reply = commands.hmget(key, FIELDS.toArray(String[]::new));
         return () -> {
-            Optional<AccountProfile> profile = profile(ValkeyVelocityStore.await(reply));
+            Optional<AccountProfile> profile = profile(LuaScript.await(reply));
             accounts.put(key, profile);
             return profile;
         };
@@ -94,7 +94,7 @@ public final class ValkeyProfileStore implements ProfileStore {
         }
         RedisFuture<Boolean> reply = commands.sismember(key, value);
         return () -> {
-            boolean member = ValkeyVelocityStore.await(reply);
+            boolean member = LuaScript.await(reply);
             if (member) {
                 known.put(cacheKey, true);
             }

@@ -32,14 +32,15 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
 
 OpenFRAML là người dùng khắt khe của RuleStone về độ trễ và khối lượng. Những gì OpenFRAML cần từ RuleStone được gửi
 lên dưới dạng GitHub issue, theo dõi ở đây bằng nhãn `upstream:rulestone`; trong lúc chờ, OpenFRAML dùng cách lách tạm
-thời trong code của mình, kèm link tới issue. Bốn mục đầu nằm trên đường găng dẫn tới cổng của giai đoạn 1.
+thời trong code của mình, kèm link tới issue.
+Bốn mục đầu đã được mở và nằm trên đường găng dẫn tới cổng của giai đoạn 1.
 
 | Nhu cầu | Hiện trạng RuleStone | Đề xuất |
 | --- | --- | --- |
-| Timeout cho từng lần đánh giá | Đang là kế hoạch | Cần cho ngân sách độ trễ của `gate` |
-| Số đo hiệu năng công khai | Chưa có benchmark | Bộ JMH đo p99 và mức cấp phát bộ nhớ khi chạy đồng thời |
-| Chạy shadow và canary một phiên bản rule | Đang là kế hoạch | Cần cho champion/challenger |
-| Ghi decision record ra Kafka | `AuditSink` Kafka đang là kế hoạch | OpenFRAML viết trước rồi đề xuất đưa về upstream |
+| Timeout cho từng lần đánh giá ([RuleStone#7](https://github.com/xvalleycorp/RuleStone/issues/7)) | Đang là kế hoạch | Cần cho ngân sách độ trễ của `gate` |
+| Số đo hiệu năng công khai ([RuleStone#8](https://github.com/xvalleycorp/RuleStone/issues/8)) | Chưa có benchmark | Bộ JMH đo p99 và mức cấp phát bộ nhớ khi chạy đồng thời |
+| Chạy shadow và canary một phiên bản rule ([RuleStone#9](https://github.com/xvalleycorp/RuleStone/issues/9)) | Đang là kế hoạch | Cần cho champion/challenger |
+| Ghi decision record ra Kafka ([RuleStone#10](https://github.com/xvalleycorp/RuleStone/issues/10)) | `AuditSink` Kafka đang là kế hoạch | OpenFRAML viết trước rồi đề xuất đưa về upstream |
 | Ngưỡng giao dịch giá trị lớn trong ví dụ AML | `aml_transaction_monitoring` dùng 300.000.000 đồng | Hai phiên bản trước và sau 01/12/2023, minh họa ngày hiệu lực |
 | Che số tài khoản, số định danh trong log | `DataMasker` đang là kế hoạch | Cần cho bảo vệ dữ liệu cá nhân |
 | Sàng lọc trên danh sách lớn | Phần tử danh sách được chuẩn hóa lại ở mọi lần đánh giá | Nhận danh sách đã chuẩn hóa sẵn |

@@ -206,6 +206,8 @@ public final class Gate implements AutoCloseable {
                 score(profileSnapshot, velocitySnapshot);
                 step("model");
             }
+            // Workaround: RuleStone cannot yet bound an evaluation once started, so the deadline is checked only
+            // before it (https://github.com/xvalleycorp/RuleStone/issues/7, tracked in OpenFRAML #3).
             if (expired()) {
                 return fallback(GateFailure.TIMEOUT);
             }

@@ -32,14 +32,14 @@ proven before the rest is built. Durations are estimates for a small team and wi
 
 OpenFRAML is a demanding RuleStone user for latency and volume. What it needs from RuleStone goes upstream as GitHub
 issues, tracked here with the label `upstream:rulestone`; in the meantime OpenFRAML works around them in its own
-code, with a link to the issue. The first four are on the critical path to the phase 1 gate.
+code, with a link to the issue. The first four are open and on the critical path to the phase 1 gate.
 
 | Need | RuleStone today | Proposal |
 | --- | --- | --- |
-| Timeout per evaluation | Planned | Needed for the gate's latency budget |
-| Public performance numbers | No benchmark | A JMH suite measuring p99 and allocation under concurrency |
-| Shadow and canary rule versions | Planned | Needed for champion/challenger |
-| Decision records to Kafka | `AuditSink` for Kafka planned | OpenFRAML writes one first, then proposes it upstream |
+| Timeout per evaluation ([RuleStone#7](https://github.com/xvalleycorp/RuleStone/issues/7)) | Planned | Needed for the gate's latency budget |
+| Public performance numbers ([RuleStone#8](https://github.com/xvalleycorp/RuleStone/issues/8)) | No benchmark | A JMH suite measuring p99 and allocation under concurrency |
+| Shadow and canary rule versions ([RuleStone#9](https://github.com/xvalleycorp/RuleStone/issues/9)) | Planned | Needed for champion/challenger |
+| Decision records to Kafka ([RuleStone#10](https://github.com/xvalleycorp/RuleStone/issues/10)) | `AuditSink` for Kafka planned | OpenFRAML writes one first, then proposes it upstream |
 | Large-value threshold in the AML example | `aml_transaction_monitoring` uses 300,000,000 VND | Two versions before and after 1 Dec 2023, showing effective dating |
 | Masking of account and ID numbers in logs | `DataMasker` planned | Needed for personal data protection |
 | Screening against large lists | List items are normalised on every evaluation | Accept pre-normalised lists |

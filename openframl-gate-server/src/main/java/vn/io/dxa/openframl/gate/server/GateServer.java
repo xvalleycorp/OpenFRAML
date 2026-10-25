@@ -15,9 +15,11 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import vn.io.dxa.openframl.gate.Gate;
 import vn.io.dxa.openframl.gate.GatePolicy;
+import vn.io.dxa.openframl.gate.GateRecordSink;
 import vn.io.dxa.openframl.gate.memory.InMemoryProfileStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryVelocityStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryWatchlist;
+import vn.io.dxa.openframl.kafka.KafkaGateRecordSink;
 import vn.io.dxa.openframl.pack.CountryPack;
 
 /**
@@ -30,7 +32,11 @@ import vn.io.dxa.openframl.pack.CountryPack;
  *       country pack's sample tables;</li>
  *   <li>{@code OPENFRAML_GATE_PORT}: the port, default {@code 9090};</li>
  *   <li>{@code OPENFRAML_GATE_DEFAULT_BUDGET_MS}: the budget of a call without a deadline, default 30;</li>
- *   <li>{@code OPENFRAML_GATE_REPLY_MARGIN_MS}: kept back from the caller's deadline for the reply, default 1.</li>
+ *   <li>{@code OPENFRAML_GATE_REPLY_MARGIN_MS}: kept back from the caller's deadline for the reply, default 1;</li>
+ *   <li>{@code OPENFRAML_GATE_KAFKA_BOOTSTRAP}: Kafka brokers to publish decision records to; without it, records
+ *       are not kept;</li>
+ *   <li>{@code OPENFRAML_GATE_RECORDS_TOPIC}: the topic for decision records, default
+ *       {@code openframl.gate.records}.</li>
  * </ul>
  *
  * <p>Until the Valkey stores are in, {@link #main} starts with empty in-memory stores: it is for trials and
@@ -75,8 +81,16 @@ public final class GateServer implements AutoCloseable {
         CountryPack pack = CountryPack.forCountry(env.getOrDefault("OPENFRAML_COUNTRY", "VN"));
         String rulesDir = env.get("OPENFRAML_GATE_RULES_DIR");
         GatePolicy policy = rulesDir == null ? GatePolicy.of(pack) : GatePolicy.fromDirectory(pack, Path.of(rulesDir));
+        String kafka = env.get("OPENFRAML_GATE_KAFKA_BOOTSTRAP");
+        KafkaGateRecordSink records = kafka == null ? null : KafkaGateRecordSink.connect(kafka,
+                env.getOrDefault("OPENFRAML_GATE_RECORDS_TOPIC", "openframl.gate.records"), Map.of());
+        if (records == null) {
+            LOG.log(System.Logger.Level.WARNING, "OPENFRAML_GATE_KAFKA_BOOTSTRAP not set: decision records are not "
+                    + "kept");
+        }
         Gate gate = Gate.builder(pack).policy(policy).profiles(new InMemoryProfileStore())
-                .velocity(new InMemoryVelocityStore()).watchlist(new InMemoryWatchlist()).build();
+                .velocity(new InMemoryVelocityStore()).watchlist(new InMemoryWatchlist())
+                .recordSink(records == null ? GateRecordSink.NONE : records).build();
         GateGrpcService service = new GateGrpcService(gate,
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_DEFAULT_BUDGET_MS", "30"))),
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_REPLY_MARGIN_MS", "1"))));
@@ -91,6 +105,9 @@ public final class GateServer implements AutoCloseable {
                 Thread.currentThread().interrupt();
             } finally {
                 gate.close();
+                if (records != null) {
+                    records.close();
+                }
             }
         }));
         server.awaitTermination();

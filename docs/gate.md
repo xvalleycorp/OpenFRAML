@@ -112,6 +112,16 @@ asynchronously (to Kafka) and must not block. A record holds the event id, the o
 RuleStone's own decision records, the model version and score, the list the beneficiary was found on, and the time
 spent in each step. Like RuleStone's records, it holds no input values: no account numbers, names or amounts.
 
+`GateRecordJson` writes a record as one line of JSON, schema `openframl.gate.record/1`, with RuleStone's decision
+records in RuleStone's own JSON form. The format is open: a bank reads its records without OpenFRAML. Fields are not
+removed or renamed within a schema version.
+
+The Kafka Connector (`openframl-kafka`) publishes them: `KafkaGateRecordSink` sends each record to a topic, keyed by
+event id, with acknowledgement from every in-sync replica, idempotent retries and lz4 compression. `accept` only puts
+the record on a bounded queue (100,000 by default, about 10 seconds at 10,000 TPS); one sender thread does the rest,
+because a Kafka producer can block its caller and the decision path must not wait. When the queue is full the record
+is dropped, never the decision: `dropped()` and `failed()` count what is lost and should be alerted on.
+
 ## Configuration
 
 | Builder option | Default | Purpose |
@@ -149,6 +159,8 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 | `OPENFRAML_GATE_PORT` | `9090` | Port |
 | `OPENFRAML_GATE_DEFAULT_BUDGET_MS` | `30` | Budget of a call without a deadline |
 | `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Kept back from the caller's deadline for the reply |
+| `OPENFRAML_GATE_KAFKA_BOOTSTRAP` | Not set: records are not kept | Kafka brokers for decision records |
+| `OPENFRAML_GATE_RECORDS_TOPIC` | `openframl.gate.records` | Topic for decision records |
 
 Until the Valkey stores are in, the server starts with empty in-memory stores: it is for trials and benchmarks, not
 production. An application can build its own `Gate` and serve it with `GateServer.start`.

@@ -20,7 +20,7 @@ proven before the rest is built. Durations are estimates for a small team and wi
 - [x] Vietnam Country Pack: sample rules with a test for every rule and threshold (`openframl-vn`)
 - [x] Gate Service: gRPC with per-call deadlines (`openframl-gate-server`)
 - [ ] Profiles and durable velocity on Valkey, with an in-process Caffeine cache
-- [ ] Decision records to Kafka (`GateRecordSink`)
+- [x] Decision records to Kafka, in an open JSON format: Kafka Connector (`openframl-kafka`)
 - [x] Policy changes without a restart: activate and roll back in one step, four-eyes approval, recorded before they
       take effect (`openframl-gate`)
 - [ ] Admin API for policy changes with authenticated makers and checkers; backtest or shadow run before activation

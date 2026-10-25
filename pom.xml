@@ -60,6 +60,7 @@
     <module>openframl-model</module>
     <module>openframl-gate</module>
     <module>openframl-vn</module>
+    <module>openframl-kafka</module>
     <module>openframl-gate-server</module>
     <module>openframl-benchmark</module>
   </modules>
@@ -77,6 +78,7 @@
     <grpc.version>1.84.2</grpc.version>
     <!-- RuleStone's CEL runtime needs protobuf 4; gRPC accepts it. protoc uses the same version. -->
     <protobuf.version>4.35.1</protobuf.version>
+    <kafka.version>4.4.0</kafka.version>
   </properties>
 
   <dependencyManagement>
@@ -110,6 +112,38 @@
         <groupId>vn.io.dxa.openframl</groupId>
         <artifactId>openframl-vn</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.openframl</groupId>
+        <artifactId>openframl-kafka</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <!--
+        zstd-jni is BSD-2-Clause, outside the licence allowlist, and only needed for zstd compression: the producer
+        compresses with lz4.
+      -->
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafka.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.github.luben</groupId>
+            <artifactId>zstd-jni</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!-- The SLF4J version the Kafka client is built against -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>1.7.36</version>
+      </dependency>
+      <!-- Fixes CVE-2026-106451 in the 1.11.2 that kafka-clients 4.4.0 brings -->
+      <dependency>
+        <groupId>at.yawk.lz4</groupId>
+        <artifactId>lz4-java</artifactId>
+        <version>1.11.4</version>
       </dependency>
       <dependency>
         <groupId>com.google.protobuf</groupId>

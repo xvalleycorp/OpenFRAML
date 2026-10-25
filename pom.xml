@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>vn.io.dxa.openframl</groupId>
+  <artifactId>openframl-parent</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>OpenFRAML</name>
+  <description>
+    Open-source fraud and anti-money-laundering platform for banks: inline payment screening, transaction
+    monitoring, watchlist screening, case management and regulatory reporting, with RuleStone as the decision
+    engine. Country-neutral core; Vietnam is the first country pack.
+  </description>
+  <url>https://github.com/xvalleycorp/OpenFRAML</url>
+  <inceptionYear>2026</inceptionYear>
+
+  <organization>
+    <name>The OpenFRAML Authors</name>
+    <url>https://github.com/xvalleycorp/OpenFRAML</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>openframl</id>
+      <name>OpenFRAML maintainers</name>
+      <url>https://github.com/xvalleycorp/OpenFRAML</url>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/xvalleycorp/OpenFRAML.git</connection>
+    <developerConnection>scm:git:git@github.com:xvalleycorp/OpenFRAML.git</developerConnection>
+    <url>https://github.com/xvalleycorp/OpenFRAML</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/xvalleycorp/OpenFRAML/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://github.com/xvalleycorp/OpenFRAML/actions</url>
+  </ciManagement>
+
+  <modules>
+    <module>openframl-model</module>
+    <module>openframl-gate</module>
+    <module>openframl-vn</module>
+  </modules>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- Reproducible builds, for signed releases and SBOMs -->
+    <project.build.outputTimestamp>2026-10-25T00:00:00Z</project.build.outputTimestamp>
+
+    <junit.version>6.1.3</junit.version>
+    <!-- Not on Maven Central yet: install from source with scripts/install-rulestone.sh -->
+    <rulestone.version>0.1.0-SNAPSHOT</rulestone.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>vn.io.dxa.openframl</groupId>
+        <artifactId>openframl-model</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.openframl</groupId>
+        <artifactId>openframl-gate</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.rulestone</groupId>
+        <artifactId>rulestone-core</artifactId>
+        <version>${rulestone.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.rulestone</groupId>
+        <artifactId>rulestone-cel</artifactId>
+        <version>${rulestone.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.rulestone</groupId>
+        <artifactId>rulestone-test</artifactId>
+        <version>${rulestone.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.16.0</version>
+          <configuration>
+            <compilerArgs>
+              <arg>-Xlint:all</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.5.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.4.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.12.0</version>
+          <configuration>
+            <doclint>all,-missing</doclint>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.7.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.6.3</version>
+        <executions>
+          <execution>
+            <id>enforce-build-env</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[21,)</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>[3.9,)</version>
+                </requireMavenVersion>
+                <dependencyConvergence/>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!--
+      Licence check for every dependency (CI runs mvn -Plicense-check verify). An allowlist rather than a blocklist,
+      so that an unexpected licence (AGPL, SSPL, BSL...) cannot slip through under a different spelling.
+      See CONTRIBUTING.md.
+    -->
+    <profile>
+      <id>license-check</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>check-third-party-licenses</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>add-third-party</goal>
+                </goals>
+                <configuration>
+                  <!-- Always re-check, even when an old THIRD-PARTY.txt is still in target/ -->
+                  <force>true</force>
+                  <failOnBlacklist>true</failOnBlacklist>
+                  <failOnMissing>true</failOnMissing>
+                  <excludedScopes>test</excludedScopes>
+                  <excludedGroups>^vn\.io\.dxa\.openframl</excludedGroups>
+                  <!-- Fold the different spellings of one licence into its SPDX id -->
+                  <licenseMerges>
+                    <licenseMerge>Apache-2.0|Apache 2.0|Apache License Version 2.0|Apache License, Version 2.0|The Apache Software License, Version 2.0|The Apache License, Version 2.0</licenseMerge>
+                    <licenseMerge>MIT|MIT License|The MIT License</licenseMerge>
+                    <!-- RE2/J declares "Go License": the Go licence is BSD-3-Clause -->
+                    <licenseMerge>BSD-3-Clause|BSD 3-Clause|BSD 3-clause|BSD-3-Clause License|The BSD 3-Clause License|Go License</licenseMerge>
+                  </licenseMerges>
+                  <!-- Allowlist: any licence outside it fails the build -->
+                  <includedLicenses>
+                    <includedLicense>Apache-2.0</includedLicense>
+                    <includedLicense>MIT</includedLicense>
+                    <includedLicense>BSD-3-Clause</includedLicense>
+                  </includedLicenses>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Release packaging: sources and javadoc, as Maven Central requires -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

@@ -1,0 +1,26 @@
+# Maven
+target/
+dependency-reduced-pom.xml
+pom.xml.versionsBackup
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+
+# Secrets: never commit environment files
+.env
+*.env
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Python
+__pycache__/

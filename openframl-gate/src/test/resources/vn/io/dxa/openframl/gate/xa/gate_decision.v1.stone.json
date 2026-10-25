@@ -1,0 +1,50 @@
+{
+  "id": "gate_decision",
+  "version": "1",
+  "description": "Test table for an invented country XA, in the ISO 4217 test currency XTS",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "COLLECT",
+  "inputs": {
+    "transaction": { "amount": "money", "type": "string", "channel": "string" },
+    "originator": { "accountAgeDays": "int", "riskRating": "string" },
+    "beneficiary": {
+      "watchlisted": "bool", "watchlistSource": "string", "known": "bool", "accountAgeDays": "int",
+      "sameInstitution": "bool"
+    },
+    "device": { "known": "bool", "remoteAccess": "bool", "activeCall": "bool" },
+    "velocity": { "count10m": "int", "count24h": "int", "amount24h": "money", "distinctBeneficiaries24h": "int" },
+    "score": { "fraud": "decimal", "modelVersion": "string" }
+  },
+  "outputs": { "action": "string" },
+  "rules": [
+    {
+      "id": "WATCHLIST",
+      "when": "has(beneficiary.watchlisted) && beneficiary.watchlisted",
+      "then": { "action": "'HOLD'" },
+      "reasonCode": "BENEFICIARY_ON_WATCHLIST"
+    },
+    {
+      "id": "BURST",
+      "when": "velocity.count10m >= 3",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "RAPID_SUCCESSION"
+    },
+    {
+      "id": "NEW_BENEFICIARY_LARGE",
+      "when": "has(beneficiary.known) && !beneficiary.known && transaction.amount >= money(1000, 'XTS')",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "NEW_BENEFICIARY_LARGE_AMOUNT"
+    },
+    {
+      "id": "HIGH_SCORE",
+      "when": "has(score.fraud) && score.fraud >= decimal('0.9')",
+      "then": { "action": "'DENY'" },
+      "reasonCode": "FRAUD_SCORE_HIGH"
+    },
+    {
+      "id": "DEFAULT",
+      "when": "true",
+      "then": { "action": "'ALLOW'" }
+    }
+  ]
+}

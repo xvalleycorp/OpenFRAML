@@ -1,0 +1,11 @@
+{
+  "id": "gate_decision",
+  "version": "1",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "FIRST",
+  "inputs": { "transaction": { "amount": "money" } },
+  "outputs": { "action": "string" },
+  "rules": [
+    { "id": "TYPO", "when": "true", "then": { "action": "'BLOCK'" } }
+  ]
+}

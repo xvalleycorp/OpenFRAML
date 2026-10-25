@@ -1,0 +1,26 @@
+version: 2
+# Grouped so that dozens of single PRs do not pile up; major library upgrades stay separate PRs for a closer look.
+# Only versions released at least 14 days ago, to lower supply-chain risk.
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 5
+    groups:
+      maven-plugins:
+        patterns: ["org.apache.maven.plugins:*", "org.codehaus.mojo:*"]
+      maven-libraries:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      github-actions:
+        patterns: ["*"]

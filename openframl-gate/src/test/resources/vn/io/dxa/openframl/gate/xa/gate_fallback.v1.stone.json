@@ -1,0 +1,33 @@
+{
+  "id": "gate_fallback",
+  "version": "1",
+  "description": "Test fallback policy for XA: listed beneficiaries fail closed, small payments to known beneficiaries fail open",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "FIRST",
+  "inputs": {
+    "failure": "string",
+    "transaction": { "amount": "money" },
+    "beneficiary": { "watchlisted": "bool", "known": "bool" }
+  },
+  "outputs": { "action": "string", "reviewLater": "bool" },
+  "rules": [
+    {
+      "id": "LISTED",
+      "when": "has(beneficiary.watchlisted) && beneficiary.watchlisted",
+      "then": { "action": "'HOLD'" },
+      "reasonCode": "GATE_FAIL_CLOSED"
+    },
+    {
+      "id": "SMALL_KNOWN",
+      "when": "has(beneficiary.known) && beneficiary.known && transaction.amount < money(500, 'XTS')",
+      "then": { "action": "'ALLOW'", "reviewLater": "true" },
+      "reasonCode": "GATE_FAIL_OPEN"
+    },
+    {
+      "id": "OTHER",
+      "when": "true",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "GATE_DEGRADED"
+    }
+  ]
+}

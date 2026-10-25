@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>vn.io.dxa.openframl</groupId>
+    <artifactId>openframl-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>openframl-vn</artifactId>
+  <name>OpenFRAML Country Pack: Vietnam</name>
+  <description>
+    The Vietnam country pack: business time zone, currency, sample decision tables for the gate, and reason messages
+    in English and Vietnamese. Sample thresholds are for illustration; each bank sets its own.
+  </description>
+  <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-vn</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-model</artifactId>
+    </dependency>
+    <!-- The pack's tables are tested with the gate that runs them -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-gate</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.rulestone</groupId>
+      <artifactId>rulestone-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

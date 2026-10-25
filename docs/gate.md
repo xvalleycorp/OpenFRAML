@@ -1,0 +1,106 @@
+# The gate
+
+The gate decides what to do with a payment after the customer confirms it and before the payment hub sends it to the
+switch. Instant payments cannot be recalled, so this is the only moment to stop one. The target is p99 under 30 ms,
+measured from receiving the request to returning the decision; it will be verified by the phase 1 benchmark.
+
+## Steps and latency budget
+
+Everything the gate reads is precomputed and held in memory or a local key-value store. RuleStone and the model run
+inside the gate's process. Nothing in the hot path queries a relational database or makes a network call that is
+not listed here.
+
+| Step | What happens | Budget (p99) |
+| --- | --- | --- |
+| Receive | Decode the request | 1 ms |
+| Watchlist | Look the beneficiary up in the local replica of the lists of suspicious accounts | 2 ms |
+| Profiles | Read the originator, the beneficiary and the device from the profile store, in one call | 3 ms |
+| Velocity | Count this attempt and read the originator's short-term counters | 2 ms |
+| Model | Score the payment; a score that is late is dropped | 5 ms |
+| Rules | Evaluate the decision table `gate_decision` | 2 ms |
+| Reply | Return the decision; the audit record is published asynchronously | 1 ms |
+| Reserve | GC pauses, queueing, bursts | 14 ms |
+
+The watchlist check runs first, before anything that can fail or time out. The velocity counters are updated before
+the decision is returned, and requests are routed to nodes by originating account, so a payment always sees the
+one before it. The caller passes its deadline with each request; the gate skips the model when too little time is
+left and decides with the rules alone.
+
+## Decisions
+
+| Decision | Meaning | What the bank does |
+| --- | --- | --- |
+| `ALLOW` | Let the payment through | Send it to the switch |
+| `CHALLENGE` | Ask for more | Show a scam warning, re-authenticate, or have the customer confirm again |
+| `HOLD` | Keep it back for a quick review | Open a high-priority case, contact the customer |
+| `DENY` | Refuse it | Tell the customer; report if required |
+
+The decision table uses hit policy `COLLECT`: every rule that fires proposes an action, the most severe one wins, and
+the outcome keeps the reason codes of all of them. Reason codes are for the bank's staff; they are never shown to
+customers, because AML reasons are confidential.
+
+## Facts
+
+The gate passes these facts to both of its tables. A table declares the fields it uses; facts it does not declare
+are ignored. A field that the gate could not fill (the step did not run, failed, or does not apply) is left unset,
+so tables test optional fields with `has(...)`.
+
+| Fact | Type | Set when |
+| --- | --- | --- |
+| `transaction.amount` | money | Always |
+| `transaction.type`, `transaction.channel` | string | Always |
+| `originator.accountAgeDays` | int | The profile store has the originating account |
+| `originator.riskRating` | string | The account has an AML risk rating |
+| `beneficiary.watchlisted` | bool | The payment has a beneficiary and the watchlist check ran |
+| `beneficiary.watchlistSource` | string | The beneficiary is listed |
+| `beneficiary.known` | bool | The profile lookup succeeded: the originator has paid this beneficiary before |
+| `beneficiary.accountAgeDays` | int | The profile store has the beneficiary account |
+| `beneficiary.sameInstitution` | bool | The payment has a beneficiary |
+| `device.remoteAccess`, `device.activeCall` | bool | Always (`false` when the channel cannot tell) |
+| `device.known` | bool | The session has a device id and the profile lookup succeeded |
+| `velocity.count10m`, `velocity.count24h`, `velocity.distinctBeneficiaries24h` | int | The velocity step succeeded; counts include this attempt |
+| `velocity.amount24h` | money | The velocity step succeeded; in the currency of this payment |
+| `score.fraud` | decimal, 0 to 1 | A score arrived in time |
+| `score.modelVersion` | string | A score arrived in time |
+| `failure` | string | Only for `gate_fallback`: `TIMEOUT`, `STORE_UNAVAILABLE` or `POLICY_ERROR` |
+
+The business date that selects the table version in force is the payment's `occurredAt` in the country pack's time
+zone. Replaying a payment therefore uses the rules that were in force when it was made.
+
+## Fallback policy
+
+When the deadline passes before the decision table runs, a store fails, or the decision table fails, the gate
+evaluates `gate_fallback` instead, with the facts gathered so far. The bank writes there which payments fail open
+and which fail closed. The Vietnam pack, for example:
+
+| Situation | Decision | Why |
+| --- | --- | --- |
+| Beneficiary is listed | `HOLD` (fail closed) | The watchlist check ran first and does not depend on what failed |
+| Small payment to a known beneficiary | `ALLOW`, marked for review (fail open) | Low risk; do not interrupt the customer |
+| Anything else | `CHALLENGE` | Safer than refusing; the customer can still complete the payment |
+
+If `gate_fallback` fails too, a built-in last resort holds a listed beneficiary and challenges everything else, with
+reason code `GATE_FALLBACK_FAILED`.
+
+Both tables are checked when the gate is built. A missing table, a table without the string output `action`, or a
+rule that sets an unknown action stops the build instead of failing a payment.
+
+## Records
+
+Every decision produces one `GateRecord`, handed to the record sink before `decide` returns. The sink publishes it
+asynchronously (to Kafka) and must not block. A record holds the event id, the outcome, the rule versions with
+RuleStone's own decision records, the model version and score, the list the beneficiary was found on, and the time
+spent in each step. Like RuleStone's records, it holds no input values: no account numbers, names or amounts.
+
+## Configuration
+
+| Builder option | Default | Purpose |
+| --- | --- | --- |
+| `profiles` | Required | Precomputed profiles |
+| `velocity` | Required | Short-term counters; `InMemoryVelocityStore` keeps them on the node |
+| `watchlist` | No list | Local replica of the lists of suspicious accounts |
+| `scoreProvider` | No model | Fraud model; without one, every decision takes the rules-only branch |
+| `recordSink` | Drop records | Where audit records go |
+| `modelBudget` | 5 ms | The longest the gate waits for a score |
+| `ruleReserve` | 2 ms | Time kept back for the decision table after scoring |
+| `executor` | Virtual threads | Where scoring runs |

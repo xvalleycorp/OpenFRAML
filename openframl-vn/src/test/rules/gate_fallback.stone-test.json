@@ -1,0 +1,163 @@
+{
+  "decision": "gate_fallback",
+  "description": "Sample fallback policy for Vietnam. Amounts in VND",
+  "cases": [
+    {
+      "name": "listed beneficiary fails closed",
+      "description": "The profile store is down; only the watchlist check ran",
+      "asOf": "2026-10-25",
+      "facts": {
+        "failure": "STORE_UNAVAILABLE",
+        "transaction": {
+          "amount": "100000 VND"
+        },
+        "beneficiary": {
+          "watchlisted": true
+        },
+        "device": {
+          "remoteAccess": false
+        }
+      },
+      "expect": {
+        "output": {
+          "action": "HOLD"
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "GATE_FAIL_CLOSED"
+        ]
+      }
+    },
+    {
+      "name": "small payment to a known beneficiary fails open",
+      "asOf": "2026-10-25",
+      "facts": {
+        "failure": "TIMEOUT",
+        "transaction": {
+          "amount": "4999999 VND"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true
+        },
+        "device": {
+          "remoteAccess": false
+        }
+      },
+      "expect": {
+        "output": {
+          "action": "ALLOW",
+          "reviewLater": true
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "GATE_FAIL_OPEN"
+        ]
+      }
+    },
+    {
+      "name": "5,000,000 VND to a known beneficiary is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "failure": "TIMEOUT",
+        "transaction": {
+          "amount": "5000000 VND"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true
+        },
+        "device": {
+          "remoteAccess": false
+        }
+      },
+      "expect": {
+        "output": {
+          "action": "CHALLENGE"
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "GATE_DEGRADED"
+        ]
+      }
+    },
+    {
+      "name": "small payment under remote access is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "failure": "TIMEOUT",
+        "transaction": {
+          "amount": "100000 VND"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true
+        },
+        "device": {
+          "remoteAccess": true
+        }
+      },
+      "expect": {
+        "output": {
+          "action": "CHALLENGE"
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "GATE_DEGRADED"
+        ]
+      }
+    },
+    {
+      "name": "small payment to a new beneficiary is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "failure": "POLICY_ERROR",
+        "transaction": {
+          "amount": "100000 VND"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": false
+        },
+        "device": {
+          "remoteAccess": false
+        }
+      },
+      "expect": {
+        "output": {
+          "action": "CHALLENGE"
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "GATE_DEGRADED"
+        ]
+      }
+    },
+    {
+      "name": "unknown relationship is challenged",
+      "description": "The profile store is down, so whether the beneficiary is known is unknown",
+      "asOf": "2026-10-25",
+      "facts": {
+        "failure": "STORE_UNAVAILABLE",
+        "transaction": {
+          "amount": "100000 VND"
+        },
+        "beneficiary": {
+          "watchlisted": false
+        },
+        "device": {
+          "remoteAccess": false
+        }
+      },
+      "expect": {
+        "output": {
+          "action": "CHALLENGE"
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "GATE_DEGRADED"
+        ]
+      }
+    }
+  ]
+}

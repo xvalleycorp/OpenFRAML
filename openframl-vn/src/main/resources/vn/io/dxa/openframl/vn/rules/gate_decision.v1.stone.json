@@ -1,0 +1,107 @@
+{
+  "id": "gate_decision",
+  "version": "1",
+  "description": "Sample inline payment screening for Vietnam: every rule that fires proposes an action and the gate takes the most severe. Amounts in VND. Thresholds illustrate the typologies and are not legal thresholds; each bank sets its own",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "COLLECT",
+  "inputs": {
+    "transaction": { "amount": "money", "type": "string", "channel": "string" },
+    "originator": { "accountAgeDays": "int", "riskRating": "string" },
+    "beneficiary": {
+      "watchlisted": "bool",
+      "watchlistSource": "string",
+      "known": "bool",
+      "accountAgeDays": "int",
+      "sameInstitution": "bool"
+    },
+    "device": { "known": "bool", "remoteAccess": "bool", "activeCall": "bool" },
+    "velocity": { "count10m": "int", "count24h": "int", "amount24h": "money", "distinctBeneficiaries24h": "int" },
+    "score": { "fraud": "decimal", "modelVersion": "string" }
+  },
+  "outputs": { "action": "string" },
+  "rules": [
+    {
+      "id": "WATCHLISTED_BENEFICIARY",
+      "description": "The beneficiary is on a list of suspicious accounts (the regulator's, the police's or the bank's own). Mandatory: no score can lower it",
+      "when": "has(beneficiary.watchlisted) && beneficiary.watchlisted",
+      "then": { "action": "'HOLD'" },
+      "reasonCode": "BENEFICIARY_ON_WATCHLIST"
+    },
+    {
+      "id": "REMOTE_ACCESS",
+      "description": "A remote-control or screen-sharing app was active while the customer confirmed the payment",
+      "when": "device.remoteAccess",
+      "then": { "action": "'HOLD'" },
+      "reasonCode": "REMOTE_ACCESS_DURING_PAYMENT"
+    },
+    {
+      "id": "CALL_TO_NEW_BENEFICIARY",
+      "description": "The customer was on a phone call while paying a beneficiary they have never paid: the pattern of scams by callers impersonating the police or a government office",
+      "when": "device.activeCall && has(beneficiary.known) && !beneficiary.known",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "ACTIVE_CALL_NEW_BENEFICIARY"
+    },
+    {
+      "id": "NEW_DEVICE_LARGE",
+      "description": "10,000,000 VND or more from a device the customer has not used before",
+      "when": "has(device.known) && !device.known && transaction.amount >= money(10000000, 'VND')",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "NEW_DEVICE_LARGE_AMOUNT"
+    },
+    {
+      "id": "YOUNG_BENEFICIARY",
+      "description": "20,000,000 VND or more to an account opened less than 30 days ago, a sign of a rented or bought account",
+      "when": "has(beneficiary.accountAgeDays) && beneficiary.accountAgeDays < 30 && transaction.amount >= money(20000000, 'VND')",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "YOUNG_BENEFICIARY_ACCOUNT"
+    },
+    {
+      "id": "NEW_BENEFICIARY_LARGE",
+      "description": "50,000,000 VND or more to a beneficiary the customer has never paid",
+      "when": "has(beneficiary.known) && !beneficiary.known && transaction.amount >= money(50000000, 'VND')",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "NEW_BENEFICIARY_LARGE_AMOUNT"
+    },
+    {
+      "id": "RAPID_SUCCESSION",
+      "description": "5 or more payment attempts in 10 minutes, this one included",
+      "when": "velocity.count10m >= 5",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "RAPID_SUCCESSION"
+    },
+    {
+      "id": "MANY_BENEFICIARIES",
+      "description": "10 or more distinct beneficiaries in 24 hours, as when a taken-over account is emptied",
+      "when": "velocity.distinctBeneficiaries24h >= 10",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "MANY_BENEFICIARIES"
+    },
+    {
+      "id": "REPEATED_NEAR_LIMIT",
+      "description": "A transfer of 450,000,000 VND or more after another in the last 24 hours, together 900,000,000 VND or more: consecutive transfers near the 499,999,999 VND per-transfer limit of fast transfers",
+      "when": "transaction.amount >= money(450000000, 'VND') && velocity.count24h >= 2 && velocity.amount24h >= money(900000000, 'VND')",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "REPEATED_NEAR_LIMIT_TRANSFERS"
+    },
+    {
+      "id": "FRAUD_SCORE_HIGH",
+      "description": "The fraud model scores the payment 0.9 or more",
+      "when": "has(score.fraud) && score.fraud >= decimal('0.9')",
+      "then": { "action": "'HOLD'" },
+      "reasonCode": "FRAUD_SCORE_HIGH"
+    },
+    {
+      "id": "FRAUD_SCORE_ELEVATED",
+      "description": "The fraud model scores the payment from 0.7 up to 0.9",
+      "when": "has(score.fraud) && score.fraud >= decimal('0.7') && score.fraud < decimal('0.9')",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "FRAUD_SCORE_ELEVATED"
+    },
+    {
+      "id": "DEFAULT",
+      "description": "Every payment gets at least ALLOW",
+      "when": "true",
+      "then": { "action": "'ALLOW'" }
+    }
+  ]
+}

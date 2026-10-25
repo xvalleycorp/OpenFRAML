@@ -1,0 +1,37 @@
+{
+  "id": "gate_fallback",
+  "version": "1",
+  "description": "Sample fallback policy for Vietnam, used when the gate cannot run gate_decision (deadline passed, store down, table error). Amounts in VND",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "FIRST",
+  "inputs": {
+    "failure": "string",
+    "transaction": { "amount": "money" },
+    "beneficiary": { "watchlisted": "bool", "known": "bool" },
+    "device": { "remoteAccess": "bool" }
+  },
+  "outputs": { "action": "string", "reviewLater": "bool" },
+  "rules": [
+    {
+      "id": "LISTED",
+      "description": "Fail closed: the watchlist check runs first and does not depend on anything that failed",
+      "when": "has(beneficiary.watchlisted) && beneficiary.watchlisted",
+      "then": { "action": "'HOLD'" },
+      "reasonCode": "GATE_FAIL_CLOSED"
+    },
+    {
+      "id": "SMALL_TO_KNOWN",
+      "description": "Fail open: under 5,000,000 VND to a beneficiary the customer has paid before, with no remote access; monitoring looks at it again",
+      "when": "has(beneficiary.known) && beneficiary.known && transaction.amount < money(5000000, 'VND') && !device.remoteAccess",
+      "then": { "action": "'ALLOW'", "reviewLater": "true" },
+      "reasonCode": "GATE_FAIL_OPEN"
+    },
+    {
+      "id": "OTHERWISE",
+      "description": "Anything else is challenged: safer than refusing, and the customer can still complete the payment",
+      "when": "true",
+      "then": { "action": "'CHALLENGE'" },
+      "reasonCode": "GATE_DEGRADED"
+    }
+  ]
+}

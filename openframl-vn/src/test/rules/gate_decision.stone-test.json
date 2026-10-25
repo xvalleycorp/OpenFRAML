@@ -1,0 +1,1207 @@
+{
+  "decision": "gate_decision",
+  "description": "Sample gate rules for Vietnam: each typology and both sides of every threshold. Amounts in VND",
+  "cases": [
+    {
+      "name": "ordinary payment to a known beneficiary is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "payment without device, profile or score facts is allowed",
+      "description": "A branch payment: no device id, profiles not found",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {},
+        "beneficiary": {
+          "watchlisted": false,
+          "sameInstitution": false
+        },
+        "device": {
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "listed beneficiary is held",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": true,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false,
+          "watchlistSource": "REGULATOR"
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "HOLD",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "BENEFICIARY_ON_WATCHLIST"
+        ]
+      }
+    },
+    {
+      "name": "a low score does not lower a listed beneficiary",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": true,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {
+          "fraud": "0.01",
+          "modelVersion": "m1"
+        }
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "HOLD",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "BENEFICIARY_ON_WATCHLIST"
+        ]
+      }
+    },
+    {
+      "name": "remote access while confirming is held",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": true,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "HOLD",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "REMOTE_ACCESS_DURING_PAYMENT"
+        ]
+      }
+    },
+    {
+      "name": "phone call while paying a new beneficiary is challenged",
+      "description": "Impersonation scam: the caller tells the customer where to send the money",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": false,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": true
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "ACTIVE_CALL_NEW_BENEFICIARY"
+        ]
+      }
+    },
+    {
+      "name": "phone call while paying a known beneficiary is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": true
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "new device at 10,000,000 VND is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "10000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": false,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "NEW_DEVICE_LARGE_AMOUNT"
+        ]
+      }
+    },
+    {
+      "name": "new device just under 10,000,000 VND is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "9999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": false,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "20,000,000 VND to a 29-day-old account is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "20000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 29,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "YOUNG_BENEFICIARY_ACCOUNT"
+        ]
+      }
+    },
+    {
+      "name": "20,000,000 VND to a 30-day-old account is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "20000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 30,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "young account just under 20,000,000 VND is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "19999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 3,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "50,000,000 VND to a new beneficiary is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "50000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": false,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "NEW_BENEFICIARY_LARGE_AMOUNT"
+        ]
+      }
+    },
+    {
+      "name": "new beneficiary just under 50,000,000 VND is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "49999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": false,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "fifth attempt in 10 minutes is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 5,
+          "count24h": 5,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "RAPID_SUCCESSION"
+        ]
+      }
+    },
+    {
+      "name": "fourth attempt in 10 minutes is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 4,
+          "count24h": 4,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "tenth distinct beneficiary in a day is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 10,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 10
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "MANY_BENEFICIARIES"
+        ]
+      }
+    },
+    {
+      "name": "ninth distinct beneficiary in a day is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 9,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 9
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "second transfer at the fast-transfer limit is challenged",
+      "description": "Each transfer stays just under the 500,000,000 VND electronic transfer reporting threshold",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "499999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 2,
+          "amount24h": "999999998 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "REPEATED_NEAR_LIMIT_TRANSFERS"
+        ]
+      }
+    },
+    {
+      "name": "first transfer at the fast-transfer limit is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "499999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "499999999 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "second transfer just under 450,000,000 VND is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "449999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 3,
+          "amount24h": "1349999997 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "two near-limit transfers just under 900,000,000 VND together are allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "450000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 2,
+          "amount24h": "899999999 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {}
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "score of 0.9 is held",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {
+          "fraud": "0.9",
+          "modelVersion": "m1"
+        }
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "HOLD",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "FRAUD_SCORE_HIGH"
+        ]
+      }
+    },
+    {
+      "name": "score of 0.7 is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {
+          "fraud": "0.7",
+          "modelVersion": "m1"
+        }
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "FRAUD_SCORE_ELEVATED"
+        ]
+      }
+    },
+    {
+      "name": "score just under 0.9 is challenged",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {
+          "fraud": "0.8999",
+          "modelVersion": "m1"
+        }
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "CHALLENGE",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "FRAUD_SCORE_ELEVATED"
+        ]
+      }
+    },
+    {
+      "name": "score just under 0.7 is allowed",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "2000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": true,
+          "accountAgeDays": 900,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": false,
+          "activeCall": false
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {
+          "fraud": "0.6999",
+          "modelVersion": "m1"
+        }
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "every rule that fires is reported, in table order",
+      "description": "Remote-control scam: the fraudster moves money from the customer's own phone to a fresh mule account",
+      "asOf": "2026-10-25",
+      "facts": {
+        "transaction": {
+          "amount": "80000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "MOBILE"
+        },
+        "originator": {
+          "accountAgeDays": 2000,
+          "riskRating": "LOW"
+        },
+        "beneficiary": {
+          "watchlisted": false,
+          "known": false,
+          "accountAgeDays": 2,
+          "sameInstitution": false
+        },
+        "device": {
+          "known": true,
+          "remoteAccess": true,
+          "activeCall": true
+        },
+        "velocity": {
+          "count10m": 1,
+          "count24h": 1,
+          "amount24h": "2000000 VND",
+          "distinctBeneficiaries24h": 1
+        },
+        "score": {
+          "fraud": "0.95",
+          "modelVersion": "m1"
+        }
+      },
+      "expect": {
+        "output": {
+          "action": [
+            "HOLD",
+            "CHALLENGE",
+            "CHALLENGE",
+            "CHALLENGE",
+            "HOLD",
+            "ALLOW"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "REMOTE_ACCESS_DURING_PAYMENT",
+          "ACTIVE_CALL_NEW_BENEFICIARY",
+          "YOUNG_BENEFICIARY_ACCOUNT",
+          "NEW_BENEFICIARY_LARGE_AMOUNT",
+          "FRAUD_SCORE_HIGH"
+        ]
+      }
+    }
+  ]
+}

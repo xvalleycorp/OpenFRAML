@@ -36,8 +36,9 @@ the decision engine.
 | --- | --- | --- | --- | --- |
 | [Event Model](openframl-model) | `openframl-model` | Common transaction event model; country pack SPI | 1 | Usable |
 | [Payment Gate](openframl-gate) | `openframl-gate` | Inline decision before a payment is sent: `ALLOW`, `CHALLENGE`, `HOLD`, `DENY` | 1 | Usable as a library |
-| [Gate Service](openframl-gate-server) | `openframl-gate-server` | The Payment Gate over gRPC; the caller's deadline is the gate's time budget | 1 | Experimental: in-memory stores only |
+| [Gate Service](openframl-gate-server) | `openframl-gate-server` | The Payment Gate over gRPC; the caller's deadline is the gate's time budget | 1 | Experimental |
 | [Kafka Connector](openframl-kafka) | `openframl-kafka` | Publishes the gate's decision records to Kafka, in an open JSON format | 1 | Usable |
+| [Valkey Store](openframl-valkey) | `openframl-valkey` | Profiles and durable velocity on Valkey, with an in-process cache | 1 | Usable |
 | [Vietnam Country Pack](openframl-vn) | `openframl-vn` | Sample gate rules for Vietnam, reasons in English and Vietnamese | 1 | Sample rules |
 | [Benchmark](openframl-benchmark) | `openframl-benchmark` | JMH benchmark and open-loop gRPC load test on a synthetic bank | 1 | Usable |
 | Behaviour Profiles | `openframl-features` | Behaviour profiles and velocity, computed with Apache Flink | 2 | Planned |

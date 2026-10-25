@@ -27,6 +27,10 @@
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-kafka</artifactId>
     </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-valkey</artifactId>
+    </dependency>
     <!-- Sends the Kafka client's logs to java.util.logging, like the gate's own -->
     <dependency>
       <groupId>org.slf4j</groupId>

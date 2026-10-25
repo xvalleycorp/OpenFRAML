@@ -121,12 +121,35 @@ riêng làm phần còn lại, vì Kafka producer có thể chặn bên gọi v�
 đầy, bản ghi bị bỏ, còn quyết định thì không bao giờ bị giữ lại: `dropped()` và `failed()` đếm số bản ghi bị mất, và
 cần đặt cảnh báo trên hai số này.
 
+## Kho dữ liệu
+
+Kho trong bộ nhớ (`openframl-gate`, package `memory`) giữ mọi thứ ngay trên node: dùng cho test, đo hiệu năng và chạy
+thử trên một node. Kho Valkey (`openframl-valkey`) giữ hồ sơ và velocity trên Valkey, hoặc một server tương thích
+Redis, để dữ liệu còn nguyên sau khi khởi động lại và mọi node thấy cùng một bộ đếm.
+
+- **Cách tổ chức key.** `ValkeyLayout` đặt tên key: hồ sơ một tài khoản là một hash (`ofr:acct:<account>`, gồm các
+  trường `openedOn` và `risk`); những người thụ hưởng tài khoản đã từng chuyển tiền và các thiết bị khách hàng đã dùng
+  là các set; các lần giao dịch trong 24 giờ gần nhất là một sorted set, điểm số là thời gian. Tầng stream sẽ ghi theo
+  cách tổ chức này; trong lúc chưa có tầng stream, một batch job có thể nạp hồ sơ bằng `ValkeyProfileLoader`.
+- **Hồ sơ: một vòng gọi, hoặc không vòng nào.** `ValkeyProfileStore` gửi cùng lúc mọi lệnh mà cache không trả lời
+  được. Cache Caffeine nằm ngay trong tiến trình `gate`: hồ sơ tài khoản, dù tìm thấy hay không, được giữ mặc định 60
+  giây; người thụ hưởng hay thiết bị đã biết được giữ ngay khi thấy lần đầu. Thay đổi trên Valkey đến được `gate` trong
+  khoảng thời gian đó.
+- **Velocity: nguyên tử theo từng tài khoản.** `ValkeyVelocityStore` gửi mỗi lần giao dịch kèm một script ngắn: script
+  thêm lần giao dịch, cắt set của tài khoản còn 24 giờ và tối đa 10.000 lần, rồi trả về phần còn lại; `gate` tự đếm
+  bằng số thập phân chính xác. Script chạy nguyên tử, nên hai node cùng quyết định giao dịch của một tài khoản vẫn thấy
+  nhau. Mỗi lần giao dịch được lưu theo mã sự kiện, nên lời gọi bị retry chỉ được đếm một lần. Người thụ hưởng được lưu
+  dưới dạng SHA-256 rút gọn, không phải số tài khoản. Cách này giúp số tài khoản không lộ ra trực tiếp nhưng không phải
+  là ẩn danh hóa, nên quyền truy cập Valkey phải được hạn chế như quyền truy cập dữ liệu core banking.
+- **Khi có lỗi.** Mọi lệnh đi chung một kết nối. Lệnh chạy quá timeout (5 ms trong dịch vụ chặn giao dịch), hoặc được
+  gửi khi kết nối đang đứt, sẽ lỗi ngay, và `gate` áp dụng chính sách dự phòng.
+
 ## Cấu hình
 
 | Tùy chọn | Mặc định | Mục đích |
 | --- | --- | --- |
 | `profiles` | Bắt buộc | Hồ sơ tính sẵn |
-| `velocity` | Bắt buộc | Bộ đếm ngắn hạn; `InMemoryVelocityStore` giữ bộ đếm ngay trên node |
+| `velocity` | Bắt buộc | Bộ đếm ngắn hạn: `InMemoryVelocityStore` trên node, `ValkeyVelocityStore` dùng chung |
 | `watchlist` | Không có danh sách | Bản sao cục bộ của danh sách tài khoản nghi ngờ |
 | `scoreProvider` | Không có model | Model gian lận; nếu không có, mọi quyết định đi nhánh chỉ có rule |
 | `recordSink` | Bỏ bản ghi | Nơi nhận bản ghi kiểm toán |
@@ -144,8 +167,10 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 
 - **Deadline.** Bên gọi đặt deadline cho mọi lời gọi. Service lấy thời gian còn lại trừ đi khoảng dành cho việc trả
   lời (mặc định 1 ms) làm ngân sách cho `gate`. Lời gọi không có deadline dùng ngân sách mặc định (30 ms).
-- **Định tuyến.** Định tuyến lời gọi theo tài khoản gửi (consistent hashing trên `originator.institution` và
-  `originator.account`), để bộ đếm velocity của mỗi tài khoản nằm trên một node và lệnh sau luôn thấy lệnh trước.
+- **Định tuyến.** Với kho trong bộ nhớ, định tuyến lời gọi theo tài khoản gửi (consistent hashing trên
+  `originator.institution` và `originator.account`), để bộ đếm của mỗi tài khoản nằm trên một node và lệnh sau luôn
+  thấy lệnh trước. Với kho Valkey, node nào cũng phục vụ được mọi tài khoản; định tuyến theo tài khoản khi đó giúp cache
+  của từng node luôn có sẵn dữ liệu.
 - **Lỗi.** Giao dịch thiếu hoặc sai bị từ chối với mã `INVALID_ARGUMENT`, kèm tên trường. Thông báo lỗi không bao giờ
   lặp lại số tài khoản.
 - **Số tiền.** Số thập phân chính xác dạng chuỗi, không có số mũ (`"1500000"`, `"12.50"`); số thực dấu phẩy động
@@ -160,6 +185,10 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 | `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Thời gian giữ lại từ deadline của bên gọi để trả lời |
 | `OPENFRAML_GATE_KAFKA_BOOTSTRAP` | Không đặt: không giữ bản ghi | Các broker Kafka nhận decision record |
 | `OPENFRAML_GATE_RECORDS_TOPIC` | `openframl.gate.records` | Topic nhận decision record |
+| `OPENFRAML_GATE_VALKEY_URL` | Không đặt: kho trong bộ nhớ, rỗng | Valkey cho hồ sơ và velocity, ví dụ `redis://valkey:6379` |
+| `OPENFRAML_GATE_VALKEY_TIMEOUT_MS` | `5` | Thời gian tối đa cho một lệnh Valkey |
+| `OPENFRAML_GATE_PROFILE_CACHE_SECONDS` | `60` | Thời gian `gate` giữ hồ sơ trong cache |
 
-Cho tới khi có kho dữ liệu trên Valkey, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
-hiệu năng, không dùng cho production. Ứng dụng có thể tự dựng `Gate` và phục vụ bằng `GateServer.start`.
+Nếu không đặt `OPENFRAML_GATE_VALKEY_URL`, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
+hiệu năng. Danh sách nghi ngờ rỗng cho tới khi Sàng lọc danh sách (`openframl-screen`) nạp vào. Ứng dụng có thể tự dựng
+`Gate` và phục vụ bằng `GateServer.start`.

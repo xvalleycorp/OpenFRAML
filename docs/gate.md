@@ -122,12 +122,34 @@ the record on a bounded queue (100,000 by default, about 10 seconds at 10,000 TP
 because a Kafka producer can block its caller and the decision path must not wait. When the queue is full the record
 is dropped, never the decision: `dropped()` and `failed()` count what is lost and should be alerted on.
 
+## Stores
+
+The in-memory stores (`openframl-gate`, package `memory`) keep everything on the node: for tests, benchmarks and
+single-node trials. The Valkey Store (`openframl-valkey`) keeps profiles and velocity in Valkey, or a Redis-compatible
+server, so that they survive a restart and every node sees the same counters.
+
+- **Layout.** `ValkeyLayout` names the keys: an account's profile is a hash (`ofr:acct:<account>`, fields `openedOn`
+  and `risk`), the beneficiaries it has paid and the devices a customer has used are sets, and its attempts of the
+  last 24 hours are a sorted set scored by time. The stream layer writes this layout; until it exists, a batch job
+  can load profiles with `ValkeyProfileLoader`.
+- **Profiles: one round trip, or none.** `ValkeyProfileStore` sends every command the cache cannot answer at once.
+  A Caffeine cache in the gate's process keeps account profiles, found or not, for 60 seconds by default, and a known
+  beneficiary or device once it is seen. A change in Valkey reaches the gate within that time.
+- **Velocity: atomic per account.** `ValkeyVelocityStore` sends each attempt with a short script that adds it, trims
+  the account's set to 24 hours and 10,000 attempts, and returns the rest; the gate counts them, in exact decimals.
+  The script runs atomically, so two nodes deciding payments of one account see each other. An attempt is stored
+  under its event id, so a retried call is counted once. Beneficiaries are stored as a truncated SHA-256, not as
+  account numbers; that keeps them out of plain sight but is not anonymisation, so access to Valkey must be
+  restricted like access to the core banking data.
+- **Failures.** One shared connection; a command that takes longer than its timeout (5 ms in the Gate Service) or
+  is sent while the connection is down fails at once, and the gate applies its fallback policy.
+
 ## Configuration
 
 | Builder option | Default | Purpose |
 | --- | --- | --- |
 | `profiles` | Required | Precomputed profiles |
-| `velocity` | Required | Short-term counters; `InMemoryVelocityStore` keeps them on the node |
+| `velocity` | Required | Short-term counters: `InMemoryVelocityStore` on the node, `ValkeyVelocityStore` shared |
 | `watchlist` | No list | Local replica of the lists of suspicious accounts |
 | `scoreProvider` | No model | Fraud model; without one, every decision takes the rules-only branch |
 | `recordSink` | Drop records | Where audit records go |
@@ -145,8 +167,10 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 
 - **Deadline.** The caller sets a deadline on every call. The service gives the gate the time remaining less a
   reply margin (1 ms by default). A call without a deadline gets the default budget (30 ms).
-- **Routing.** Route calls by originating account (consistent hashing on `originator.institution` and
-  `originator.account`), so each account's velocity counters live on one node and a payment sees the one before it.
+- **Routing.** With in-memory stores, route calls by originating account (consistent hashing on
+  `originator.institution` and `originator.account`), so each account's counters live on one node and a payment sees
+  the one before it. With the Valkey stores, any node can serve any account; routing by account still keeps each
+  node's cache warm.
 - **Errors.** An incomplete or invalid transaction is rejected with `INVALID_ARGUMENT`, naming the field. The message
   never repeats an account number.
 - **Amounts.** Exact decimals as text without an exponent (`"1500000"`, `"12.50"`); floating point never reaches
@@ -161,6 +185,10 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 | `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Kept back from the caller's deadline for the reply |
 | `OPENFRAML_GATE_KAFKA_BOOTSTRAP` | Not set: records are not kept | Kafka brokers for decision records |
 | `OPENFRAML_GATE_RECORDS_TOPIC` | `openframl.gate.records` | Topic for decision records |
+| `OPENFRAML_GATE_VALKEY_URL` | Not set: empty in-memory stores | Valkey for profiles and velocity, e.g. `redis://valkey:6379` |
+| `OPENFRAML_GATE_VALKEY_TIMEOUT_MS` | `5` | How long a Valkey command may take |
+| `OPENFRAML_GATE_PROFILE_CACHE_SECONDS` | `60` | How long the gate caches a profile |
 
-Until the Valkey stores are in, the server starts with empty in-memory stores: it is for trials and benchmarks, not
-production. An application can build its own `Gate` and serve it with `GateServer.start`.
+Without `OPENFRAML_GATE_VALKEY_URL` the server starts with empty in-memory stores, for trials and benchmarks only.
+The watchlist starts empty until List Screening (`openframl-screen`) loads it. An application can build its own
+`Gate` and serve it with `GateServer.start`.

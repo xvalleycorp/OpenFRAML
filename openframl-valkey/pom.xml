@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>vn.io.dxa.openframl</groupId>
+    <artifactId>openframl-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>openframl-valkey</artifactId>
+  <name>OpenFRAML Valkey Store</name>
+  <description>
+    Profiles and durable velocity counters for the gate on Valkey (or Redis), with an in-process Caffeine cache:
+    every lookup in one round trip, or none when the cache has it.
+  </description>
+  <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-valkey</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-gate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.lettuce</groupId>
+      <artifactId>lettuce-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
+  </dependencies>
+</project>

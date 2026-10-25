@@ -1,6 +1,6 @@
-# The gate
+# Payment Gate (`openframl-gate`)
 
-The gate decides what to do with a payment after the customer confirms it and before the payment hub sends it to the
+The Payment Gate decides what to do with a payment after the customer confirms it and before the payment hub sends it to the
 switch. Instant payments cannot be recalled, so this is the only moment to stop one. The target is p99 under 30 ms,
 measured from receiving the request to returning the decision; it will be verified by the phase 1 benchmark.
 
@@ -104,3 +104,28 @@ spent in each step. Like RuleStone's records, it holds no input values: no accou
 | `modelBudget` | 5 ms | The longest the gate waits for a score |
 | `ruleReserve` | 2 ms | Time kept back for the decision table after scoring |
 | `executor` | Virtual threads | Where scoring runs |
+
+## gRPC service
+
+The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, with the API in
+[`openframl/gate/v1/gate.proto`](../openframl-gate-server/src/main/protobuf/openframl/gate/v1/gate.proto): one call,
+`GateService.Decide`, from a `Transaction` to a `DecideResponse`.
+
+- **Deadline.** The caller sets a deadline on every call. The service gives the gate the time remaining less a
+  reply margin (1 ms by default). A call without a deadline gets the default budget (30 ms).
+- **Routing.** Route calls by originating account (consistent hashing on `originator.institution` and
+  `originator.account`), so each account's velocity counters live on one node and a payment sees the one before it.
+- **Errors.** An incomplete or invalid transaction is rejected with `INVALID_ARGUMENT`, naming the field. The message
+  never repeats an account number.
+- **Amounts.** Exact decimals as text without an exponent (`"1500000"`, `"12.50"`); floating point never reaches
+  the gate.
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `OPENFRAML_COUNTRY` | `VN` | Country pack |
+| `OPENFRAML_GATE_PORT` | `9090` | Port |
+| `OPENFRAML_GATE_DEFAULT_BUDGET_MS` | `30` | Budget of a call without a deadline |
+| `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Kept back from the caller's deadline for the reply |
+
+Until the Valkey stores are in, the server starts with empty in-memory stores: it is for trials and benchmarks, not
+production. An application can build its own `Gate` and serve it with `GateServer.start`.

@@ -10,9 +10,9 @@ before they leave the bank and covers the AML obligations — transaction monito
 management and regulatory reporting — in one system, with [RuleStone](https://github.com/xvalleycorp/RuleStone) as
 the decision engine.
 
-> **Status: pre-release, phase 1.** The inline gate works as a library and is tested; the gRPC service, the Valkey
-> and Kafka integrations and the benchmark come next. Nothing is published to Maven Central yet. See the
-> [roadmap](docs/roadmap.md).
+> **Status: pre-release, phase 1.** The Payment Gate works as a library and as a gRPC service, with a benchmark;
+> the Valkey and Kafka integrations come next, and the latency target is still to be verified on server hardware.
+> Nothing is published to Maven Central yet. See the [roadmap](docs/roadmap.md).
 
 - **Two paths.** An inline path decides a payment in a few tens of milliseconds, inside the payment flow. An
   asynchronous path handles the volume for monitoring and reporting. The inline call is the only synchronous one.
@@ -27,17 +27,21 @@ the decision engine.
 
 ## Modules
 
-| Module | Purpose | Phase | Status |
-| --- | --- | --- | --- |
-| [`openframl-model`](openframl-model) | Common transaction event model; country pack SPI | 1 | Usable |
-| [`openframl-gate`](openframl-gate) | Inline decision before a payment is sent: `ALLOW`, `CHALLENGE`, `HOLD`, `DENY` | 1 | Library usable; gRPC service next |
-| [`openframl-vn`](openframl-vn) | Vietnam country pack: sample gate rules, reasons in English and Vietnamese | 1 | Sample rules |
-| `openframl-features` | Behaviour profiles and velocity, computed with Apache Flink | 2 | Planned |
-| `openframl-monitor` | AML and fraud scenarios after the transaction | 2 | Planned |
-| `openframl-screen` | Screening against sanctions, PEP and national lists | 2 | Planned |
-| `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Planned |
-| `openframl-report` | Regulatory reports in the templates of each country pack | 2 | Planned |
-| `openframl-ml` | Model serving, champion/challenger, shadow mode | 3 | Planned |
+| Module | Code | Purpose | Phase | Status |
+| --- | --- | --- | --- | --- |
+| [Event Model](openframl-model) | `openframl-model` | Common transaction event model; country pack SPI | 1 | Usable |
+| [Payment Gate](openframl-gate) | `openframl-gate` | Inline decision before a payment is sent: `ALLOW`, `CHALLENGE`, `HOLD`, `DENY` | 1 | Usable as a library |
+| [Gate Service](openframl-gate-server) | `openframl-gate-server` | The Payment Gate over gRPC; the caller's deadline is the gate's time budget | 1 | Experimental: in-memory stores only |
+| [Vietnam Country Pack](openframl-vn) | `openframl-vn` | Sample gate rules for Vietnam, reasons in English and Vietnamese | 1 | Sample rules |
+| [Benchmark](openframl-benchmark) | `openframl-benchmark` | JMH benchmark and open-loop gRPC load test on a synthetic bank | 1 | Usable |
+| Behaviour Profiles | `openframl-features` | Behaviour profiles and velocity, computed with Apache Flink | 2 | Planned |
+| Transaction Monitoring | `openframl-monitor` | AML and fraud scenarios after the transaction | 2 | Planned |
+| Watchlist Screening | `openframl-screen` | Screening against sanctions, PEP and national lists | 2 | Planned |
+| Case Management | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Planned |
+| Regulatory Reporting | `openframl-report` | Regulatory reports in the templates of each country pack | 2 | Planned |
+| Model Serving | `openframl-ml` | Model serving, champion/challenger, shadow mode | 3 | Planned |
+
+Modules are called by their name; the code is for lookups, Maven coordinates and package names.
 
 ## Getting started
 
@@ -66,7 +70,8 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 
 ## Documentation
 
-- [The gate: steps, facts, fallback policy](docs/gate.md)
+- [Payment Gate: steps, facts, fallback policy, gRPC service](docs/gate.md)
+- [Benchmark](docs/benchmark.md)
 - [Country packs](docs/country-packs.md)
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)

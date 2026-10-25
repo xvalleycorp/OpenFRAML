@@ -2,7 +2,8 @@
 
 Cổng của giai đoạn 1 là p99 dưới 30 ms ở 20.000 TPS trên máy chủ x86 phổ thông. Module Đo hiệu năng đo theo hai cách,
 cả hai trên một ngân hàng tổng hợp tất định, với Gói quốc gia Việt Nam. Mục tiêu chưa được kiểm chứng: các lần chạy
-đầu tiên dưới đây làm trên laptop, nơi bộ sinh tải và server dùng chung một máy.
+đầu tiên dưới đây làm trên một máy phát triển, bộ sinh tải và server chạy cạnh nhau; các lần đo trên máy chủ sẽ làm
+tiếp theo.
 
 ## Đo cái gì
 
@@ -39,7 +40,7 @@ chỉ lệch trong code đã biên dịch); vì vậy các lần chạy dưới 
 
 ## Kết quả đầu tiên
 
-Apple M2 (8 nhân), 16 GB, macOS 26.6, JDK 22.0.2, G1 với heap 4 GB, ngày 25/10/2026.
+Máy phát triển: ARM64 8 nhân, 16 GB, macOS 26.6, JDK 22.0.2, G1 với heap 4 GB, ngày 25/10/2026.
 
 `GateBenchmark`, 4 luồng, độ trễ của một quyết định tính bằng micro-giây:
 
@@ -62,7 +63,7 @@ Các con số đến nay cho thấy:
 - **Đuôi độ trễ do GC.** p99.99 khoảng 19 ms, và p99.9 phía client 21 ms ở 10.000 TPS, khớp với các lần dừng của G1
   (16 lần dừng trong lượt 10.000 TPS, dài nhất 19, 25 và 38 ms). Đây là lý do thiết kế chọn Generational ZGC, với
   thời gian dừng dưới 1 ms.
-- **Lượt 20.000 TPS chưa kết luận được.** Bộ gửi bị trễ lịch 19.219 lần: một laptop 8 nhân chạy cả bộ gửi, client và
+- **Lượt 20.000 TPS chưa kết luận được.** Bộ gửi bị trễ lịch 19.219 lần: một máy 8 nhân chạy cả bộ gửi, client và
   server, nên máy bão hòa trước khi `gate` bão hòa.
 - **Chuyển việc chấm điểm sang luồng khác tốn khoảng 12 µs** ở p50, nằm trong ngân sách 5 ms của model.
 

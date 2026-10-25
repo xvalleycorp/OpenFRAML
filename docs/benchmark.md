@@ -2,7 +2,8 @@
 
 The phase 1 gate is p99 under 30 ms at 20,000 TPS on commodity x86 servers. The Benchmark module measures it in two
 ways, both on a deterministic synthetic bank with the Vietnam Country Pack. The target is not verified yet: the
-first runs below were on a laptop, where the load generator and the server share one machine.
+first runs below were on one development machine, with the load generator and the server side by side; server runs
+come next.
 
 ## What is measured
 
@@ -39,7 +40,7 @@ address in compiled code); the runs below therefore used G1.
 
 ## First results
 
-Apple M2 (8 cores), 16 GB, macOS 26.6, JDK 22.0.2, G1 with a 4 GB heap, 25 October 2026.
+Development machine: 8-core ARM64, 16 GB, macOS 26.6, JDK 22.0.2, G1 with a 4 GB heap, 25 October 2026.
 
 `GateBenchmark`, 4 threads, latency of one decision in microseconds:
 
@@ -62,7 +63,7 @@ What the numbers say so far:
 - **GC pauses make the tail.** The p99.99 of about 19 ms, and the client p99.9 of 21 ms at 10,000 TPS, match G1
   pauses (16 pauses in the 10,000 TPS run, the longest 19, 25 and 38 ms). This is why the design specifies
   Generational ZGC, with pauses under 1 ms.
-- **The 20,000 TPS run is not conclusive.** The sender fell behind schedule 19,219 times: one 8-core laptop ran the
+- **The 20,000 TPS run is not conclusive.** The sender fell behind schedule 19,219 times: one 8-core machine ran the
   sender, the client and the server, so the machine saturated before the gate did.
 - **Handing scoring to another thread costs about 12 µs** at p50, inside the 5 ms model budget.
 

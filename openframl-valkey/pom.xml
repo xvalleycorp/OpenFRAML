@@ -31,5 +31,11 @@
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
     </dependency>
+    <!-- Real decision tables for the policy repository tests -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-vn</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

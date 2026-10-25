@@ -100,8 +100,35 @@ hoặc bảng riêng của ngân hàng, giữ bí mật trong một thư mục c
 4. `Gate.rollback` quay về policy trước đó trong một bước, cũng được duyệt và ghi nhật ký như vậy.
 
 Mỗi policy có một mã định danh là hash SHA-256 của nội dung các bảng, và mỗi quyết định ghi lại phiên bản bảng đã
-quyết định. Backtest hoặc chạy shadow trước khi kích hoạt, và API quản trị có xác thực người soạn và người duyệt, là
-các bước kế tiếp trong [lộ trình](roadmap.md).
+quyết định. Backtest hoặc chạy shadow trước khi kích hoạt là bước kế tiếp trong [lộ trình](roadmap.md).
+
+### Service quản trị và mọi node
+
+Khi có nhiều node `gate`, một thay đổi chỉ cần duyệt một lần và mọi node đều làm theo. Dịch vụ chặn giao dịch cung cấp
+API gRPC `PolicyAdmin`
+([`openframl/gate/admin/v1/policy_admin.proto`](../../openframl-gate-server/src/main/protobuf/openframl/gate/admin/v1/policy_admin.proto))
+trên một cổng riêng:
+
+1. **Ai được gọi.** Chỉ qua mutual TLS. Người gọi là common name trong client certificate do CA quản trị của ngân hàng
+   cấp. Ngân hàng liệt kê tên nào là người soạn (`OPENFRAML_ADMIN_MAKERS`) và tên nào là người duyệt
+   (`OPENFRAML_ADMIN_CHECKERS`). Lời gọi không có certificate do CA đó cấp không qua được bước bắt tay TLS; tên không
+   nằm trong danh sách nào bị từ chối.
+2. **Đề xuất.** Người soạn gửi toàn bộ policy, gồm mọi phiên bản của mọi bảng, kèm lý do. Policy được biên dịch và
+   kiểm tra ngay, nên người duyệt không bao giờ phải xem một policy không chạy được. Đề xuất ghi lại policy đang có
+   hiệu lực tại thời điểm đó.
+3. **Xem xét và duyệt.** Người duyệt đọc các bảng được đề xuất (`GetPolicyTables`) rồi duyệt, kèm mã policy mình đã
+   xem; nếu mã không khớp, việc duyệt thất bại. Người soạn không bao giờ được tự quyết định đề xuất của mình, kể cả khi
+   có cả hai vai trò. Một đề xuất chỉ được duyệt khi policy mà nó dựa vào vẫn còn hiệu lực: với hai thay đổi soạn song
+   song, thay đổi thứ hai phải được đề xuất lại trên nền thay đổi thứ nhất.
+4. **Mọi node làm theo.** Quyết định duyệt được lưu trong `PolicyRepository` (`ValkeyPolicyRepository` khi có
+   Valkey; việc duyệt là một script nguyên tử). `PolicySync` trên mỗi node đọc quyết định này mỗi 2 giây và khi khởi
+   động, biên dịch các bảng rồi đưa policy vào hiệu lực với cùng bảo đảm như `Gate.activate`. Node chỉ tin các bảng có
+   hash đúng bằng mã đã duyệt: bảng bị sửa sau khi duyệt sẽ bị từ chối, và node giữ nguyên policy đang chạy.
+5. **Quay lại.** `ProposeRollback` đề xuất quay về policy có hiệu lực trước thay đổi được duyệt gần nhất; đề xuất này
+   được duyệt như mọi thay đổi khác.
+
+Ai ghi được vào các key của repository thì thay đổi được những gì `gate` chạy: dùng Valkey ACL để chỉ các node
+`gate` có quyền ghi. Khi không có Valkey, repository nằm trong tiến trình, chỉ dùng cho một node.
 
 ## Bản ghi
 
@@ -224,6 +251,11 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 | `OPENFRAML_GATE_PROFILE_CACHE_SECONDS` | `60` | Thời gian `gate` giữ hồ sơ trong cache |
 | `OPENFRAML_GATE_MODEL` | Không đặt: chỉ dùng rule | Đường dẫn tới model gian lận ONNX |
 | `OPENFRAML_GATE_MODEL_BUDGET_MS` | `5` | Thời gian tối đa chờ điểm của model |
+| `OPENFRAML_GATE_POLICY_SYNC_SECONDS` | `2` | Chu kỳ node kiểm tra policy đã được duyệt |
+| `OPENFRAML_ADMIN_PORT` | Không đặt: không có service quản trị | Cổng của service quản trị policy, chỉ qua mutual TLS |
+| `OPENFRAML_ADMIN_TLS_CERT`, `OPENFRAML_ADMIN_TLS_KEY` | Bắt buộc khi có cổng | Chuỗi certificate và khóa PKCS#8 của server, dạng PEM |
+| `OPENFRAML_ADMIN_TLS_CLIENT_CA` | Bắt buộc khi có cổng | CA cấp client certificate cho người quản trị |
+| `OPENFRAML_ADMIN_MAKERS`, `OPENFRAML_ADMIN_CHECKERS` | Bắt buộc khi có cổng | Common name của certificate, cách nhau bằng dấu phẩy |
 
 Nếu không đặt `OPENFRAML_GATE_VALKEY_URL`, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
 hiệu năng. Danh sách nghi ngờ rỗng cho tới khi Sàng lọc danh sách (`openframl-screen`) nạp vào. Ứng dụng có thể tự dựng

@@ -152,12 +152,20 @@ public final class Gate implements AutoCloseable {
      *                                  applied
      */
     public synchronized PolicyChange activate(GatePolicy next, Approval approval) {
+        return apply(next, PolicyChange.Kind.ACTIVATE, approval);
+    }
+
+    /**
+     * Puts a change approved for every node in force on this one, as {@link PolicySync} does: like {@link #activate},
+     * but recorded as the kind of change that was approved.
+     */
+    synchronized PolicyChange apply(GatePolicy next, PolicyChange.Kind kind, Approval approval) {
         Objects.requireNonNull(next, "next");
         GatePolicy current = policies.current();
         if (current.id().equals(next.id())) {
             throw new IllegalArgumentException("policy " + next.id() + " is already in force");
         }
-        PolicyChange change = new PolicyChange(PolicyChange.Kind.ACTIVATE, current.id(), next.id(), approval);
+        PolicyChange change = new PolicyChange(kind, current.id(), next.id(), approval);
         audit.record(change);
         policies = new Policies(next, current);
         LOG.log(INFO, "policy {0} in force (was {1}), approved by {2}", next.id(), current.id(), approval.checker());

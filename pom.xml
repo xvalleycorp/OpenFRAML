@@ -163,6 +163,12 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <!-- Tests only: certificates for the admin service's mutual TLS tests -->
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>1.86</version>
+      </dependency>
       <!-- The SLF4J version the Kafka client is built against -->
       <dependency>
         <groupId>org.slf4j</groupId>

@@ -1,0 +1,124 @@
+// Copyright 2026 The OpenFRAML Authors
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package openframl.gate.admin.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "PolicyAdminProto";
+option java_package = "vn.io.dxa.openframl.gate.admin.v1";
+
+// Four-eyes changes of the decision tables every gate node runs.
+//
+// Served only over mutual TLS: the caller is the client certificate's common name, and the bank's configuration
+// says which names are makers and which are checkers. A maker proposes; a different person, a checker, reviews the
+// proposed tables and approves or rejects; every node then puts the approved policy in force within seconds.
+service PolicyAdmin {
+  // Compiles and checks the tables, then records a pending proposal. Maker only.
+  rpc Propose(ProposeRequest) returns (Proposal);
+  // Proposes going back to the policy in force before the last approved change. Maker only.
+  rpc ProposeRollback(ProposeRollbackRequest) returns (Proposal);
+  // Checker only, never the proposal's maker.
+  rpc Approve(ApproveRequest) returns (PolicyChange);
+  // Checker only, never the proposal's maker.
+  rpc Reject(RejectRequest) returns (Proposal);
+  rpc ListPending(ListPendingRequest) returns (ListPendingResponse);
+  // The tables of a proposed or past policy, for review.
+  rpc GetPolicyTables(GetPolicyTablesRequest) returns (GetPolicyTablesResponse);
+  rpc GetActive(GetActiveRequest) returns (GetActiveResponse);
+  rpc ListHistory(ListHistoryRequest) returns (ListHistoryResponse);
+}
+
+enum ChangeKind {
+  CHANGE_KIND_UNSPECIFIED = 0;
+  CHANGE_KIND_ACTIVATE = 1;
+  CHANGE_KIND_ROLLBACK = 2;
+}
+
+enum ProposalStatus {
+  PROPOSAL_STATUS_UNSPECIFIED = 0;
+  PROPOSAL_STATUS_PENDING = 1;
+  PROPOSAL_STATUS_APPROVED = 2;
+  PROPOSAL_STATUS_REJECTED = 3;
+}
+
+message ProposeRequest {
+  // RuleStone decision tables as JSON, every version of every table: the whole policy, not a difference.
+  repeated string tables = 1;
+  // Why, e.g. the change ticket.
+  string reason = 2;
+}
+
+message ProposeRollbackRequest {
+  string reason = 1;
+}
+
+message ApproveRequest {
+  string proposal_id = 1;
+  // The policy the checker reviewed; the approval fails if the proposal puts a different one in force.
+  string policy_id = 2;
+}
+
+message RejectRequest {
+  string proposal_id = 1;
+  string reason = 2;
+}
+
+message Proposal {
+  string id = 1;
+  ChangeKind kind = 2;
+  // The policy in force when it was proposed; it can only be approved while that is still so.
+  string from_policy_id = 3;
+  string to_policy_id = 4;
+  string maker = 5;
+  string reason = 6;
+  google.protobuf.Timestamp proposed_at = 7;
+  ProposalStatus status = 8;
+  string decided_by = 9;
+  google.protobuf.Timestamp decided_at = 10;
+  string decision_reason = 11;
+}
+
+message PolicyChange {
+  // Counts approved changes, from 1.
+  int64 sequence = 1;
+  ChangeKind kind = 2;
+  string from_policy_id = 3;
+  string to_policy_id = 4;
+  string maker = 5;
+  string checker = 6;
+  string reason = 7;
+  google.protobuf.Timestamp approved_at = 8;
+}
+
+message ListPendingRequest {}
+
+message ListPendingResponse {
+  repeated Proposal proposals = 1;
+}
+
+message GetPolicyTablesRequest {
+  string policy_id = 1;
+}
+
+message GetPolicyTablesResponse {
+  repeated string tables = 1;
+}
+
+message GetActiveRequest {}
+
+message GetActiveResponse {
+  // The policy every node must run.
+  string policy_id = 1;
+  // The change that put it in force; unset while the gates run the policy they started with.
+  PolicyChange change = 2;
+}
+
+message ListHistoryRequest {}
+
+message ListHistoryResponse {
+  repeated PolicyChange changes = 1;
+}

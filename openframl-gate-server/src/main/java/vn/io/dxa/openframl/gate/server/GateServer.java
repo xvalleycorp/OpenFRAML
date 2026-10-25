@@ -5,6 +5,7 @@
 
 package vn.io.dxa.openframl.gate.server;
 
+import ai.onnxruntime.OrtException;
 import io.grpc.Server;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import vn.io.dxa.openframl.gate.memory.InMemoryProfileStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryVelocityStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryWatchlist;
 import vn.io.dxa.openframl.kafka.KafkaGateRecordSink;
+import vn.io.dxa.openframl.onnx.OnnxScoreProvider;
 import vn.io.dxa.openframl.pack.CountryPack;
 import vn.io.dxa.openframl.valkey.Valkey;
 import vn.io.dxa.openframl.valkey.ValkeyLayout;
@@ -46,7 +48,9 @@ import vn.io.dxa.openframl.valkey.ValkeyVelocityStore;
  *   <li>{@code OPENFRAML_GATE_VALKEY_URL}: Valkey for profiles and velocity, e.g. {@code redis://valkey:6379};
  *       without it, empty in-memory stores, for trials and benchmarks only;</li>
  *   <li>{@code OPENFRAML_GATE_VALKEY_TIMEOUT_MS}: how long a Valkey command may take, default 5;</li>
- *   <li>{@code OPENFRAML_GATE_PROFILE_CACHE_SECONDS}: how long the gate caches a profile, default 60.</li>
+ *   <li>{@code OPENFRAML_GATE_PROFILE_CACHE_SECONDS}: how long the gate caches a profile, default 60;</li>
+ *   <li>{@code OPENFRAML_GATE_MODEL}: an ONNX fraud model; without it, decisions are made by the rules alone;</li>
+ *   <li>{@code OPENFRAML_GATE_MODEL_BUDGET_MS}: the longest the gate waits for a score, default 5.</li>
  * </ul>
  *
  * <p>The watchlist starts empty until list screening loads it. Embedders build their own {@link Gate} and pass it
@@ -86,7 +90,7 @@ public final class GateServer implements AutoCloseable {
         server.awaitTermination();
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException, OrtException {
         Map<String, String> env = System.getenv();
         CountryPack pack = CountryPack.forCountry(env.getOrDefault("OPENFRAML_COUNTRY", "VN"));
         String rulesDir = env.get("OPENFRAML_GATE_RULES_DIR");
@@ -114,9 +118,19 @@ public final class GateServer implements AutoCloseable {
                     1_000_000);
             velocity = new ValkeyVelocityStore(valkey);
         }
-        Gate gate = Gate.builder(pack).policy(policy).profiles(profiles).velocity(velocity)
+        String modelPath = env.get("OPENFRAML_GATE_MODEL");
+        OnnxScoreProvider model = modelPath == null ? null
+                : OnnxScoreProvider.load(Path.of(modelPath), pack.businessZone());
+        Gate.Builder builder = Gate.builder(pack).policy(policy).profiles(profiles).velocity(velocity)
                 .watchlist(new InMemoryWatchlist())
-                .recordSink(records == null ? GateRecordSink.NONE : records).build();
+                .recordSink(records == null ? GateRecordSink.NONE : records)
+                .modelBudget(Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_MODEL_BUDGET_MS", "5"))));
+        if (model != null) {
+            LOG.log(System.Logger.Level.INFO, "model {0} scores payments from features {1}", model.modelVersion(),
+                    model.featureNames());
+            builder.scoreProvider(model);
+        }
+        Gate gate = builder.build();
         GateGrpcService service = new GateGrpcService(gate,
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_DEFAULT_BUDGET_MS", "30"))),
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_REPLY_MARGIN_MS", "1"))));
@@ -135,6 +149,13 @@ public final class GateServer implements AutoCloseable {
                 }
                 if (valkey != null) {
                     valkey.close();
+                }
+                if (model != null) {
+                    try {
+                        model.close();
+                    } catch (OrtException e) {
+                        LOG.log(System.Logger.Level.WARNING, "model did not close: {0}", e.getMessage());
+                    }
                 }
             }
         }));

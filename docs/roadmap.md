@@ -24,7 +24,7 @@ proven before the rest is built. Durations are estimates for a small team and wi
 - [x] Policy changes without a restart: activate and roll back in one step, four-eyes approval, recorded before they
       take effect (`openframl-gate`)
 - [ ] Admin API for policy changes with authenticated makers and checkers; backtest or shadow run before activation
-- [ ] ONNX Runtime `ScoreProvider`
+- [x] ONNX Runtime `ScoreProvider`, the model's contract in its metadata: ONNX Scorer (`openframl-onnx`)
 - [x] Benchmark: JMH and an open-loop gRPC load test on a synthetic bank (`openframl-benchmark`); first results in
       [Benchmark](benchmark.md)
 - [ ] Routing by originating account across gate nodes

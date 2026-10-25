@@ -25,7 +25,7 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
       khi có hiệu lực (`openframl-gate`)
 - [ ] API quản trị cho thay đổi policy, có xác thực người soạn và người duyệt; backtest hoặc chạy shadow trước khi
       kích hoạt
-- [ ] `ScoreProvider` chạy ONNX Runtime
+- [x] `ScoreProvider` chạy ONNX Runtime, hợp đồng của model nằm trong metadata: Chấm điểm ONNX (`openframl-onnx`)
 - [x] Đo hiệu năng: benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp
       (`openframl-benchmark`); kết quả đầu tiên trong [Đo hiệu năng](benchmark.md)
 - [ ] Định tuyến theo tài khoản gửi giữa các node `gate`

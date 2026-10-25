@@ -121,6 +121,40 @@ riêng làm phần còn lại, vì Kafka producer có thể chặn bên gọi v�
 đầy, bản ghi bị bỏ, còn quyết định thì không bao giờ bị giữ lại: `dropped()` và `failed()` đếm số bản ghi bị mất, và
 cần đặt cảnh báo trên hai số này.
 
+## Model
+
+Chấm điểm ONNX (`openframl-onnx`) chạy model gian lận ngay trong tiến trình `gate` bằng ONNX Runtime. Có thể dùng
+model huấn luyện bằng bất kỳ framework nào (XGBoost, LightGBM, scikit-learn, PyTorch) rồi xuất ra ONNX. Điểm của model
+là một đầu vào của bảng quyết định, không bao giờ tự nó là quyết định.
+
+File model tự mang hợp đồng của nó trong metadata, nên chỉ cần triển khai một file:
+
+| Khóa metadata | Bắt buộc | Nội dung |
+| --- | --- | --- |
+| `openframl.features` | Có | Các feature dùng khi huấn luyện, cách nhau bằng dấu phẩy, theo thứ tự đầu vào |
+| `openframl.model_version` | Có | Được ghi kèm mọi quyết định, ví dụ `fraud-xgb-3` |
+| `openframl.output` | Không | Output chứa xác suất gian lận; mặc định là output cuối cùng |
+
+Đầu vào là một tensor float `[1, số feature]`. Đầu ra là xác suất gian lận: tensor float `[1]`, `[1, 1]`, hoặc
+`[1, 2]` với lớp gian lận ở cuối, hoặc danh sách map từ lớp sang xác suất mà scikit-learn xuất ra.
+`OnnxScoreProvider.load` kiểm tra metadata và kích thước đầu vào rồi chạy thử model một lần, nên model không khớp hợp
+đồng bị phát hiện ngay khi load, không phải khi đang xử lý giao dịch. Mỗi lời gọi chỉ dùng một luồng ONNX, vì `gate`
+chấm điểm nhiều giao dịch cùng lúc.
+
+`ScoreFeatures` đặt tên cho các feature mà model có thể yêu cầu. Tên feature không bao giờ bị đổi hay đổi nghĩa, chỉ
+được thêm mới:
+
+| Feature | Nội dung |
+| --- | --- |
+| `amount`, `log_amount` | Số tiền giao dịch, và `log(1 + số tiền)` |
+| `count_10m`, `count_24h`, `amount_24h`, `log_amount_24h`, `distinct_beneficiaries_24h` | Velocity, tính cả giao dịch này |
+| `originator_age_days`, `beneficiary_age_days` | Tuổi tài khoản tính theo ngày nghiệp vụ; `-1` nếu không có hồ sơ |
+| `originator_risk_high`, `beneficiary_risk_high` | Xếp hạng rủi ro `HIGH` |
+| `beneficiary_known`, `same_institution` | Đã từng chuyển tiền; người thụ hưởng cùng ngân hàng |
+| `has_device`, `device_known`, `remote_access`, `active_call` | Tín hiệu phiên |
+| `hour_of_day` | Giờ theo múi giờ nghiệp vụ của gói quốc gia |
+| `channel_<channel>`, `type_<type>` | Một cờ cho mỗi kênh (`channel_mobile`...) và mỗi loại giao dịch (`type_transfer_out`...) |
+
 ## Kho dữ liệu
 
 Kho trong bộ nhớ (`openframl-gate`, package `memory`) giữ mọi thứ ngay trên node: dùng cho test, đo hiệu năng và chạy
@@ -188,6 +222,8 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 | `OPENFRAML_GATE_VALKEY_URL` | Không đặt: kho trong bộ nhớ, rỗng | Valkey cho hồ sơ và velocity, ví dụ `redis://valkey:6379` |
 | `OPENFRAML_GATE_VALKEY_TIMEOUT_MS` | `5` | Thời gian tối đa cho một lệnh Valkey |
 | `OPENFRAML_GATE_PROFILE_CACHE_SECONDS` | `60` | Thời gian `gate` giữ hồ sơ trong cache |
+| `OPENFRAML_GATE_MODEL` | Không đặt: chỉ dùng rule | Đường dẫn tới model gian lận ONNX |
+| `OPENFRAML_GATE_MODEL_BUDGET_MS` | `5` | Thời gian tối đa chờ điểm của model |
 
 Nếu không đặt `OPENFRAML_GATE_VALKEY_URL`, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
 hiệu năng. Danh sách nghi ngờ rỗng cho tới khi Sàng lọc danh sách (`openframl-screen`) nạp vào. Ứng dụng có thể tự dựng

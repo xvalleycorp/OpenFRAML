@@ -16,11 +16,17 @@ import java.util.concurrent.TimeUnit;
 import vn.io.dxa.openframl.gate.Gate;
 import vn.io.dxa.openframl.gate.GatePolicy;
 import vn.io.dxa.openframl.gate.GateRecordSink;
+import vn.io.dxa.openframl.gate.ProfileStore;
+import vn.io.dxa.openframl.gate.VelocityStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryProfileStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryVelocityStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryWatchlist;
 import vn.io.dxa.openframl.kafka.KafkaGateRecordSink;
 import vn.io.dxa.openframl.pack.CountryPack;
+import vn.io.dxa.openframl.valkey.Valkey;
+import vn.io.dxa.openframl.valkey.ValkeyLayout;
+import vn.io.dxa.openframl.valkey.ValkeyProfileStore;
+import vn.io.dxa.openframl.valkey.ValkeyVelocityStore;
 
 /**
  * Runs the gate as a gRPC server.
@@ -36,11 +42,15 @@ import vn.io.dxa.openframl.pack.CountryPack;
  *   <li>{@code OPENFRAML_GATE_KAFKA_BOOTSTRAP}: Kafka brokers to publish decision records to; without it, records
  *       are not kept;</li>
  *   <li>{@code OPENFRAML_GATE_RECORDS_TOPIC}: the topic for decision records, default
- *       {@code openframl.gate.records}.</li>
+ *       {@code openframl.gate.records};</li>
+ *   <li>{@code OPENFRAML_GATE_VALKEY_URL}: Valkey for profiles and velocity, e.g. {@code redis://valkey:6379};
+ *       without it, empty in-memory stores, for trials and benchmarks only;</li>
+ *   <li>{@code OPENFRAML_GATE_VALKEY_TIMEOUT_MS}: how long a Valkey command may take, default 5;</li>
+ *   <li>{@code OPENFRAML_GATE_PROFILE_CACHE_SECONDS}: how long the gate caches a profile, default 60.</li>
  * </ul>
  *
- * <p>Until the Valkey stores are in, {@link #main} starts with empty in-memory stores: it is for trials and
- * benchmarks, not production. Embedders build their own {@link Gate} and pass it to {@link #start}.
+ * <p>The watchlist starts empty until list screening loads it. Embedders build their own {@link Gate} and pass it
+ * to {@link #start}.
  */
 public final class GateServer implements AutoCloseable {
 
@@ -88,16 +98,31 @@ public final class GateServer implements AutoCloseable {
             LOG.log(System.Logger.Level.WARNING, "OPENFRAML_GATE_KAFKA_BOOTSTRAP not set: decision records are not "
                     + "kept");
         }
-        Gate gate = Gate.builder(pack).policy(policy).profiles(new InMemoryProfileStore())
-                .velocity(new InMemoryVelocityStore()).watchlist(new InMemoryWatchlist())
+        String valkeyUrl = env.get("OPENFRAML_GATE_VALKEY_URL");
+        Valkey valkey = valkeyUrl == null ? null : Valkey.connect(valkeyUrl,
+                Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_VALKEY_TIMEOUT_MS", "5"))));
+        ProfileStore profiles;
+        VelocityStore velocity;
+        if (valkey == null) {
+            LOG.log(System.Logger.Level.WARNING, "OPENFRAML_GATE_VALKEY_URL not set: empty in-memory stores, for "
+                    + "trials and benchmarks only");
+            profiles = new InMemoryProfileStore();
+            velocity = new InMemoryVelocityStore();
+        } else {
+            profiles = new ValkeyProfileStore(valkey.connection(), ValkeyLayout.DEFAULT,
+                    Duration.ofSeconds(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_PROFILE_CACHE_SECONDS", "60"))),
+                    1_000_000);
+            velocity = new ValkeyVelocityStore(valkey);
+        }
+        Gate gate = Gate.builder(pack).policy(policy).profiles(profiles).velocity(velocity)
+                .watchlist(new InMemoryWatchlist())
                 .recordSink(records == null ? GateRecordSink.NONE : records).build();
         GateGrpcService service = new GateGrpcService(gate,
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_DEFAULT_BUDGET_MS", "30"))),
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_REPLY_MARGIN_MS", "1"))));
         GateServer server = start(Integer.parseInt(env.getOrDefault("OPENFRAML_GATE_PORT", "9090")), service);
-        LOG.log(System.Logger.Level.WARNING, "gate for {0} (pack {1}, policy {2}) listening on port {3}, with "
-                + "in-memory stores: for trials and benchmarks only", pack.countryCode(), pack.version(), policy.id(),
-                server.port());
+        LOG.log(System.Logger.Level.INFO, "gate for {0} (pack {1}, policy {2}) listening on port {3}",
+                pack.countryCode(), pack.version(), policy.id(), server.port());
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 server.close();
@@ -107,6 +132,9 @@ public final class GateServer implements AutoCloseable {
                 gate.close();
                 if (records != null) {
                     records.close();
+                }
+                if (valkey != null) {
+                    valkey.close();
                 }
             }
         }));

@@ -61,6 +61,7 @@
     <module>openframl-gate</module>
     <module>openframl-vn</module>
     <module>openframl-kafka</module>
+    <module>openframl-valkey</module>
     <module>openframl-gate-server</module>
     <module>openframl-benchmark</module>
   </modules>
@@ -79,6 +80,8 @@
     <!-- RuleStone's CEL runtime needs protobuf 4; gRPC accepts it. protoc uses the same version. -->
     <protobuf.version>4.35.1</protobuf.version>
     <kafka.version>4.4.0</kafka.version>
+    <lettuce.version>7.8.0.RELEASE</lettuce.version>
+    <caffeine.version>3.3.0</caffeine.version>
   </properties>
 
   <dependencyManagement>
@@ -118,6 +121,21 @@
         <artifactId>openframl-kafka</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.openframl</groupId>
+        <artifactId>openframl-valkey</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.lettuce</groupId>
+        <artifactId>lettuce-core</artifactId>
+        <version>${lettuce.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+        <version>${caffeine.version}</version>
+      </dependency>
       <!--
         zstd-jni is BSD-2-Clause, outside the licence allowlist, and only needed for zstd compression: the producer
         compresses with lz4.
@@ -155,6 +173,12 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>33.6.0-jre</version>
+      </dependency>
+      <!-- Annotations only; Caffeine wants 1.0.1, Guava 1.0.0 -->
+      <dependency>
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>1.0.1</version>
       </dependency>
       <dependency>
         <groupId>com.google.errorprone</groupId>
@@ -301,6 +325,8 @@
                   <includedLicenses>
                     <includedLicense>Apache-2.0</includedLicense>
                     <includedLicense>MIT</includedLicense>
+                    <!-- MIT without the attribution clause; Reactive Streams, under Lettuce -->
+                    <includedLicense>MIT-0</includedLicense>
                     <includedLicense>BSD-3-Clause</includedLicense>
                   </includedLicenses>
                 </configuration>

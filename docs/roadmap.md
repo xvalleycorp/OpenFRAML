@@ -19,7 +19,7 @@ proven before the rest is built. Durations are estimates for a small team and wi
 - [x] Node-local velocity counters, watchlist replica and profile store in memory
 - [x] Vietnam Country Pack: sample rules with a test for every rule and threshold (`openframl-vn`)
 - [x] Gate Service: gRPC with per-call deadlines (`openframl-gate-server`)
-- [ ] Profiles and durable velocity on Valkey, with an in-process Caffeine cache
+- [x] Profiles and durable velocity on Valkey, with an in-process Caffeine cache: Valkey Store (`openframl-valkey`)
 - [x] Decision records to Kafka, in an open JSON format: Kafka Connector (`openframl-kafka`)
 - [x] Policy changes without a restart: activate and roll back in one step, four-eyes approval, recorded before they
       take effect (`openframl-gate`)

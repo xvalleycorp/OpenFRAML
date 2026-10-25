@@ -20,7 +20,7 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
 - [x] Gói quốc gia Việt Nam: rule mẫu, có test cho mọi rule và mọi ngưỡng (`openframl-vn`)
 - [x] Dịch vụ chặn giao dịch: gRPC có deadline cho từng lời gọi (`openframl-gate-server`)
 - [ ] Hồ sơ và velocity bền vững trên Valkey, kèm cache trong tiến trình Caffeine
-- [ ] Ghi decision record lên Kafka (`GateRecordSink`)
+- [x] Ghi decision record lên Kafka theo định dạng JSON mở: Kết nối Kafka (`openframl-kafka`)
 - [x] Thay policy không cần khởi động lại: kích hoạt và quay lại trong một bước, hai người duyệt, ghi nhật ký trước
       khi có hiệu lực (`openframl-gate`)
 - [ ] API quản trị cho thay đổi policy, có xác thực người soạn và người duyệt; backtest hoặc chạy shadow trước khi

@@ -23,6 +23,16 @@
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-gate</artifactId>
     </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-kafka</artifactId>
+    </dependency>
+    <!-- Sends the Kafka client's logs to java.util.logging, like the gate's own -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>runtime</scope>
+    </dependency>
     <!-- Country packs are chosen at start-up; Vietnam ships with the server -->
     <dependency>
       <groupId>vn.io.dxa.openframl</groupId>

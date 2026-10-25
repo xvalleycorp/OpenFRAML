@@ -23,6 +23,7 @@
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-model</artifactId>
     </dependency>
+    <!-- Also brings Jackson, used for the records' JSON form at the version RuleStone is built with -->
     <dependency>
       <groupId>vn.io.dxa.rulestone</groupId>
       <artifactId>rulestone-core</artifactId>

@@ -110,6 +110,17 @@ bộ (lên Kafka) và không được chặn luồng. Bản ghi gồm mã sự k
 RuleStone, phiên bản model và điểm, danh sách chứa người thụ hưởng, và thời gian của từng bước. Giống decision record
 của RuleStone, bản ghi không chứa giá trị đầu vào: không có số tài khoản, tên hay số tiền.
 
+`GateRecordJson` ghi mỗi bản ghi thành một dòng JSON theo schema `openframl.gate.record/1`; decision record của
+RuleStone giữ nguyên định dạng JSON của RuleStone. Đây là định dạng mở: ngân hàng đọc được bản ghi của mình mà không
+cần OpenFRAML. Trong cùng một phiên bản schema, không trường nào bị bỏ hay đổi tên.
+
+Kết nối Kafka (`openframl-kafka`) đẩy bản ghi lên Kafka: `KafkaGateRecordSink` gửi mỗi bản ghi vào một topic với key là
+mã sự kiện. Mỗi bản ghi phải được mọi replica đồng bộ xác nhận, retry không sinh bản trùng, và dữ liệu nén bằng lz4.
+`accept` chỉ đặt bản ghi vào một hàng đợi có giới hạn (mặc định 100.000, khoảng 10 giây ở 10.000 TPS); một luồng gửi
+riêng làm phần còn lại, vì Kafka producer có thể chặn bên gọi và luồng quyết định không được phải chờ. Khi hàng đợi
+đầy, bản ghi bị bỏ, còn quyết định thì không bao giờ bị giữ lại: `dropped()` và `failed()` đếm số bản ghi bị mất, và
+cần đặt cảnh báo trên hai số này.
+
 ## Cấu hình
 
 | Tùy chọn | Mặc định | Mục đích |
@@ -147,6 +158,8 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 | `OPENFRAML_GATE_PORT` | `9090` | Cổng |
 | `OPENFRAML_GATE_DEFAULT_BUDGET_MS` | `30` | Ngân sách của lời gọi không có deadline |
 | `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Thời gian giữ lại từ deadline của bên gọi để trả lời |
+| `OPENFRAML_GATE_KAFKA_BOOTSTRAP` | Không đặt: không giữ bản ghi | Các broker Kafka nhận decision record |
+| `OPENFRAML_GATE_RECORDS_TOPIC` | `openframl.gate.records` | Topic nhận decision record |
 
 Cho tới khi có kho dữ liệu trên Valkey, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
 hiệu năng, không dùng cho production. Ứng dụng có thể tự dựng `Gate` và phục vụ bằng `GateServer.start`.

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>vn.io.dxa.openframl</groupId>
+    <artifactId>openframl-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>openframl-kafka</artifactId>
+  <name>OpenFRAML Kafka Connector</name>
+  <description>
+    Kafka for OpenFRAML: publishes the gate's decision records, in their open JSON form, without ever holding up a
+    decision.
+  </description>
+  <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-kafka</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-gate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+    </dependency>
+  </dependencies>
+</project>

@@ -79,7 +79,7 @@
     <rulestone.version>0.1.0-SNAPSHOT</rulestone.version>
     <grpc.version>1.84.2</grpc.version>
     <!-- RuleStone's CEL runtime needs protobuf 4; gRPC accepts it. protoc uses the same version. -->
-    <protobuf.version>4.35.1</protobuf.version>
+    <protobuf.version>4.36.2</protobuf.version>
     <kafka.version>4.4.0</kafka.version>
     <lettuce.version>7.8.0.RELEASE</lettuce.version>
     <caffeine.version>3.3.0</caffeine.version>
@@ -173,7 +173,7 @@
       <dependency>
         <groupId>at.yawk.lz4</groupId>
         <artifactId>lz4-java</artifactId>
-        <version>1.11.4</version>
+        <version>1.12.0</version>
       </dependency>
       <dependency>
         <groupId>com.google.protobuf</groupId>
@@ -184,7 +184,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.6.0-jre</version>
+        <version>33.7.2-jre</version>
       </dependency>
       <!-- Annotations only; Caffeine wants 1.0.1, Guava 1.0.0 -->
       <dependency>

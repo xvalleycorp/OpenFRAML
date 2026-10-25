@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://openframl.dxa.io.vn/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://openframl.dxa.io.vn/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://openframl.dxa.io.vn/vi/"/>
+  </url>
+  <url>
+    <loc>https://openframl.dxa.io.vn/vi/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://openframl.dxa.io.vn/"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="https://openframl.dxa.io.vn/vi/"/>
+  </url>
+</urlset>

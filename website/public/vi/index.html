@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenFRAML · Phòng chống gian lận và rửa tiền, không tốn phí bản quyền</title>
+<meta name="description" content="OpenFRAML là nền tảng phòng chống gian lận và rửa tiền mã nguồn mở cho ngân hàng: không phí bản quyền, máy chủ phổ thông, và rule, dữ liệu, mã nguồn do ngân hàng làm chủ.">
+<link rel="canonical" href="https://openframl.dxa.io.vn/vi/">
+<link rel="alternate" hreflang="en" href="https://openframl.dxa.io.vn/">
+<link rel="alternate" hreflang="vi" href="https://openframl.dxa.io.vn/vi/">
+<link rel="alternate" hreflang="x-default" href="https://openframl.dxa.io.vn/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="OpenFRAML">
+<meta property="og:title" content="OpenFRAML · Phòng chống gian lận và rửa tiền, không tốn phí bản quyền">
+<meta property="og:description" content="Mã nguồn mở, chạy trên máy chủ của bạn, rule do đội ngũ của bạn kiểm soát. Không phí bản quyền.">
+<meta property="og:url" content="https://openframl.dxa.io.vn/vi/">
+<meta property="og:image" content="https://openframl.dxa.io.vn/assets/og-vi.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0A2540">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/be-vietnam-pro-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/site.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Bỏ qua, tới nội dung</a>
+
+<header class="hero">
+<svg class="hero-ring" viewBox="0 0 64 64" aria-hidden="true"><path d="M51.05 21A22 22 0 1 0 51.05 43" fill="none" stroke="#0F2E4F" stroke-width="8"/></svg>
+<div class="wrap">
+<nav class="nav" aria-label="Điều hướng chính">
+<a class="brand" href="/vi/" aria-label="Trang chủ OpenFRAML">
+<svg viewBox="0 0 64 64" width="36" height="36" aria-hidden="true"><path d="M51.05 21A22 22 0 1 0 51.05 43" fill="none" stroke="#FFFFFF" stroke-width="8"/><circle cx="54" cy="32" r="5.5" fill="#0D9488"/></svg>
+<span class="wordmark"><span>Open</span><b>FRAML</b></span>
+</a>
+<ul class="nav-links">
+<li class="nav-doc"><a href="https://github.com/xvalleycorp/OpenFRAML/blob/main/docs/vi/gate.md" target="_blank" rel="noopener">Tài liệu</a></li>
+<li class="nav-doc"><a href="https://github.com/xvalleycorp/OpenFRAML/blob/main/docs/vi/roadmap.md" target="_blank" rel="noopener">Lộ trình</a></li>
+<li class="nav-doc"><a href="https://github.com/xvalleycorp/RuleStone" target="_blank" rel="noopener">RuleStone</a></li>
+<li>
+<details class="lang-menu">
+<summary aria-label="Ngôn ngữ: Tiếng Việt">
+<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#DA251D"/><polygon points="15.00,4.00 16.35,8.15 20.71,8.15 17.18,10.71 18.53,14.85 15.00,12.29 11.47,14.85 12.82,10.71 9.29,8.15 13.65,8.15" fill="#FFFF00"/></svg>
+<span>VI</span>
+<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</summary>
+<ul>
+<li><a href="/" hreflang="en" lang="en"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#B22234"/><path d="M0 2.308h30M0 5.385h30M0 8.462h30M0 11.538h30M0 14.615h30M0 17.692h30" stroke="#FFFFFF" stroke-width="1.538"/><rect width="12" height="10.77" fill="#3C3B6E"/><path d="M1 1.08h0M3 1.08h0M5 1.08h0M7 1.08h0M9 1.08h0M11 1.08h0M2 2.15h0M4 2.15h0M6 2.15h0M8 2.15h0M10 2.15h0M1 3.23h0M3 3.23h0M5 3.23h0M7 3.23h0M9 3.23h0M11 3.23h0M2 4.31h0M4 4.31h0M6 4.31h0M8 4.31h0M10 4.31h0M1 5.38h0M3 5.38h0M5 5.38h0M7 5.38h0M9 5.38h0M11 5.38h0M2 6.46h0M4 6.46h0M6 6.46h0M8 6.46h0M10 6.46h0M1 7.54h0M3 7.54h0M5 7.54h0M7 7.54h0M9 7.54h0M11 7.54h0M2 8.62h0M4 8.62h0M6 8.62h0M8 8.62h0M10 8.62h0M1 9.69h0M3 9.69h0M5 9.69h0M7 9.69h0M9 9.69h0M11 9.69h0" stroke="#FFFFFF" stroke-width=".8" stroke-linecap="round"/></svg>English</a></li>
+<li><a href="/vi/" hreflang="vi" lang="vi" aria-current="page"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#DA251D"/><polygon points="15.00,4.00 16.35,8.15 20.71,8.15 17.18,10.71 18.53,14.85 15.00,12.29 11.47,14.85 12.82,10.71 9.29,8.15 13.65,8.15" fill="#FFFF00"/></svg>Tiếng Việt</a></li>
+</ul>
+</details>
+</li>
+<li><a class="nav-cta" href="https://github.com/xvalleycorp/OpenFRAML" target="_blank" rel="noopener"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>GitHub</a></li>
+</ul>
+</nav>
+
+<div class="hero-body">
+<div class="hero-copy">
+<p class="status">Trước phát hành · giai đoạn 1</p>
+<h1>Phòng chống gian lận và rửa tiền, không tốn phí bản quyền.</h1>
+<p class="hero-lead">OpenFRAML chặn giao dịch gian lận trước khi tiền rời ngân hàng, đồng thời đáp ứng giám sát giao dịch, sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định. Mã nguồn mở, chạy trên máy chủ của chính ngân hàng, với rule do đội ngũ của bạn kiểm soát.</p>
+<div class="actions">
+<a class="btn btn-primary" href="#start">Bắt đầu</a>
+<a class="btn btn-ghost" href="https://github.com/xvalleycorp/OpenFRAML" target="_blank" rel="noopener"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>Xem trên GitHub</a>
+</div>
+<p class="hero-meta">Không phí bản quyền · Apache 2.0 · on-premise trên máy chủ x86 phổ thông, không cần GPU</p>
+</div>
+
+<figure class="trace" aria-label="Ngân sách độ trễ của một quyết định">
+<div class="trace-head"><span>Decide(transaction, 30 ms)</span><span>ngân sách p99</span></div>
+<ol class="steps">
+<li><span>Nhận</span><span class="bar"><i class="ms1"></i></span><span>1 ms</span></li>
+<li><span>Danh sách</span><span class="bar"><i class="ms2"></i></span><span>2 ms</span></li>
+<li><span>Hồ sơ</span><span class="bar"><i class="ms3"></i></span><span>3 ms</span></li>
+<li><span>Velocity</span><span class="bar"><i class="ms2"></i></span><span>2 ms</span></li>
+<li><span>Model</span><span class="bar"><i class="ms5"></i></span><span>5 ms</span></li>
+<li><span>Rule</span><span class="bar"><i class="ms2"></i></span><span>2 ms</span></li>
+<li><span>Trả lời</span><span class="bar"><i class="ms1"></i></span><span>1 ms</span></li>
+</ol>
+<hr>
+<div class="trace-outcome"><span class="badge badge-challenge">CHALLENGE</span><span>ACTIVE_CALL_NEW_BENEFICIARY</span></div>
+<figcaption class="trace-note">Mục tiêu p99 dưới 30 ms ở 20.000 TPS, giữ lại 14 ms dự phòng cho GC và các đợt tải tăng đột biến.</figcaption>
+</figure>
+</div>
+</div>
+</header>
+
+<main id="main">
+
+<section class="wrap section" aria-labelledby="why">
+<p class="eyebrow">Vì sao chọn OpenFRAML</p>
+<h2 id="why" class="title-gap">Chi phí thấp. Toàn quyền kiểm soát.</h2>
+<div class="pillars">
+<article class="pillar">
+<div class="pillar-head"><span class="pillar-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.66 3.13 3 7 3s7-1.34 7-3V6"/><path d="M5 12v6c0 1.66 3.13 3 7 3s7-1.34 7-3v-6"/></svg></span><div><p class="eyebrow">Chi phí</p><h3>Trả tiền cho máy chủ, không trả phí bản quyền</h3></div></div>
+<ul class="points">
+<li><h4>Không phí bản quyền</h4><p>Không tính theo giao dịch, tài khoản, module hay theo năm. Khối lượng giao dịch tăng, hóa đơn không tăng theo.</p></li>
+<li><h4>Phần cứng phổ thông</h4><p>Máy chủ x86 thông thường, không GPU, không thiết bị chuyên dụng. Số máy cần dùng tính từ benchmark công khai, không phải từ báo giá.</p></li>
+<li><h4>Khách hàng tự xác nhận</h4><p><code>CHALLENGE</code> đề nghị khách hàng xác nhận giao dịch đáng ngờ, thay vì đưa giao dịch đó vào hàng chờ của chuyên viên.</p></li>
+<li><h4>Dùng chung công sức tuân thủ</h4><p>Ngưỡng, danh sách và mẫu báo cáo nằm trong gói quốc gia, được duy trì một lần và dùng chung cho mọi ngân hàng trong nước.</p></li>
+</ul>
+</article>
+<article class="pillar pillar-control">
+<div class="pillar-head"><span class="pillar-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8L20 3M16.5 6.5l3 3M14 9l2 2"/></svg></span><div><p class="eyebrow">Quyền kiểm soát</p><h3>Ngân hàng làm chủ nền tảng</h3></div></div>
+<ul class="points">
+<li><h4>Rule của bạn</h4><p>Đội ngũ của bạn tự viết và sửa bảng quyết định. Không phải gửi yêu cầu thay đổi cho nhà cung cấp, không phải chờ bản phát hành.</p></li>
+<li><h4>Dữ liệu của bạn</h4><p>Chạy on-premise; dữ liệu khách hàng không rời ngân hàng. Bản ghi kiểm toán không chứa dữ liệu cá nhân.</p></li>
+<li><h4>Mã nguồn của bạn</h4><p>Apache 2.0: đọc, kiểm tra, sửa hay fork từng dòng. Không bị khoá, không cần dự án chuyển đổi khi rời đi.</p></li>
+<li><h4>Giải thích của bạn</h4><p>Mỗi quyết định ghi lại phiên bản rule, phiên bản model và mã lý do, chạy lại được cho kiểm toán viên hoặc cơ quan quản lý. Model không bao giờ ghi đè rule bắt buộc.</p></li>
+</ul>
+</article>
+</div>
+<h3 id="compare" class="compare-title">Khác biệt khi nền tảng là của bạn</h3>
+<div class="table-box compare" tabindex="0" role="region" aria-labelledby="compare">
+<table>
+<thead><tr><th scope="col"><span class="sr-only">Khía cạnh</span></th><th scope="col">Nền tảng thương mại, thường gặp</th><th scope="col">OpenFRAML</th></tr></thead>
+<tbody>
+<tr><th scope="row">Bản quyền</th><td>Tính theo khối lượng, tài khoản hoặc module, gia hạn hằng năm</td><td>Không có: Apache 2.0</td></tr>
+<tr><th scope="row">Thay đổi rule</th><td>Qua nhà cung cấp hoặc đối tác của họ</td><td>Đội ngũ của bạn, dưới dạng dữ liệu</td></tr>
+<tr><th scope="row">Mã nguồn</th><td>Đóng</td><td>Mở, kiểm tra được</td></tr>
+<tr><th scope="row">Nơi chạy</th><td>Nơi nhà cung cấp hỗ trợ</td><td>Máy chủ của bạn, on-premise</td></tr>
+<tr><th scope="row">Khi rời đi</th><td>Dự án chuyển đổi và điều khoản hợp đồng</td><td>Tiếp tục chạy mã nguồn bạn đang có</td></tr>
+</tbody>
+</table>
+</div>
+<div class="cost-note">
+<p><strong>Những gì vẫn tốn chi phí:</strong> máy chủ, đội ngũ biết Java và Kafka, và hỗ trợ, từ đội của bạn, cộng đồng hoặc đối tác. Mô hình chi phí và hướng dẫn tính số máy đã có trong lộ trình.</p>
+<a class="more" href="https://github.com/xvalleycorp/OpenFRAML/blob/main/docs/vi/roadmap.md#chi-ph%C3%AD-v%C3%A0-quy%E1%BB%81n-ki%E1%BB%83m-so%C3%A1t" target="_blank" rel="noopener">Chi phí và quyền kiểm soát trong lộ trình →</a>
+</div>
+</section>
+
+<section class="wrap section" aria-labelledby="recall">
+<div class="split">
+<h2 id="recall">Chuyển khoản nhanh không thu hồi được. Chặn giao dịch là thời điểm duy nhất để dừng lại.</h2>
+<p class="lead">Chặn giao dịch quyết định sau khi khách hàng xác nhận lệnh và trước khi payment hub gửi lệnh sang chuyển mạch. Mọi thứ nó đọc đều được tính sẵn và nằm trong bộ nhớ; trên đường nóng không có truy vấn cơ sở dữ liệu nào.</p>
+</div>
+<ul class="decisions">
+<li><span class="badge badge-allow">ALLOW</span><h3>Cho qua</h3><p>Gửi lệnh sang chuyển mạch.</p></li>
+<li><span class="badge badge-challenge">CHALLENGE</span><h3>Yêu cầu thêm</h3><p>Hiển thị cảnh báo lừa đảo, xác thực lại, hoặc để khách hàng xác nhận lần hai.</p></li>
+<li><span class="badge badge-hold">HOLD</span><h3>Tạm giữ để xem xét nhanh</h3><p>Mở hồ sơ ưu tiên cao và liên hệ khách hàng.</p></li>
+<li><span class="badge badge-deny">DENY</span><h3>Từ chối</h3><p>Thông báo cho khách hàng, và gửi báo cáo nếu cần.</p></li>
+</ul>
+</section>
+
+<section class="wrap section" aria-labelledby="paths">
+<h2 id="paths" class="title-gap">Hai luồng, một hệ thống</h2>
+<div class="paths">
+<article class="path path-inline">
+<p class="eyebrow">Inline · đồng bộ</p>
+<h3>Quyết định ngay trong luồng thanh toán</h3>
+<p>Vài chục mili-giây, ngay trong luồng thanh toán. Kiểm tra danh sách trước, rồi hồ sơ, velocity, model với ngân sách thời gian, và bảng quyết định. Phục vụ qua gRPC; deadline của bên gọi là ngân sách thời gian.</p>
+<p class="code">Chặn giao dịch · Dịch vụ chặn giao dịch · giai đoạn 1</p>
+</article>
+<article class="path">
+<p class="eyebrow">Bất đồng bộ · khối lượng lớn</p>
+<h3>Giám sát, sàng lọc, điều tra, báo cáo</h3>
+<p>Kịch bản AML và gian lận sau giao dịch, sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước, cảnh báo với phê duyệt hai cấp, và báo cáo theo mẫu của từng nước.</p>
+<p class="code">Giám sát · Sàng lọc · Hồ sơ · Báo cáo · giai đoạn 2</p>
+</article>
+</div>
+</section>
+
+<section class="wrap section" aria-labelledby="bench">
+<div class="bench">
+<div class="bench-copy">
+<p class="eyebrow">Đo hiệu năng</p>
+<h2 id="bench">Đo công khai</h2>
+<p class="lead">Benchmark JMH và bài kiểm tra tải gRPC vòng hở chạy trên một ngân hàng tổng hợp gồm 100.000 khách hàng, với tỷ lệ giao dịch theo gói Việt Nam. Vòng hở đo mỗi giao dịch từ thời điểm lẽ ra phải gửi, nên server chậm sẽ hiện ra trong các percentile.</p>
+<p class="caveat">Các lần chạy đầu tiên trên một laptop 8 nhân, ngày 25/10/2026. Mục tiêu 30 ms chưa được kiểm chứng: lần đo tiếp theo chạy trên máy chủ Linux x86 với Generational ZGC.</p>
+<a class="more" href="https://github.com/xvalleycorp/OpenFRAML/blob/main/docs/vi/benchmark.md" target="_blank" rel="noopener">Phương pháp và kết quả đầy đủ →</a>
+</div>
+<dl class="figures">
+<div><dt>Một quyết định trong tiến trình</dt><dd>0,13 ms</dd><small>p99.9, chỉ rule</small></div>
+<div><dt>Bảng quyết định</dt><dd>≈16 µs</dd><small>p50, phần lớn của một quyết định</small></div>
+<div><dt>Qua gRPC ở 10.000 TPS</dt><dd>2,67 ms</dd><small>p99 phía client, trả lời 100%</small></div>
+<div><dt>Đuôi độ trễ hiện nay</dt><dd>GC</dd><small>lý do thiết kế chọn ZGC</small></div>
+</dl>
+</div>
+</section>
+
+<section class="wrap section" aria-labelledby="packs">
+<div class="pack">
+<div class="pack-copy">
+<p class="eyebrow">Gói quốc gia</p>
+<h2 id="packs">Lõi không gắn với nước nào. Việt Nam đi đầu.</h2>
+<p class="lead">Ngưỡng pháp lý, mẫu báo cáo, danh sách, chuyển mạch, múi giờ và ngôn ngữ nằm trong gói quốc gia có phiên bản. Lõi được kiểm thử với một nước giả định, nên không có gì của riêng một nước lọt vào lõi.</p>
+<a class="more" href="https://github.com/xvalleycorp/OpenFRAML/blob/main/docs/vi/country-packs.md" target="_blank" rel="noopener">Cách gói quốc gia hoạt động →</a>
+</div>
+<div class="pack-card">
+<div>Gói quốc gia Việt Nam <span>VN</span></div>
+<div>gate_decision.v1 · gate_fallback.v1</div>
+<div>lý do bằng tiếng Anh và tiếng Việt</div>
+<div>mỗi rule và ngưỡng đều có test</div>
+</div>
+</div>
+</section>
+
+<section class="wrap section" aria-labelledby="modules">
+<div class="section-head">
+<h2 id="modules">Module</h2>
+<a class="more" href="https://github.com/xvalleycorp/OpenFRAML/blob/main/docs/vi/roadmap.md" target="_blank" rel="noopener">Lộ trình đầy đủ →</a>
+</div>
+<div class="table-box" tabindex="0" role="region" aria-labelledby="modules">
+<table>
+<thead><tr><th scope="col">Module</th><th scope="col">Chức năng</th><th scope="col">Giai đoạn</th><th scope="col">Trạng thái</th></tr></thead>
+<tbody>
+<tr><td>Mô hình sự kiện<br><code>openframl-model</code></td><td>Mô hình sự kiện giao dịch chung; SPI gói quốc gia</td><td>1</td><td class="state">Dùng được</td></tr>
+<tr><td>Chặn giao dịch<br><code>openframl-gate</code></td><td>Quyết định inline trước khi gửi lệnh</td><td>1</td><td class="state">Dùng được dưới dạng thư viện</td></tr>
+<tr><td>Dịch vụ chặn giao dịch<br><code>openframl-gate-server</code></td><td>Chặn giao dịch qua gRPC; deadline của bên gọi là ngân sách thời gian</td><td>1</td><td class="state">Thử nghiệm</td></tr>
+<tr><td>Gói quốc gia Việt Nam<br><code>openframl-vn</code></td><td>Rule mẫu, lý do bằng tiếng Anh và tiếng Việt</td><td>1</td><td class="state">Rule mẫu</td></tr>
+<tr><td>Đo hiệu năng<br><code>openframl-benchmark</code></td><td>Benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp</td><td>1</td><td class="state">Dùng được</td></tr>
+<tr><td>Hồ sơ hành vi<br><code>openframl-features</code></td><td>Hồ sơ hành vi và velocity, tính bằng Apache Flink</td><td>2</td><td class="state state-planned">Dự kiến</td></tr>
+<tr><td>Giám sát giao dịch<br><code>openframl-monitor</code></td><td>Kịch bản AML và gian lận sau giao dịch</td><td>2</td><td class="state state-planned">Dự kiến</td></tr>
+<tr><td>Sàng lọc danh sách<br><code>openframl-screen</code></td><td>Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước</td><td>2</td><td class="state state-planned">Dự kiến</td></tr>
+<tr><td>Quản lý hồ sơ điều tra<br><code>openframl-case</code></td><td>Cảnh báo, điều tra, phê duyệt hai cấp</td><td>2</td><td class="state state-planned">Dự kiến</td></tr>
+<tr><td>Báo cáo theo quy định<br><code>openframl-report</code></td><td>Báo cáo cho cơ quan quản lý theo mẫu của từng gói quốc gia</td><td>2</td><td class="state state-planned">Dự kiến</td></tr>
+<tr><td>Phục vụ model<br><code>openframl-ml</code></td><td>Phục vụ model, champion/challenger, chạy shadow</td><td>3</td><td class="state state-planned">Dự kiến</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<section id="start" class="wrap section" aria-labelledby="start-title">
+<div class="start">
+<div class="start-copy">
+<h2 id="start-title">Bắt đầu</h2>
+<p class="lead">Cần JDK 21, Maven 3.9 trở lên và git. RuleStone chưa có trên Maven Central, nên script cài nó từ mã nguồn tại một commit cố định.</p>
+<pre><code>git clone https://github.com/xvalleycorp/OpenFRAML
+cd OpenFRAML
+./scripts/install-rulestone.sh
+mvn verify</code></pre>
+</div>
+<div class="start-code">
+<pre><code>Gate gate = Gate.builder(CountryPack.forCountry("VN"))
+        .profiles(profileStore)
+        .velocity(new InMemoryVelocityStore())
+        .watchlist(watchlist)
+        .recordSink(kafkaPublisher)
+        .build();
+
+GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
+<span class="c">// CHALLENGE · [ACTIVE_CALL_NEW_BENEFICIARY, ...]</span></code></pre>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer class="footer">
+<div class="wrap">
+<div class="footer-brand">
+<a class="brand" href="/vi/" aria-label="Trang chủ OpenFRAML">
+<svg viewBox="0 0 64 64" width="32" height="32" aria-hidden="true"><path d="M51.05 21A22 22 0 1 0 51.05 43" fill="none" stroke="#FFFFFF" stroke-width="8"/><circle cx="54" cy="32" r="5.5" fill="#0D9488"/></svg>
+<span class="wordmark"><span>Open</span><b>FRAML</b></span>
+</a>
+<p>Giấy phép Apache 2.0</p>
+</div>
+<ul>
+<li><a href="https://github.com/xvalleycorp/OpenFRAML/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Đóng góp</a></li>
+<li><a href="https://github.com/xvalleycorp/OpenFRAML/blob/main/SECURITY.md" target="_blank" rel="noopener">Chính sách bảo mật</a></li>
+<li><a href="https://github.com/xvalleycorp/RuleStone" target="_blank" rel="noopener">RuleStone</a></li>
+<li><a href="https://github.com/xvalleycorp/vobs" target="_blank" rel="noopener">VOBS</a></li>
+<li><a class="gh-link" href="https://github.com/xvalleycorp/OpenFRAML" target="_blank" rel="noopener"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg>GitHub</a></li>
+</ul>
+</div>
+</footer>
+</body>
+</html>

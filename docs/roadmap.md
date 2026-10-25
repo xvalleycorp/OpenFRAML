@@ -12,18 +12,21 @@ proven before the rest is built. Durations are estimates for a small team and wi
 
 ## Phase 1
 
-- [x] Common transaction event model, versioned (`openframl-model`)
+- [x] Event Model: common transaction event model, versioned (`openframl-model`)
 - [x] Country pack SPI; the core tested against an invented country
-- [x] Gate as a library: watchlist first, profiles, velocity, model with a time budget, decision table, fallback
+- [x] Payment Gate as a library: watchlist first, profiles, velocity, model with a time budget, decision table, fallback
       policy, audit record without personal data (`openframl-gate`)
 - [x] Node-local velocity counters, watchlist replica and profile store in memory
-- [x] Vietnam sample rules with a test for every rule and threshold (`openframl-vn`)
-- [ ] gRPC service with per-call deadlines; routing by originating account
+- [x] Vietnam Country Pack: sample rules with a test for every rule and threshold (`openframl-vn`)
+- [x] Gate Service: gRPC with per-call deadlines (`openframl-gate-server`)
 - [ ] Profiles and durable velocity on Valkey, with an in-process Caffeine cache
 - [ ] Decision records to Kafka (`GateRecordSink`)
 - [ ] Hot reload of decision tables after maker-checker approval
 - [ ] ONNX Runtime `ScoreProvider`
-- [ ] JMH benchmark per step, and a synthetic load generator for the 20,000 TPS target
+- [x] Benchmark: JMH and an open-loop gRPC load test on a synthetic bank (`openframl-benchmark`); first results in
+      [Benchmark](benchmark.md)
+- [ ] Routing by originating account across gate nodes
+- [ ] The 20,000 TPS target measured on server hardware with Generational ZGC
 
 ## Upstream issues for RuleStone
 

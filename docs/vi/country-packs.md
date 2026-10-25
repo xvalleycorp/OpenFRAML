@@ -31,7 +31,7 @@ RuleStone dùng mã quốc gia giả `XA` và `XB`. Một test khác đọc mã 
 cơ quan quản lý hay chuyển mạch của một nước thật. Không test nào đụng tới Việt Nam, nên nếu lõi vô tình phụ thuộc
 Việt Nam, build sẽ thất bại.
 
-## Gói Việt Nam
+## Gói quốc gia Việt Nam (`openframl-vn`)
 
 `openframl-vn` (phiên bản `2026.10.0`) dùng múi giờ `Asia/Ho_Chi_Minh` và đồng tiền `VND`. Các bảng của `gate` là
 bảng mẫu: ngưỡng trong đó minh họa các thủ đoạn phổ biến ở Việt Nam, không phải ngưỡng pháp lý. Mỗi ngân hàng tự

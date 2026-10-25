@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>openframl-vn</artifactId>
-  <name>OpenFRAML Country Pack: Vietnam</name>
+  <name>OpenFRAML Vietnam Country Pack</name>
   <description>
     The Vietnam country pack: business time zone, currency, sample decision tables for the gate, and reason messages
     in English and Vietnamese. Sample thresholds are for illustration; each bank sets its own.

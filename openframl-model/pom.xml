@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>openframl-model</artifactId>
-  <name>OpenFRAML Model</name>
+  <name>OpenFRAML Event Model</name>
   <description>
     The common transaction event model every channel adapter normalises to, and the country pack SPI. No
     dependencies: modules and adapters share it without pulling in an engine or a framework.

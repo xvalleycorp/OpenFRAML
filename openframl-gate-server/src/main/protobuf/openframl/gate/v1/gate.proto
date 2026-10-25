@@ -1,0 +1,121 @@
+// Copyright 2026 The OpenFRAML Authors
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package openframl.gate.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "GateProto";
+option java_package = "vn.io.dxa.openframl.gate.v1";
+
+// Decides a payment after the customer confirms it and before the payment hub sends it to the switch.
+//
+// Set a deadline on every call. The gate decides within it: when time is short it decides without the model score,
+// and past the deadline its fallback policy decides. Route calls by originating account (consistent hashing on
+// originator.institution and originator.account), so that each account's velocity counters live on one node.
+service GateService {
+  rpc Decide(DecideRequest) returns (DecideResponse);
+}
+
+message DecideRequest {
+  Transaction transaction = 1;
+}
+
+// A transaction in the common event model, version 1.
+message Transaction {
+  // "1"; other versions are rejected.
+  string schema_version = 1;
+  // Unique and stable across retries.
+  string event_id = 2;
+  // When the customer confirmed the payment, set by the bank's own system.
+  google.protobuf.Timestamp occurred_at = 3;
+  Channel channel = 4;
+  TransactionType type = 5;
+  Money amount = 6;
+  string customer_id = 7;
+  AccountRef originator = 8;
+  // Unset for cash.
+  AccountRef beneficiary = 9;
+  SessionSignals session = 10;
+}
+
+message Money {
+  // Exact decimal, no exponent, e.g. "1500000" or "12.50".
+  string value = 1;
+  // ISO 4217 code, e.g. "VND".
+  string currency = 2;
+}
+
+message AccountRef {
+  // The institution's identifier in the country's payment scheme (bank code, BIN or BIC).
+  string institution = 1;
+  string account = 2;
+}
+
+// What the channel knows about the session. Leave a field empty when the channel cannot observe it.
+message SessionSignals {
+  string device_id = 1;
+  string ip_address = 2;
+  bool remote_access_detected = 3;
+  bool active_call_detected = 4;
+  string authentication_method = 5;
+}
+
+enum Channel {
+  CHANNEL_UNSPECIFIED = 0;
+  CHANNEL_MOBILE = 1;
+  CHANNEL_INTERNET = 2;
+  CHANNEL_BRANCH = 3;
+  CHANNEL_OPEN_API = 4;
+  CHANNEL_CARD = 5;
+  CHANNEL_ATM = 6;
+  CHANNEL_OTHER = 7;
+}
+
+enum TransactionType {
+  TRANSACTION_TYPE_UNSPECIFIED = 0;
+  TRANSACTION_TYPE_TRANSFER_OUT = 1;
+  TRANSACTION_TYPE_TRANSFER_IN = 2;
+  TRANSACTION_TYPE_CASH_DEPOSIT = 3;
+  TRANSACTION_TYPE_CASH_WITHDRAWAL = 4;
+  TRANSACTION_TYPE_CARD_PAYMENT = 5;
+  TRANSACTION_TYPE_BILL_PAYMENT = 6;
+}
+
+message DecideResponse {
+  Decision decision = 1;
+  // For the bank's staff and systems; never show them to the customer.
+  repeated string reason_codes = 2;
+  // The decision table version that decided, e.g. "gate_decision@1@sha256:...".
+  string policy_version = 3;
+  // Set when the fallback policy decided instead of the decision table.
+  Fallback fallback = 4;
+  // The payment was let through without a full decision; monitoring looks at it again.
+  bool review_later = 5;
+}
+
+enum Decision {
+  DECISION_UNSPECIFIED = 0;
+  // Send the payment.
+  DECISION_ALLOW = 1;
+  // Show a scam warning, re-authenticate, or have the customer confirm again.
+  DECISION_CHALLENGE = 2;
+  // Keep the payment back for a quick review.
+  DECISION_HOLD = 3;
+  // Refuse the payment.
+  DECISION_DENY = 4;
+}
+
+enum Fallback {
+  // No fallback: the decision table decided.
+  FALLBACK_UNSPECIFIED = 0;
+  // The deadline passed before the decision table could run.
+  FALLBACK_TIMEOUT = 1;
+  // The profile or velocity store failed.
+  FALLBACK_STORE_UNAVAILABLE = 2;
+  // The decision table failed.
+  FALLBACK_POLICY_ERROR = 3;
+}

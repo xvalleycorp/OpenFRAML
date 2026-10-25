@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>openframl-gate</artifactId>
-  <name>OpenFRAML Gate</name>
+  <name>OpenFRAML Payment Gate</name>
   <description>
     Inline payment screening: decides ALLOW, CHALLENGE, HOLD or DENY before a payment leaves the bank, within the
     caller's deadline, with RuleStone embedded in the process. Transport-neutral library; the gRPC service wraps it.

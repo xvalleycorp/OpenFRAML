@@ -31,7 +31,7 @@ RuleStone's examples use the placeholder country codes `XA` and `XB`. Another te
 on a currency, time zone, regulator or scheme of a real country. Neither test touches Vietnam, so a dependency of the
 core on Vietnam shows up as a failing build.
 
-## The Vietnam pack
+## Vietnam Country Pack (`openframl-vn`)
 
 `openframl-vn` (version `2026.10.0`) uses the zone `Asia/Ho_Chi_Minh` and the currency `VND`. Its gate tables are
 samples: their thresholds illustrate the typologies seen in Vietnam and are not legal thresholds. Each bank tunes its

@@ -1,6 +1,6 @@
-# Luồng chặn giao dịch (`gate`)
+# Chặn giao dịch (`openframl-gate`)
 
-`gate` quyết định xử lý một giao dịch sau khi khách hàng xác nhận lệnh và trước khi payment hub gửi lệnh sang chuyển
+Chặn giao dịch (`gate`) quyết định xử lý một giao dịch sau khi khách hàng xác nhận lệnh và trước khi payment hub gửi lệnh sang chuyển
 mạch. Chuyển khoản nhanh không thu hồi được, nên đây là thời điểm duy nhất để chặn. Mục tiêu là p99 dưới 30 ms, tính
 từ lúc nhận request đến lúc trả quyết định; con số này sẽ được kiểm chứng bằng benchmark của giai đoạn 1.
 
@@ -103,3 +103,28 @@ của RuleStone, bản ghi không chứa giá trị đầu vào: không có số
 | `modelBudget` | 5 ms | Thời gian tối đa chờ điểm của model |
 | `ruleReserve` | 2 ms | Thời gian giữ lại cho bảng quyết định sau bước chấm điểm |
 | `executor` | Virtual thread | Nơi chạy chấm điểm |
+
+## Service gRPC
+
+Dịch vụ chặn giao dịch (`openframl-gate-server`) cung cấp Chặn giao dịch qua gRPC, với API trong
+[`openframl/gate/v1/gate.proto`](../../openframl-gate-server/src/main/protobuf/openframl/gate/v1/gate.proto): một lời
+gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
+
+- **Deadline.** Bên gọi đặt deadline cho mọi lời gọi. Service lấy thời gian còn lại trừ đi khoảng dành cho việc trả
+  lời (mặc định 1 ms) làm ngân sách cho `gate`. Lời gọi không có deadline dùng ngân sách mặc định (30 ms).
+- **Định tuyến.** Định tuyến lời gọi theo tài khoản gửi (consistent hashing trên `originator.institution` và
+  `originator.account`), để bộ đếm velocity của mỗi tài khoản nằm trên một node và lệnh sau luôn thấy lệnh trước.
+- **Lỗi.** Giao dịch thiếu hoặc sai bị từ chối với mã `INVALID_ARGUMENT`, kèm tên trường. Thông báo lỗi không bao giờ
+  lặp lại số tài khoản.
+- **Số tiền.** Số thập phân chính xác dạng chuỗi, không có số mũ (`"1500000"`, `"12.50"`); số thực dấu phẩy động
+  không bao giờ tới được `gate`.
+
+| Biến môi trường | Mặc định | Mục đích |
+| --- | --- | --- |
+| `OPENFRAML_COUNTRY` | `VN` | Gói quốc gia |
+| `OPENFRAML_GATE_PORT` | `9090` | Cổng |
+| `OPENFRAML_GATE_DEFAULT_BUDGET_MS` | `30` | Ngân sách của lời gọi không có deadline |
+| `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Thời gian giữ lại từ deadline của bên gọi để trả lời |
+
+Cho tới khi có kho dữ liệu trên Valkey, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
+hiệu năng, không dùng cho production. Ứng dụng có thể tự dựng `Gate` và phục vụ bằng `GateServer.start`.

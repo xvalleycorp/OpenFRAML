@@ -7,9 +7,9 @@ gian lận trước khi tiền rời ngân hàng, đồng thời đáp ứng cá
 sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — trong cùng một hệ thống, dùng
 [RuleStone](https://github.com/xvalleycorp/RuleStone) làm engine ra quyết định.
 
-> **Trạng thái: trước phát hành, giai đoạn 1.** `gate` đã chạy được dưới dạng thư viện và có kiểm thử; tiếp theo là
-> service gRPC, tích hợp Valkey và Kafka, và bộ benchmark. Chưa phát hành lên Maven Central. Xem
-> [lộ trình](roadmap.md).
+> **Trạng thái: trước phát hành, giai đoạn 1.** Chặn giao dịch đã chạy được dưới dạng thư viện và service gRPC, có
+> bộ đo hiệu năng; tiếp theo là tích hợp Valkey và Kafka, và mục tiêu độ trễ còn phải kiểm chứng trên máy chủ thật.
+> Chưa phát hành lên Maven Central. Xem [lộ trình](roadmap.md).
 
 - **Hai luồng.** Luồng inline quyết định một giao dịch trong vài chục mili-giây, ngay trong luồng thanh toán. Luồng
   bất đồng bộ xử lý khối lượng lớn cho giám sát và báo cáo. Lời gọi inline là lời gọi đồng bộ duy nhất.
@@ -24,17 +24,21 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 
 ## Module
 
-| Module | Chức năng | Giai đoạn | Trạng thái |
-| --- | --- | --- | --- |
-| [`openframl-model`](../../openframl-model) | Mô hình sự kiện giao dịch chung; SPI gói quốc gia | 1 | Dùng được |
-| [`openframl-gate`](../../openframl-gate) | Quyết định inline trước khi gửi lệnh: `ALLOW`, `CHALLENGE`, `HOLD`, `DENY` | 1 | Thư viện dùng được; service gRPC là bước kế |
-| [`openframl-vn`](../../openframl-vn) | Gói quốc gia Việt Nam: rule mẫu cho `gate`, lý do bằng tiếng Anh và tiếng Việt | 1 | Rule mẫu |
-| `openframl-features` | Hồ sơ hành vi và velocity, tính bằng Apache Flink | 2 | Dự kiến |
-| `openframl-monitor` | Kịch bản AML và gian lận sau giao dịch | 2 | Dự kiến |
-| `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước | 2 | Dự kiến |
-| `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Dự kiến |
-| `openframl-report` | Báo cáo cho cơ quan quản lý theo mẫu của từng gói quốc gia | 2 | Dự kiến |
-| `openframl-ml` | Phục vụ model, champion/challenger, chạy shadow | 3 | Dự kiến |
+| Module | Mã | Chức năng | Giai đoạn | Trạng thái |
+| --- | --- | --- | --- | --- |
+| [Mô hình sự kiện](../../openframl-model) | `openframl-model` | Mô hình sự kiện giao dịch chung; SPI gói quốc gia | 1 | Dùng được |
+| [Chặn giao dịch](../../openframl-gate) | `openframl-gate` | Quyết định inline trước khi gửi lệnh: `ALLOW`, `CHALLENGE`, `HOLD`, `DENY` | 1 | Dùng được dưới dạng thư viện |
+| [Dịch vụ chặn giao dịch](../../openframl-gate-server) | `openframl-gate-server` | Chặn giao dịch qua gRPC; deadline của bên gọi là ngân sách thời gian | 1 | Thử nghiệm: mới có kho dữ liệu trong bộ nhớ |
+| [Gói quốc gia Việt Nam](../../openframl-vn) | `openframl-vn` | Rule mẫu cho Việt Nam, lý do bằng tiếng Anh và tiếng Việt | 1 | Rule mẫu |
+| [Đo hiệu năng](../../openframl-benchmark) | `openframl-benchmark` | Benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp | 1 | Dùng được |
+| Hồ sơ hành vi | `openframl-features` | Hồ sơ hành vi và velocity, tính bằng Apache Flink | 2 | Dự kiến |
+| Giám sát giao dịch | `openframl-monitor` | Kịch bản AML và gian lận sau giao dịch | 2 | Dự kiến |
+| Sàng lọc danh sách | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước | 2 | Dự kiến |
+| Quản lý hồ sơ điều tra | `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Dự kiến |
+| Báo cáo theo quy định | `openframl-report` | Báo cáo cho cơ quan quản lý theo mẫu của từng gói quốc gia | 2 | Dự kiến |
+| Phục vụ model | `openframl-ml` | Phục vụ model, champion/challenger, chạy shadow | 3 | Dự kiến |
+
+Module được gọi bằng tên; mã dùng để tra cứu, cho tọa độ Maven và tên package.
 
 ## Bắt đầu
 
@@ -63,7 +67,8 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 
 ## Tài liệu
 
-- [`gate`: các bước, facts, chính sách dự phòng](gate.md)
+- [Chặn giao dịch: các bước, facts, chính sách dự phòng, service gRPC](gate.md)
+- [Đo hiệu năng](benchmark.md)
 - [Gói quốc gia](country-packs.md)
 - [Lộ trình](roadmap.md)
 - [Hướng dẫn đóng góp](../../CONTRIBUTING.md) · [Chính sách bảo mật](../../SECURITY.md)

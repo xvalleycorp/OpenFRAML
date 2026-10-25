@@ -35,8 +35,12 @@ Pull requests with commits missing the sign-off are not merged.
   country `XA`, the ISO 4217 test currency `XTS`.
 - New dependencies must have a licence on the allowlist in `pom.xml` (Apache-2.0, MIT, BSD-3-Clause). Avoid
   projects that are BSL, SSPL, AGPL or "source-available" (for example Redpanda, Aerospike, Neo4j Community, recent
-  Redis, Elasticsearch, MinIO). CI runs `mvn -Plicense-check verify`.
-- Commit prefixes by module: `model:`, `gate:`, `vn:`, `docs:`, `build:`, `ci:`.
+  Redis, Elasticsearch, MinIO). CI runs `mvn -Plicense-check verify`. The one exception is the Benchmark module
+  (`openframl-benchmark`): it uses JMH (GPL-2.0 with the Classpath Exception) as a measuring tool, is never deployed
+  or distributed, and is left out of the check.
+- Call modules by their name and give the code alongside it the first time, e.g. Payment Gate (`openframl-gate`);
+  the names are listed in the [README](README.md#modules).
+- Commit prefixes by module: `model:`, `gate:`, `server:`, `vn:`, `benchmark:`, `docs:`, `build:`, `ci:`.
 
 ## RuleStone
 

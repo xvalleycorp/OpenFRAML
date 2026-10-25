@@ -122,6 +122,38 @@ the record on a bounded queue (100,000 by default, about 10 seconds at 10,000 TP
 because a Kafka producer can block its caller and the decision path must not wait. When the queue is full the record
 is dropped, never the decision: `dropped()` and `failed()` count what is lost and should be alerted on.
 
+## Models
+
+The ONNX Scorer (`openframl-onnx`) runs a fraud model in the gate's process with ONNX Runtime. A model trained in
+any framework (XGBoost, LightGBM, scikit-learn, PyTorch) and exported to ONNX can be used; the score is one input of
+the decision table, never the decision itself.
+
+The model file carries its own contract in its metadata, so the file is all that is deployed:
+
+| Metadata key | Required | Content |
+| --- | --- | --- |
+| `openframl.features` | Yes | The features it was trained on, comma-separated, in input order |
+| `openframl.model_version` | Yes | Recorded with every decision, e.g. `fraud-xgb-3` |
+| `openframl.output` | No | The output holding the fraud probability; by default the last output |
+
+The input is one float tensor `[1, features]`. The output is the fraud probability: a float tensor `[1]`, `[1, 1]`,
+or `[1, 2]` with the fraud class last, or scikit-learn's list of class-to-probability maps. `OnnxScoreProvider.load`
+checks the metadata and the input shape and runs the model once, so a model that does not fit fails when it is
+loaded, not on a payment. Each call uses one ONNX thread: the gate scores many payments at once.
+
+`ScoreFeatures` names the features a model can ask for. A name is never renamed or changed in meaning, only added:
+
+| Features | Content |
+| --- | --- |
+| `amount`, `log_amount` | The payment's amount, and `log(1 + amount)` |
+| `count_10m`, `count_24h`, `amount_24h`, `log_amount_24h`, `distinct_beneficiaries_24h` | Velocity, including this payment |
+| `originator_age_days`, `beneficiary_age_days` | Account age at the business date; `-1` without a profile |
+| `originator_risk_high`, `beneficiary_risk_high` | Risk rating `HIGH` |
+| `beneficiary_known`, `same_institution` | Paid before; beneficiary at the same bank |
+| `has_device`, `device_known`, `remote_access`, `active_call` | Session signals |
+| `hour_of_day` | Hour in the country pack's business time zone |
+| `channel_<channel>`, `type_<type>` | One flag per channel (`channel_mobile`...) and transaction type (`type_transfer_out`...) |
+
 ## Stores
 
 The in-memory stores (`openframl-gate`, package `memory`) keep everything on the node: for tests, benchmarks and
@@ -188,6 +220,8 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 | `OPENFRAML_GATE_VALKEY_URL` | Not set: empty in-memory stores | Valkey for profiles and velocity, e.g. `redis://valkey:6379` |
 | `OPENFRAML_GATE_VALKEY_TIMEOUT_MS` | `5` | How long a Valkey command may take |
 | `OPENFRAML_GATE_PROFILE_CACHE_SECONDS` | `60` | How long the gate caches a profile |
+| `OPENFRAML_GATE_MODEL` | Not set: rules alone | Path to an ONNX fraud model |
+| `OPENFRAML_GATE_MODEL_BUDGET_MS` | `5` | The longest the gate waits for a score |
 
 Without `OPENFRAML_GATE_VALKEY_URL` the server starts with empty in-memory stores, for trials and benchmarks only.
 The watchlist starts empty until List Screening (`openframl-screen`) loads it. An application can build its own

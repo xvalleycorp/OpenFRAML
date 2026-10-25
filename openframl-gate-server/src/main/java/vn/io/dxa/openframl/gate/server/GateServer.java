@@ -8,11 +8,13 @@ package vn.io.dxa.openframl.gate.server;
 import io.grpc.Server;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import vn.io.dxa.openframl.gate.Gate;
+import vn.io.dxa.openframl.gate.GatePolicy;
 import vn.io.dxa.openframl.gate.memory.InMemoryProfileStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryVelocityStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryWatchlist;
@@ -24,6 +26,8 @@ import vn.io.dxa.openframl.pack.CountryPack;
  * <p>Configured from the environment:
  * <ul>
  *   <li>{@code OPENFRAML_COUNTRY}: the country pack, default {@code VN};</li>
+ *   <li>{@code OPENFRAML_GATE_RULES_DIR}: a directory of the bank's own {@code *.stone.json} tables; without it, the
+ *       country pack's sample tables;</li>
  *   <li>{@code OPENFRAML_GATE_PORT}: the port, default {@code 9090};</li>
  *   <li>{@code OPENFRAML_GATE_DEFAULT_BUDGET_MS}: the budget of a call without a deadline, default 30;</li>
  *   <li>{@code OPENFRAML_GATE_REPLY_MARGIN_MS}: kept back from the caller's deadline for the reply, default 1.</li>
@@ -69,14 +73,17 @@ public final class GateServer implements AutoCloseable {
     public static void main(String[] args) throws IOException, InterruptedException {
         Map<String, String> env = System.getenv();
         CountryPack pack = CountryPack.forCountry(env.getOrDefault("OPENFRAML_COUNTRY", "VN"));
-        Gate gate = Gate.builder(pack).profiles(new InMemoryProfileStore()).velocity(new InMemoryVelocityStore())
-                .watchlist(new InMemoryWatchlist()).build();
+        String rulesDir = env.get("OPENFRAML_GATE_RULES_DIR");
+        GatePolicy policy = rulesDir == null ? GatePolicy.of(pack) : GatePolicy.fromDirectory(pack, Path.of(rulesDir));
+        Gate gate = Gate.builder(pack).policy(policy).profiles(new InMemoryProfileStore())
+                .velocity(new InMemoryVelocityStore()).watchlist(new InMemoryWatchlist()).build();
         GateGrpcService service = new GateGrpcService(gate,
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_DEFAULT_BUDGET_MS", "30"))),
                 Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_REPLY_MARGIN_MS", "1"))));
         GateServer server = start(Integer.parseInt(env.getOrDefault("OPENFRAML_GATE_PORT", "9090")), service);
-        LOG.log(System.Logger.Level.WARNING, "gate for {0} (pack {1}) listening on port {2}, with in-memory stores: "
-                + "for trials and benchmarks only", pack.countryCode(), pack.version(), server.port());
+        LOG.log(System.Logger.Level.WARNING, "gate for {0} (pack {1}, policy {2}) listening on port {3}, with "
+                + "in-memory stores: for trials and benchmarks only", pack.countryCode(), pack.version(), policy.id(),
+                server.port());
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 server.close();

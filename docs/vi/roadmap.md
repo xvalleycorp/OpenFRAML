@@ -21,7 +21,10 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
 - [x] Dịch vụ chặn giao dịch: gRPC có deadline cho từng lời gọi (`openframl-gate-server`)
 - [ ] Hồ sơ và velocity bền vững trên Valkey, kèm cache trong tiến trình Caffeine
 - [ ] Ghi decision record lên Kafka (`GateRecordSink`)
-- [ ] Hot reload bảng quyết định sau khi được duyệt qua maker-checker
+- [x] Thay policy không cần khởi động lại: kích hoạt và quay lại trong một bước, hai người duyệt, ghi nhật ký trước
+      khi có hiệu lực (`openframl-gate`)
+- [ ] API quản trị cho thay đổi policy, có xác thực người soạn và người duyệt; backtest hoặc chạy shadow trước khi
+      kích hoạt
 - [ ] `ScoreProvider` chạy ONNX Runtime
 - [x] Đo hiệu năng: benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp
       (`openframl-benchmark`); kết quả đầu tiên trong [Đo hiệu năng](benchmark.md)

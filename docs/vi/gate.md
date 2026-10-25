@@ -84,6 +84,25 @@ yêu cầu xác thực thêm với mọi giao dịch khác, kèm mã lý do `GAT
 Cả hai bảng được kiểm tra khi khởi tạo `gate`. Thiếu bảng, bảng không có output kiểu string `action`, hoặc rule đặt
 một hành động không tồn tại sẽ làm khởi tạo thất bại, thay vì làm hỏng một giao dịch.
 
+## Thay đổi policy
+
+Ngân hàng thay rule và ngưỡng thường xuyên, vì thủ đoạn lừa đảo thay đổi rất nhanh; việc này không cần phát hành bản
+mới hay khởi động lại. Hai bảng tạo thành policy của `gate` (`GatePolicy`): mặc định là bảng mẫu của gói quốc gia,
+hoặc bảng riêng của ngân hàng, giữ bí mật trong một thư mục các file `.stone.json` cùng mọi phiên bản cũ.
+
+1. Thay đổi được soạn thành một bộ bảng mới và biên dịch. Bước biên dịch kiểm tra mọi thứ kiểm tra được trước khi có
+   giao dịch: RuleStone kiểm tra kiểu mọi rule, còn `gate` yêu cầu đủ hai bảng và hành động hợp lệ. Policy không qua
+   được kiểm tra thì không bao giờ được tạo ra.
+2. Người thứ hai duyệt. `Approval` ghi người soạn, người duyệt và lý do; người duyệt không bao giờ được là người soạn.
+3. `Gate.activate` ghi thay đổi vào `PolicyAudit`, rồi đổi policy trong một bước. Nếu nhật ký không ghi được, thay
+   đổi không được áp dụng. Giao dịch bắt đầu từ lúc đó dùng policy mới; giao dịch đang được quyết định hoàn tất trên
+   policy nó bắt đầu.
+4. `Gate.rollback` quay về policy trước đó trong một bước, cũng được duyệt và ghi nhật ký như vậy.
+
+Mỗi policy có một mã định danh là hash SHA-256 của nội dung các bảng, và mỗi quyết định ghi lại phiên bản bảng đã
+quyết định. Backtest hoặc chạy shadow trước khi kích hoạt, và API quản trị có xác thực người soạn và người duyệt, là
+các bước kế tiếp trong [lộ trình](roadmap.md).
+
 ## Bản ghi
 
 Mỗi quyết định sinh một `GateRecord`, được chuyển cho record sink trước khi `decide` trả về. Sink gửi bản ghi bất đồng
@@ -103,6 +122,8 @@ của RuleStone, bản ghi không chứa giá trị đầu vào: không có số
 | `modelBudget` | 5 ms | Thời gian tối đa chờ điểm của model |
 | `ruleReserve` | 2 ms | Thời gian giữ lại cho bảng quyết định sau bước chấm điểm |
 | `executor` | Virtual thread | Nơi chạy chấm điểm |
+| `policy` | Bảng mẫu của gói quốc gia | Bộ bảng dùng khi khởi động, ví dụ `GatePolicy.fromDirectory` |
+| `policyAudit` | Ghi log thay đổi | Ghi mọi thay đổi policy trước khi có hiệu lực |
 
 ## Service gRPC
 
@@ -122,6 +143,7 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 | Biến môi trường | Mặc định | Mục đích |
 | --- | --- | --- |
 | `OPENFRAML_COUNTRY` | `VN` | Gói quốc gia |
+| `OPENFRAML_GATE_RULES_DIR` | Bảng mẫu của gói | Thư mục chứa các bảng `*.stone.json` riêng của ngân hàng |
 | `OPENFRAML_GATE_PORT` | `9090` | Cổng |
 | `OPENFRAML_GATE_DEFAULT_BUDGET_MS` | `30` | Ngân sách của lời gọi không có deadline |
 | `OPENFRAML_GATE_REPLY_MARGIN_MS` | `1` | Thời gian giữ lại từ deadline của bên gọi để trả lời |

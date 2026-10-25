@@ -6,12 +6,9 @@
 package vn.io.dxa.openframl.gate;
 
 import static java.lang.System.Logger.Level.DEBUG;
+import static java.lang.System.Logger.Level.INFO;
 import static java.lang.System.Logger.Level.WARNING;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,21 +25,12 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.LongSupplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import vn.io.dxa.openframl.model.Decision;
 import vn.io.dxa.openframl.model.TransactionEvent;
 import vn.io.dxa.openframl.pack.CountryPack;
-import vn.io.dxa.openframl.pack.PackResource;
 import vn.io.dxa.rulestone.api.DecisionRecord;
 import vn.io.dxa.rulestone.api.DecisionRef;
 import vn.io.dxa.rulestone.api.DecisionResult;
-import vn.io.dxa.rulestone.api.RuleStoneEngine;
-import vn.io.dxa.rulestone.cel.ValueType;
-import vn.io.dxa.rulestone.core.DecisionTable;
-import vn.io.dxa.rulestone.core.DecisionTableJson;
-import vn.io.dxa.rulestone.core.RuleStone;
-import vn.io.dxa.rulestone.core.Rule;
 
 /**
  * Decides what to do with a payment before it leaves the bank, within the caller's deadline.
@@ -63,10 +51,15 @@ import vn.io.dxa.rulestone.core.Rule;
  * The bank decides there which payments fail open and which fail closed. If even that table fails, the gate holds a
  * listed beneficiary and challenges everything else ({@value #FALLBACK_FAILED}).
  *
- * <p>Both tables come from the {@link CountryPack} and are checked when the gate is built: a table that is missing,
- * declares no {@code action} output, or names an unknown action stops the build, not a payment. The business date
- * that selects the table version in force is the payment's {@code occurredAt} in the pack's zone, so a replayed
- * payment is decided by the rules that were in force when it was made.
+ * <p>Both tables form the gate's {@link GatePolicy}: the country pack's samples by default, or the bank's own. A
+ * policy is checked when it is compiled, so a table that is missing, declares no {@code action} output, or names an
+ * unknown action stops the build, not a payment. The business date that selects the table version in force is the
+ * payment's {@code occurredAt} in the pack's zone, so a replayed payment is decided by the rules that were in force
+ * when it was made.
+ *
+ * <p>The policy changes without a restart: {@link #activate} swaps in a new one and {@link #rollback} returns to the
+ * previous one, each approved by two different people and recorded by the {@link PolicyAudit} before it takes
+ * effect. A decision runs from start to end on the policy in force when it started.
  *
  * <p>Thread-safe. Every decision is handed to the {@link GateRecordSink} before {@link #decide} returns.
  */
@@ -83,11 +76,9 @@ public final class Gate implements AutoCloseable {
 
     private static final System.Logger LOG = System.getLogger(Gate.class.getName());
 
-    /** A quoted literal, the usual form of an {@code action} expression, e.g. {@code 'HOLD'}. */
-    private static final Pattern ACTION_LITERAL = Pattern.compile("'([A-Za-z_]+)'");
-
     private final CountryPack pack;
-    private final RuleStoneEngine engine;
+    private final PolicyAudit audit;
+    private volatile Policies policies;
     private final ProfileStore profiles;
     private final VelocityStore velocity;
     private final Watchlist watchlist;
@@ -99,9 +90,13 @@ public final class Gate implements AutoCloseable {
     private final boolean ownsExecutor;
     private final LongSupplier nanoTime;
 
-    private Gate(Builder builder, List<DecisionTable> tables) {
+    /** The policy in force and the one before it, swapped together. */
+    private record Policies(GatePolicy current, GatePolicy previous) {}
+
+    private Gate(Builder builder, GatePolicy policy) {
         this.pack = builder.pack;
-        this.engine = RuleStone.builder().clock(Clock.system(pack.businessZone())).decisions(tables).build();
+        this.audit = builder.audit;
+        this.policies = new Policies(policy, null);
         this.profiles = builder.profiles;
         this.velocity = builder.velocity;
         this.watchlist = builder.watchlist;
@@ -143,6 +138,51 @@ public final class Gate implements AutoCloseable {
         return pack;
     }
 
+    /** The policy in force. */
+    public GatePolicy policy() {
+        return policies.current();
+    }
+
+    /**
+     * Puts a new policy in force for every decision that starts from now on. Decisions already running finish on the
+     * policy they started with.
+     *
+     * @throws IllegalArgumentException if {@code next} is already in force
+     * @throws RuntimeException         the audit's exception if it cannot record the change; the change is not
+     *                                  applied
+     */
+    public synchronized PolicyChange activate(GatePolicy next, Approval approval) {
+        Objects.requireNonNull(next, "next");
+        GatePolicy current = policies.current();
+        if (current.id().equals(next.id())) {
+            throw new IllegalArgumentException("policy " + next.id() + " is already in force");
+        }
+        PolicyChange change = new PolicyChange(PolicyChange.Kind.ACTIVATE, current.id(), next.id(), approval);
+        audit.record(change);
+        policies = new Policies(next, current);
+        LOG.log(INFO, "policy {0} in force (was {1}), approved by {2}", next.id(), current.id(), approval.checker());
+        return change;
+    }
+
+    /**
+     * Returns to the policy in force before the last activation: one step back, not more.
+     *
+     * @throws IllegalStateException if there is nothing to go back to
+     */
+    public synchronized PolicyChange rollback(Approval approval) {
+        Policies now = policies;
+        if (now.previous() == null) {
+            throw new IllegalStateException("no previous policy to roll back to");
+        }
+        PolicyChange change = new PolicyChange(PolicyChange.Kind.ROLLBACK, now.current().id(), now.previous().id(),
+                approval);
+        audit.record(change);
+        policies = new Policies(now.previous(), null);
+        LOG.log(INFO, "policy {0} in force again (rolled back from {1}), approved by {2}", now.previous().id(),
+                now.current().id(), approval.checker());
+        return change;
+    }
+
     /** Stops the gate's own scoring threads; an executor given to the builder is left running. */
     @Override
     public void close() {
@@ -155,6 +195,7 @@ public final class Gate implements AutoCloseable {
     private final class Evaluation {
 
         private final TransactionEvent event;
+        private final GatePolicy policy = policies.current();
         private final LocalDate businessDate;
         private final GateFacts facts;
         private final long deadline;
@@ -278,7 +319,7 @@ public final class Gate implements AutoCloseable {
         }
 
         private DecisionResult evaluate(String decisionId) {
-            DecisionResult result = engine.evaluate(
+            DecisionResult result = policy.engine().evaluate(
                     DecisionRef.of(decisionId).asOf(businessDate).correlationId(event.eventId()), facts.toFacts());
             records.add(result.record());
             return result;
@@ -328,6 +369,8 @@ public final class Gate implements AutoCloseable {
         private Duration ruleReserve = Duration.ofMillis(2);
         private ExecutorService executor;
         private LongSupplier nanoTime = System::nanoTime;
+        private GatePolicy policy;
+        private PolicyAudit audit = change -> LOG.log(INFO, "policy change {0}", change);
 
         private Builder(CountryPack pack) {
             this.pack = Objects.requireNonNull(pack, "pack");
@@ -377,6 +420,18 @@ public final class Gate implements AutoCloseable {
             return this;
         }
 
+        /** The policy to start with, e.g. the bank's own tables; by default the country pack's samples. */
+        public Builder policy(GatePolicy policy) {
+            this.policy = Objects.requireNonNull(policy, "policy");
+            return this;
+        }
+
+        /** Records every policy change before it takes effect; by default the change is only logged. */
+        public Builder policyAudit(PolicyAudit audit) {
+            this.audit = Objects.requireNonNull(audit, "audit");
+            return this;
+        }
+
         /** The time source; tests replace it to step through deadlines. */
         Builder nanoTime(LongSupplier nanoTime) {
             this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
@@ -390,10 +445,7 @@ public final class Gate implements AutoCloseable {
             if (profiles == null || velocity == null) {
                 throw new IllegalStateException("a gate needs a profile store and a velocity store");
             }
-            List<DecisionTable> tables = readTables(pack);
-            checkActions(tables, DECISION_ID);
-            checkActions(tables, FALLBACK_ID);
-            return new Gate(this, tables);
+            return new Gate(this, policy != null ? policy : GatePolicy.of(pack));
         }
 
         private static Duration positive(Duration duration, String name) {
@@ -402,47 +454,5 @@ public final class Gate implements AutoCloseable {
             }
             return duration;
         }
-    }
-
-    private static List<DecisionTable> readTables(CountryPack pack) {
-        List<DecisionTable> tables = new ArrayList<>();
-        for (PackResource resource : pack.decisionTables()) {
-            try (InputStream in = resource.open()) {
-                tables.add(DecisionTableJson.read(in));
-            } catch (IOException e) {
-                throw new UncheckedIOException("cannot read " + resource.name() + " from country pack "
-                        + pack.countryCode(), e);
-            }
-        }
-        return tables;
-    }
-
-    private static void checkActions(List<DecisionTable> tables, String decisionId) {
-        List<DecisionTable> versions = tables.stream().filter(table -> table.id().equals(decisionId)).toList();
-        if (versions.isEmpty()) {
-            throw new IllegalStateException("the country pack has no decision table " + decisionId);
-        }
-        for (DecisionTable table : versions) {
-            if (!ValueType.STRING.equals(table.outputs().get("action"))) {
-                throw new IllegalStateException(table.ref() + " must declare the string output 'action'");
-            }
-            for (Rule rule : table.rules()) {
-                String expression = rule.then().get("action");
-                Matcher literal = expression == null ? null : ACTION_LITERAL.matcher(expression.strip());
-                if (literal != null && literal.matches() && !isDecision(literal.group(1))) {
-                    throw new IllegalStateException("%s rule %s sets unknown action %s; expected one of %s"
-                            .formatted(table.ref(), rule.id(), literal.group(1), List.of(Decision.values())));
-                }
-            }
-        }
-    }
-
-    private static boolean isDecision(String name) {
-        for (Decision decision : Decision.values()) {
-            if (decision.name().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

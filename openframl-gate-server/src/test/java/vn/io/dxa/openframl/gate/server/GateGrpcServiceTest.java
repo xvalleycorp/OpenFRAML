@@ -68,7 +68,7 @@ class GateGrpcServiceTest {
                 .build();
         String name = InProcessServerBuilder.generateName();
         server = InProcessServerBuilder.forName(name)
-                .addService(new GateGrpcService(gate, Duration.ofSeconds(1), replyMargin)).build().start();
+                .addService(new GateGrpcService(gate, Duration.ofSeconds(5), replyMargin)).build().start();
         channel = InProcessChannelBuilder.forName(name).build();
         return GateServiceGrpc.newBlockingStub(channel);
     }
@@ -113,21 +113,22 @@ class GateGrpcServiceTest {
         InMemoryProfileStore known = profiles();
         ProfileStore slow = event -> {
             try {
-                Thread.sleep(80);
+                Thread.sleep(800);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
             return known.lookup(event);
         };
-        // A 300 ms deadline less a 250 ms reply margin leaves 50 ms: the 80 ms lookup overruns it.
-        GateServiceGrpc.GateServiceBlockingStub gateStub = serve(slow, Duration.ofMillis(250));
-        DecideResponse late = gateStub.withDeadlineAfter(300, TimeUnit.MILLISECONDS)
+        // A 3 s deadline less a 2.5 s reply margin leaves 500 ms: the 800 ms lookup overruns it. The margins are
+        // wide so that a cold JVM on a slow machine still reaches the lookup within the budget.
+        GateServiceGrpc.GateServiceBlockingStub gateStub = serve(slow, Duration.ofMillis(2_500));
+        DecideResponse late = gateStub.withDeadlineAfter(3, TimeUnit.SECONDS)
                 .decide(request(transfer("2000000")));
         assertEquals(Fallback.FALLBACK_TIMEOUT, late.getFallback());
         assertEquals(Decision.DECISION_ALLOW, late.getDecision());
         assertTrue(late.getReviewLater());
 
-        // Without a deadline the default budget of 1 s applies.
+        // Without a deadline the default budget of 5 s applies.
         assertEquals(Fallback.FALLBACK_UNSPECIFIED, gateStub.decide(request(transfer("2000000"))).getFallback());
     }
 

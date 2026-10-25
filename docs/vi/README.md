@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../brand/openframl-logo-on-dark.svg">
+  <img src="../brand/openframl-logo.svg" alt="OpenFRAML" height="56">
+</picture>
+
 # OpenFRAML
 
 [English](../../README.md)

@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/openframl-logo-on-dark.svg">
+  <img src="docs/brand/openframl-logo.svg" alt="OpenFRAML" height="56">
+</picture>
+
 # OpenFRAML
 
 [![CI](https://github.com/xvalleycorp/OpenFRAML/actions/workflows/ci.yml/badge.svg)](https://github.com/xvalleycorp/OpenFRAML/actions/workflows/ci.yml)

@@ -39,7 +39,7 @@ features. These items make both measurable and written down; the phase is when e
 
 | Item | Phase | Content |
 | --- | --- | --- |
-| Cost model (`docs/cost.md`) | 1 | Total cost of ownership by group: licence, servers, operations team, alert handling, rule changes, integration, support; the design choices that lower each, and the costs that remain |
+| [Cost model](cost.md) (done) | 1 | Total cost of ownership by group: licence, servers, operations team, alert handling, rule changes, integration, support; the design choices that lower each, and the costs that remain |
 | Sizing guide | 1 | Nodes per TPS from the server benchmark, with high availability and disaster recovery |
 | Deployment profiles | 2 | Small (batch profiles, no Flink), medium and large, each with its components and team skills |
 | Cost metrics in shadow mode | 3 | Cost per decision, alerts per 1,000 payments, false positive rate, time from a rule proposal to the rule in force |

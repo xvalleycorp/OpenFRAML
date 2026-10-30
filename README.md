@@ -80,6 +80,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 
 - [Payment Gate: steps, facts, fallback policy, gRPC service](docs/gate.md)
 - [Benchmark](docs/benchmark.md)
+- [Cost model: what owning OpenFRAML costs, and what it still costs](docs/cost.md)
 - [Country packs](docs/country-packs.md)
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)

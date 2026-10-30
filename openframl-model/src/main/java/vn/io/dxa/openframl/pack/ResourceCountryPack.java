@@ -33,6 +33,7 @@ public abstract class ResourceCountryPack implements CountryPack {
     private final ZoneId businessZone;
     private final String currency;
     private final List<PackResource> decisionTables;
+    private final List<PackResource> monitoringTables;
     private final Class<?> anchor;
     private final String messages;
     private final Map<String, Properties> messagesByLanguage = new ConcurrentHashMap<>();
@@ -44,6 +45,18 @@ public abstract class ResourceCountryPack implements CountryPack {
      */
     protected ResourceCountryPack(String countryCode, String version, ZoneId businessZone, String currency,
                                   Class<?> anchor, List<String> decisionTables, String messages) {
+        this(countryCode, version, businessZone, currency, anchor, decisionTables, List.of(), messages);
+    }
+
+    /**
+     * @param anchor           resource names are relative to this class's package
+     * @param decisionTables   the gate's decision table files
+     * @param monitoringTables Transaction Monitoring's scenario table files
+     * @param messages         base name of the reason message files
+     */
+    protected ResourceCountryPack(String countryCode, String version, ZoneId businessZone, String currency,
+                                  Class<?> anchor, List<String> decisionTables, List<String> monitoringTables,
+                                  String messages) {
         this.countryCode = Objects.requireNonNull(countryCode, "countryCode");
         this.version = Objects.requireNonNull(version, "version");
         this.businessZone = Objects.requireNonNull(businessZone, "businessZone");
@@ -51,6 +64,8 @@ public abstract class ResourceCountryPack implements CountryPack {
         this.anchor = Objects.requireNonNull(anchor, "anchor");
         this.messages = Objects.requireNonNull(messages, "messages");
         this.decisionTables = decisionTables.stream().map(name -> new PackResource(name, resource(name))).toList();
+        this.monitoringTables = monitoringTables.stream().map(name -> new PackResource(name, resource(name)))
+                .toList();
         load("en").orElseThrow(() -> new IllegalStateException(
                 "country pack " + countryCode + " has no " + messages + "_en.properties"));
     }
@@ -78,6 +93,11 @@ public abstract class ResourceCountryPack implements CountryPack {
     @Override
     public List<PackResource> decisionTables() {
         return decisionTables;
+    }
+
+    @Override
+    public List<PackResource> monitoringTables() {
+        return monitoringTables;
     }
 
     @Override

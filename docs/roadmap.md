@@ -47,8 +47,10 @@ Started while the phase 1 server measurements wait for hardware.
 - [ ] Case Management: screens for analysts, and suspicious transaction reports
 - [x] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
 - [ ] Feeding payment screening and monitoring from the bank's transaction stream
-- [ ] Transaction Monitoring scenarios (`openframl-monitor`), Behaviour Profiles on Flink (`openframl-features`),
-      Regulatory Reporting (`openframl-report`)
+- [x] Transaction Monitoring: scenarios as country pack tables, alerts to Case Management, four Vietnam samples
+      (`openframl-monitor`)
+- [ ] Behaviour Profiles on Flink (`openframl-features`), longer monitoring windows, backtesting scenarios
+- [ ] Regulatory Reporting (`openframl-report`): large-value and suspicious transaction reports
 
 ## Cost and control
 

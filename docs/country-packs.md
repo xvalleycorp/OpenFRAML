@@ -11,7 +11,7 @@ pack, not the only one: adding a country means adding a pack, not changing the c
 | Decision tables for the gate (`gate_decision`, `gate_fallback`) | Yes | |
 | Reason messages in English and the country's languages | Yes | |
 | Legal thresholds with effective dates (large-value, electronic transfer reporting) | | Phase 2 |
-| AML scenarios for monitoring | | Phase 2 |
+| AML scenarios for monitoring (`monitor_scenarios`), apart from the gate's tables | | Phase 2: started, see [Transaction Monitoring](monitoring.md) |
 | Report templates and submission channels | | Phase 2 |
 | List sources (sanctions, police, regulator) and name normalisation | | Phase 2 |
 | Switch adapters, business calendar | | Phase 2 |

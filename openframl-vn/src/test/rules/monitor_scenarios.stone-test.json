@@ -1,0 +1,696 @@
+{
+  "decision": "monitor_scenarios",
+  "description": "Sample monitoring scenarios for Vietnam: each scenario and both sides of every threshold. Amounts in VND",
+  "cases": [
+    {
+      "name": "an ordinary transfer in raises nothing",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "10000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "cash deposits split below the reporting threshold are structuring",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "390000000 VND",
+          "type": "CASH_DEPOSIT",
+          "channel": "BRANCH",
+          "direction": "IN",
+          "cash": true
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 2,
+          "amount": "780000000 VND",
+          "maxAmount": "390000000 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": [
+            "HIGH"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "CASH_STRUCTURING"
+        ]
+      }
+    },
+    {
+      "name": "one deposit at the threshold is a report, not structuring",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "400000000 VND",
+          "type": "CASH_DEPOSIT",
+          "channel": "BRANCH",
+          "direction": "IN",
+          "cash": true
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 2,
+          "amount": "800000000 VND",
+          "maxAmount": "400000000 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "split deposits that stay below the threshold in total are not structuring",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "190000000 VND",
+          "type": "CASH_DEPOSIT",
+          "channel": "BRANCH",
+          "direction": "IN",
+          "cash": true
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 2,
+          "amount": "399999999 VND",
+          "maxAmount": "210000000 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a single cash deposit below the threshold is not structuring",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "390000000 VND",
+          "type": "CASH_DEPOSIT",
+          "channel": "BRANCH",
+          "direction": "IN",
+          "cash": true
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 1,
+          "amount": "390000000 VND",
+          "maxAmount": "390000000 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "money passed on within 48 hours",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "95000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "100000000 VND"
+        },
+        "out48h": {
+          "amount": "95000000 VND"
+        },
+        "flow48h": {
+          "outToIn": "0.95"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": [
+            "HIGH"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "PASS_THROUGH"
+        ]
+      }
+    },
+    {
+      "name": "less than 90% passed on is not pass-through",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "89000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "100000000 VND"
+        },
+        "out48h": {
+          "amount": "89000000 VND"
+        },
+        "flow48h": {
+          "outToIn": "0.89"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "small amounts passed on are below the scenario",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "99000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "99999999 VND"
+        },
+        "out48h": {
+          "amount": "99000000 VND"
+        },
+        "flow48h": {
+          "outToIn": "0.99"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "money out with nothing in has no ratio",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "10000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "0 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {}
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "ten different senders in 24 hours",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "10000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 10,
+          "amount": "50000000 VND",
+          "distinctCounterparties": 10
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": [
+            "MEDIUM"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "MANY_SENDERS"
+        ]
+      }
+    },
+    {
+      "name": "nine different senders are below the scenario",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "10000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 1
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 12,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 9
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a large amount on an account dormant for 180 days",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "50000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 180
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": [
+            "MEDIUM"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "DORMANT_REACTIVATED"
+        ]
+      }
+    },
+    {
+      "name": "179 days is not dormant",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "50000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 179
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a dormant account with a small amount",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "49999999 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {
+          "daysSinceLastActivity": 400
+        },
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "the first transaction of an account is not dormancy",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "500000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false
+        },
+        "account": {},
+        "cashIn24h": {
+          "count": 0,
+          "amount": "0 VND",
+          "maxAmount": "0 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "several scenarios fire together",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "390000000 VND",
+          "type": "CASH_DEPOSIT",
+          "channel": "BRANCH",
+          "direction": "IN",
+          "cash": true
+        },
+        "account": {
+          "daysSinceLastActivity": 200
+        },
+        "cashIn24h": {
+          "count": 2,
+          "amount": "780000000 VND",
+          "maxAmount": "390000000 VND"
+        },
+        "in24h": {
+          "count": 1,
+          "amount": "10000000 VND",
+          "distinctCounterparties": 1
+        },
+        "in48h": {
+          "amount": "10000000 VND"
+        },
+        "out48h": {
+          "amount": "0 VND"
+        },
+        "flow48h": {
+          "outToIn": "0"
+        }
+      },
+      "expect": {
+        "output": {
+          "severity": [
+            "HIGH",
+            "MEDIUM"
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "CASH_STRUCTURING",
+          "DORMANT_REACTIVATED"
+        ]
+      }
+    }
+  ]
+}

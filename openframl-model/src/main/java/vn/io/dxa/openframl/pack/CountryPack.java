@@ -33,8 +33,18 @@ public interface CountryPack {
     /** ISO 4217 code of the national currency. */
     String currency();
 
-    /** Decision tables ({@code .stone.json}), including past versions so old decisions can be replayed. */
+    /**
+     * The gate's decision tables ({@code .stone.json}), including past versions so old decisions can be replayed.
+     */
     List<PackResource> decisionTables();
+
+    /**
+     * Transaction Monitoring's scenario tables ({@code .stone.json}), past versions included; none by default. Kept
+     * apart from the gate's tables, so that a change to a scenario does not change the gate's policy.
+     */
+    default List<PackResource> monitoringTables() {
+        return List.of();
+    }
 
     /**
      * The message for a reason code in a language, for investigators and reviewers. Not for customers: AML reasons

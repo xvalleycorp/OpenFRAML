@@ -38,6 +38,8 @@ import vn.io.dxa.openframl.gate.memory.InMemoryWatchlist;
 import vn.io.dxa.openframl.kafka.KafkaGateRecordSink;
 import vn.io.dxa.openframl.onnx.OnnxScoreProvider;
 import vn.io.dxa.openframl.pack.CountryPack;
+import vn.io.dxa.openframl.screen.AccountLists;
+import vn.io.dxa.openframl.screen.WatchlistDirectory;
 import vn.io.dxa.openframl.valkey.Valkey;
 import vn.io.dxa.openframl.valkey.ValkeyLayout;
 import vn.io.dxa.openframl.valkey.ValkeyPolicyRepository;
@@ -66,6 +68,9 @@ import vn.io.dxa.openframl.valkey.ValkeyVelocityStore;
  *   <li>{@code OPENFRAML_GATE_MODEL}: an ONNX fraud model; without it, decisions are made by the rules alone;</li>
  *   <li>{@code OPENFRAML_GATE_MODEL_BUDGET_MS}: the longest the gate waits for a score, default 5;</li>
  *   <li>{@code OPENFRAML_GATE_POLICY_SYNC_SECONDS}: how often the node checks for an approved policy, default 2;</li>
+ *   <li>{@code OPENFRAML_GATE_WATCHLIST_DIR}: a directory of account lists ({@code <source>@<version>.csv}, see
+ *       {@link AccountLists}), loaded at start and again when a file changes; without it, the watchlist is
+ *       empty;</li>
  *   <li>{@code OPENFRAML_ADMIN_PORT}: serves the policy admin service on this port, over mutual TLS only, with
  *       {@code OPENFRAML_ADMIN_TLS_CERT} and {@code OPENFRAML_ADMIN_TLS_KEY} (the server's certificate chain and
  *       PKCS#8 key, PEM), {@code OPENFRAML_ADMIN_TLS_CLIENT_CA} (the CA that issues admin client certificates), and
@@ -76,7 +81,7 @@ import vn.io.dxa.openframl.valkey.ValkeyVelocityStore;
  * <p>With Valkey, approved policies are shared through it: every node syncs, and any node may serve the admin
  * service. Without Valkey, policies live in this process, for a single node.
  *
- * <p>The watchlist starts empty until list screening loads it. Embedders build their own {@link Gate} and pass it
+ * <p>Embedders build their own {@link Gate} and pass it
  * to {@link #start}.
  */
 public final class GateServer implements AutoCloseable {
@@ -158,11 +163,18 @@ public final class GateServer implements AutoCloseable {
                     1_000_000);
             velocity = new ValkeyVelocityStore(valkey);
         }
+        InMemoryWatchlist watchlist = new InMemoryWatchlist();
+        String watchlistDir = env.get("OPENFRAML_GATE_WATCHLIST_DIR");
+        WatchlistDirectory lists = watchlistDir == null ? null
+                : WatchlistDirectory.start(Path.of(watchlistDir), watchlist, Duration.ofSeconds(10));
+        if (lists == null) {
+            LOG.log(System.Logger.Level.WARNING, "OPENFRAML_GATE_WATCHLIST_DIR not set: the watchlist is empty");
+        }
         String modelPath = env.get("OPENFRAML_GATE_MODEL");
         OnnxScoreProvider model = modelPath == null ? null
                 : OnnxScoreProvider.load(Path.of(modelPath), pack.businessZone());
         Gate.Builder builder = Gate.builder(pack).policy(policy).profiles(profiles).velocity(velocity)
-                .watchlist(new InMemoryWatchlist())
+                .watchlist(watchlist)
                 .recordSink(records == null ? GateRecordSink.NONE : records)
                 .modelBudget(Duration.ofMillis(Long.parseLong(env.getOrDefault("OPENFRAML_GATE_MODEL_BUDGET_MS", "5"))));
         if (model != null) {
@@ -193,6 +205,9 @@ public final class GateServer implements AutoCloseable {
                 Thread.currentThread().interrupt();
             } finally {
                 sync.close();
+                if (lists != null) {
+                    lists.close();
+                }
                 gate.close();
                 if (records != null) {
                     records.close();

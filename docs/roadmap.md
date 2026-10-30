@@ -32,6 +32,17 @@ proven before the rest is built. Durations are estimates for a small team and wi
 - [ ] Routing by originating account across gate nodes
 - [ ] The 20,000 TPS target measured on server hardware with Generational ZGC
 
+## Phase 2
+
+Started while the phase 1 server measurements wait for hardware.
+
+- [x] Watchlist Screening: account lists for the gate, reloaded without a restart; name screening that copes with
+      Vietnamese diacritics, name order and abbreviations; an open CSV list format (`openframl-screen`)
+- [ ] Readers for official list formats (UN Security Council consolidated list, national lists named by the packs)
+- [ ] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
+- [ ] Transaction Monitoring scenarios (`openframl-monitor`), Behaviour Profiles on Flink (`openframl-features`),
+      Regulatory Reporting (`openframl-report`)
+
 ## Cost and control
 
 A bank weighs a FRAML platform on what it costs to own and on how much of it the bank controls, as much as on its

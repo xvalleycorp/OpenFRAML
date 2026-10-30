@@ -41,7 +41,7 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 | [Đo hiệu năng](../../openframl-benchmark) | `openframl-benchmark` | Benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp | 1 | Dùng được |
 | Hồ sơ hành vi | `openframl-features` | Hồ sơ hành vi và velocity, tính bằng Apache Flink | 2 | Dự kiến |
 | Giám sát giao dịch | `openframl-monitor` | Kịch bản AML và gian lận sau giao dịch | 2 | Dự kiến |
-| Sàng lọc danh sách | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước | 2 | Dự kiến |
+| [Sàng lọc danh sách](../../openframl-screen) | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước; danh sách tài khoản cho `gate` | 2 | Đã bắt đầu: sàng lọc theo tên và danh sách tài khoản |
 | Quản lý hồ sơ điều tra | `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Dự kiến |
 | Báo cáo theo quy định | `openframl-report` | Báo cáo cho cơ quan quản lý theo mẫu của từng gói quốc gia | 2 | Dự kiến |
 | Phục vụ model | `openframl-ml` | Phục vụ model, champion/challenger, chạy shadow | 3 | Dự kiến |
@@ -78,6 +78,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Chặn giao dịch: các bước, facts, chính sách dự phòng, service gRPC](gate.md)
 - [Đo hiệu năng](benchmark.md)
 - [Mô hình chi phí: chi phí sở hữu OpenFRAML, và những chi phí vẫn còn](cost.md)
+- [Sàng lọc danh sách: danh sách tài khoản cho `gate`, sàng lọc theo tên](screening.md)
 - [Gói quốc gia](country-packs.md)
 - [Lộ trình](roadmap.md)
 - [Hướng dẫn đóng góp](../../CONTRIBUTING.md) · [Chính sách bảo mật](../../SECURITY.md)

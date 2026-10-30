@@ -252,11 +252,12 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 | `OPENFRAML_GATE_MODEL` | Không đặt: chỉ dùng rule | Đường dẫn tới model gian lận ONNX |
 | `OPENFRAML_GATE_MODEL_BUDGET_MS` | `5` | Thời gian tối đa chờ điểm của model |
 | `OPENFRAML_GATE_POLICY_SYNC_SECONDS` | `2` | Chu kỳ node kiểm tra policy đã được duyệt |
+| `OPENFRAML_GATE_WATCHLIST_DIR` | Không đặt: danh sách rỗng | Thư mục chứa các danh sách tài khoản, nạp lại khi có file thay đổi; xem [Sàng lọc danh sách](screening.md) |
 | `OPENFRAML_ADMIN_PORT` | Không đặt: không có service quản trị | Cổng của service quản trị policy, chỉ qua mutual TLS |
 | `OPENFRAML_ADMIN_TLS_CERT`, `OPENFRAML_ADMIN_TLS_KEY` | Bắt buộc khi có cổng | Chuỗi certificate và khóa PKCS#8 của server, dạng PEM |
 | `OPENFRAML_ADMIN_TLS_CLIENT_CA` | Bắt buộc khi có cổng | CA cấp client certificate cho người quản trị |
 | `OPENFRAML_ADMIN_MAKERS`, `OPENFRAML_ADMIN_CHECKERS` | Bắt buộc khi có cổng | Common name của certificate, cách nhau bằng dấu phẩy |
 
 Nếu không đặt `OPENFRAML_GATE_VALKEY_URL`, server khởi động với kho trong bộ nhớ, rỗng: chỉ dùng để thử nghiệm và đo
-hiệu năng. Danh sách nghi ngờ rỗng cho tới khi Sàng lọc danh sách (`openframl-screen`) nạp vào. Ứng dụng có thể tự dựng
-`Gate` và phục vụ bằng `GateServer.start`.
+hiệu năng. Nếu không đặt `OPENFRAML_GATE_WATCHLIST_DIR`, danh sách nghi ngờ rỗng. Ứng dụng có thể tự dựng `Gate` và phục vụ
+bằng `GateServer.start`.

@@ -232,6 +232,8 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
   node's cache warm.
 - **Errors.** An incomplete or invalid transaction is rejected with `INVALID_ARGUMENT`, naming the field. The message
   never repeats an account number.
+- **Names.** `beneficiary_name`, optional, is the name the payment carries (e.g. from the scheme's name inquiry). It
+  is for screening after the payment; the gate's decision does not use it, and it is never logged or recorded.
 - **Amounts.** Exact decimals as text without an exponent (`"1500000"`, `"12.50"`); floating point never reaches
   the gate.
 

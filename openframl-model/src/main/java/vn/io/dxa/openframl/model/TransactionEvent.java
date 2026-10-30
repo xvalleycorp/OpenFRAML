@@ -28,6 +28,8 @@ import java.util.Objects;
  *                      arrives at)
  * @param beneficiary   the counterparty account, or {@code null} for cash
  * @param session       signals about the session; {@link SessionSignals#NONE} when there are none
+ * @param beneficiaryName the counterparty's name as the payment carries it (e.g. from the scheme's name inquiry),
+ *                      or {@code null}; for screening only, never logged or recorded with a decision
  */
 public record TransactionEvent(
         String schemaVersion,
@@ -39,7 +41,8 @@ public record TransactionEvent(
         String customerId,
         AccountRef originator,
         AccountRef beneficiary,
-        SessionSignals session) {
+        SessionSignals session,
+        String beneficiaryName) {
 
     /** The current version of this model. */
     public static final String SCHEMA_VERSION = "1";
@@ -58,6 +61,16 @@ public record TransactionEvent(
         Objects.requireNonNull(customerId, "customerId");
         Objects.requireNonNull(originator, "originator");
         session = session == null ? SessionSignals.NONE : session;
+        beneficiaryName = beneficiaryName == null || beneficiaryName.isBlank() ? null : beneficiaryName.strip();
+    }
+
+    /** Every field but the beneficiary's name, which is personal data; account numbers are masked. */
+    @Override
+    public String toString() {
+        return "TransactionEvent[schemaVersion=" + schemaVersion + ", eventId=" + eventId + ", occurredAt="
+                + occurredAt + ", channel=" + channel + ", type=" + type + ", amount=" + amount + ", customerId="
+                + customerId + ", originator=" + originator + ", beneficiary=" + beneficiary + ", session=" + session
+                + ", beneficiaryName=" + (beneficiaryName == null ? "none" : "redacted") + "]";
     }
 
     public static Builder builder() {
@@ -76,6 +89,7 @@ public record TransactionEvent(
         private AccountRef originator;
         private AccountRef beneficiary;
         private SessionSignals session = SessionSignals.NONE;
+        private String beneficiaryName;
 
         private Builder() {}
 
@@ -124,9 +138,14 @@ public record TransactionEvent(
             return this;
         }
 
+        public Builder beneficiaryName(String beneficiaryName) {
+            this.beneficiaryName = beneficiaryName;
+            return this;
+        }
+
         public TransactionEvent build() {
             return new TransactionEvent(SCHEMA_VERSION, eventId, occurredAt, channel, type, amount, customerId,
-                    originator, beneficiary, session);
+                    originator, beneficiary, session, beneficiaryName);
         }
     }
 }

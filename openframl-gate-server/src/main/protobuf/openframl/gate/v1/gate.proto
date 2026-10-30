@@ -40,6 +40,9 @@ message Transaction {
   // Unset for cash.
   AccountRef beneficiary = 9;
   SessionSignals session = 10;
+  // The beneficiary's name as the payment carries it, e.g. from the scheme's name inquiry; optional. Used for
+  // screening only: it is never logged or recorded with the decision.
+  string beneficiary_name = 11;
 }
 
 message Money {

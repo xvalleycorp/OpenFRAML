@@ -49,7 +49,8 @@ final class ProtoMapping {
                 text(tx.getCustomerId(), "customer_id"),
                 account(tx.getOriginator(), "originator"),
                 tx.hasBeneficiary() ? account(tx.getBeneficiary(), "beneficiary") : null,
-                tx.hasSession() ? session(tx.getSession()) : null);
+                tx.hasSession() ? session(tx.getSession()) : null,
+                tx.getBeneficiaryName());
     }
 
     static DecideResponse response(GateOutcome outcome) {

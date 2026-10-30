@@ -39,6 +39,7 @@ import vn.io.dxa.openframl.gate.v1.Money;
 import vn.io.dxa.openframl.gate.v1.SessionSignals;
 import vn.io.dxa.openframl.gate.v1.Transaction;
 import vn.io.dxa.openframl.gate.v1.TransactionType;
+import vn.io.dxa.openframl.model.TransactionEvent;
 import vn.io.dxa.openframl.pack.CountryPack;
 
 class GateGrpcServiceTest {
@@ -86,6 +87,13 @@ class GateGrpcServiceTest {
                 .setOriginator(AccountRef.newBuilder().setInstitution("999901").setAccount("0123456789"))
                 .setBeneficiary(AccountRef.newBuilder().setInstitution("999902").setAccount("9876543210"))
                 .setSession(SessionSignals.newBuilder().setDeviceId("phone-1").setActiveCallDetected(true));
+    }
+
+    @Test
+    void theBeneficiarysNameReachesTheEvent() {
+        TransactionEvent named = ProtoMapping.event(transfer("100000").setBeneficiaryName("Nguyễn Văn Đức").build());
+        assertEquals("Nguyễn Văn Đức", named.beneficiaryName());
+        assertEquals(null, ProtoMapping.event(transfer("100000").build()).beneficiaryName());
     }
 
     private static DecideRequest request(Transaction.Builder transaction) {

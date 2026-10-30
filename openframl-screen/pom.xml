@@ -23,5 +23,10 @@
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-gate</artifactId>
     </dependency>
+    <!-- Matches on payments become alerts for Case Management -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-case</artifactId>
+    </dependency>
   </dependencies>
 </project>

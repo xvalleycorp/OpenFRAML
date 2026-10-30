@@ -46,6 +46,26 @@ Tên người Việt trùng nhau rất nhiều: nhiều người có cùng họ 
 chưa phải kết luận; năm sinh và số định danh mới là thứ phân biệt hai người trùng tên, còn ngưỡng (0,85 trong các ví
 dụ) do ngân hàng tự điều chỉnh.
 
+## Sàng lọc giao dịch
+
+`PaymentScreening` sàng lọc tên người thụ hưởng mà mỗi giao dịch mang theo (`beneficiaryName` trong mô hình sự kiện,
+lấy từ tra cứu tên của hệ thống thanh toán), sau giao dịch, chạy bên cạnh `gate` chứ không nằm trong `gate`. Mỗi mục
+trong danh sách mà tên đó có thể trùng sẽ thành một cảnh báo cho Quản lý hồ sơ điều tra (`openframl-case`):
+
+- Cảnh báo nói về khách hàng trả tiền, người đã chuyển tiền cho một người có thể nằm trong danh sách; các cảnh báo về
+  cùng một khách hàng được gom vào một hồ sơ.
+- Mã cảnh báo được tạo từ sự kiện, danh sách và mục trong danh sách, nên sàng lọc lại một giao dịch không sinh thêm
+  cảnh báo mới.
+- Bằng chứng gồm những gì chuyên viên cần: danh sách và phiên bản, mục trong danh sách và ghi chú của nó, tên trên giao
+  dịch và tên trong danh sách gần với nó, điểm số và lý do, và số tiền; không bao giờ có số tài khoản.
+- Kết quả được giữ trong cache theo tên người thụ hưởng, chừng nào danh sách đang dùng chưa thay đổi, vì cùng một tên
+  thường xuất hiện lại.
+
+`ScreeningDirectory` giữ các danh sách trong một thư mục: các file `<source>@<version>.csv` theo dạng CSV mở, và danh
+sách của Liên hợp quốc dưới tên `UN-SC*.xml`. Mỗi khi có file thay đổi, nó dựng một screener mới; nếu không đọc được
+một file, các danh sách cũ vẫn được dùng. Việc đưa giao dịch từ luồng dữ liệu của ngân hàng vào là việc của tầng stream
+(dự kiến); trong lúc chưa có, một batch job có thể gọi trực tiếp.
+
 ## Danh sách của Hội đồng Bảo an Liên hợp quốc
 
 `UnConsolidatedList` đọc danh sách tổng hợp của Hội đồng Bảo an Liên hợp quốc ở dạng XML do Liên hợp quốc công bố
@@ -82,6 +102,4 @@ cả danh sách thất bại, kèm số dòng.
 Trong [lộ trình](roadmap.md) của giai đoạn 2:
 
 - Đọc các danh sách quốc gia mà gói quốc gia chỉ định.
-- Sàng lọc tên người thụ hưởng của giao dịch, sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra
-  (`openframl-case`).
 - Quy tắc về tên lấy từ gói quốc gia (chữ viết tắt, hình thức pháp lý) thay cho bộ quy tắc tiếng Việt cài sẵn.

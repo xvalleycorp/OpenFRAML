@@ -41,8 +41,9 @@ import vn.io.dxa.openframl.cases.memory.InMemoryCaseStore;
  *   <li>{@code OPENFRAML_CASE_ANALYSTS}, {@code OPENFRAML_CASE_SUPERVISORS}, {@code OPENFRAML_CASE_DETECTORS}:
  *       certificate common names, comma-separated;</li>
  *   <li>{@code OPENFRAML_CASE_JDBC_URL}: the case database, e.g.
- *       {@code jdbc:postgresql://db/openframl?user=..&password=..}, with its driver on the class path; without it,
- *       cases are kept in memory, for trials only.</li>
+ *       {@code jdbc:postgresql://db/openframl?user=..&password=..}; the PostgreSQL driver ships with the service,
+ *       another database's driver goes on the class path; without it, cases are kept in memory, for trials
+ *       only.</li>
  * </ul>
  */
 public final class CaseServer implements AutoCloseable {

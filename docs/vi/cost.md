@@ -12,7 +12,7 @@ liệu của chính ngân hàng và, về sau, từ các chỉ số đo được
 
 | Nhóm | Ngân hàng trả tiền cho | Điều gì giúp giảm | Phần vẫn còn |
 | --- | --- | --- | --- |
-| Bản quyền | Không gì cả: Apache 2.0, không phí theo giao dịch, tài khoản, module, node hay theo năm | Mọi dependency đều nằm trong danh sách licence được phép (Apache-2.0, MIT, MIT-0, BSD-3-Clause), được build kiểm tra | Hỗ trợ trả phí, nếu ngân hàng muốn |
+| Bản quyền | Không gì cả: Apache 2.0, không phí theo giao dịch, tài khoản, module, node hay theo năm | Mọi dependency đều nằm trong danh sách licence được phép (Apache-2.0, MIT, MIT-0, BSD-2-Clause, BSD-3-Clause), được build kiểm tra | Hỗ trợ trả phí, nếu ngân hàng muốn |
 | Máy chủ | Các node `gate`, Valkey, Kafka; về sau là tầng stream và tầng giám sát | Máy chủ x86 phổ thông, không cần GPU hay thiết bị chuyên dụng; hồ sơ và bộ đếm nằm trong bộ nhớ | Máy chủ cho tính sẵn sàng cao và site thứ hai; điện, chỗ đặt máy và bảo trì |
 | Đội vận hành | Người vận hành các service Java, Valkey và Kafka | Các thành phần tiêu chuẩn mà đội nền tảng của ngân hàng có thể đã vận hành; container image, health check và metrics có trong lộ trình | Chính đội ngũ đó, kể cả trực sự cố |
 | Xử lý cảnh báo | Chuyên viên xem xét giao dịch đáng ngờ và cảnh báo AML | `CHALLENGE` yêu cầu khách hàng tự xác nhận thay vì xếp hàng chờ chuyên viên; mọi quyết định kèm mã lý do; model chỉ bổ sung điểm | Chuyên viên cho phần còn lại, và cho hồ sơ AML |

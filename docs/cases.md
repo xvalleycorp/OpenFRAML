@@ -41,7 +41,7 @@ still land in one case.
 query with SQL: `ofr_case` for each case and its current state, `ofr_case_alert` and `ofr_case_alert_evidence` for
 its alerts, and `ofr_case_action` for its history. PostgreSQL is the reference database; the schema is in
 [`schema-postgresql.sql`](../openframl-case/src/main/resources/vn/io/dxa/openframl/cases/jdbc/schema-postgresql.sql),
-and the bank supplies the connection pool and the driver.
+and the bank supplies the connection pool; the Case Service ships with the PostgreSQL driver.
 
 - Each save is one transaction. The case row carries a version, the length of its history, and is updated only if
   the version is still the one that was read; otherwise the save is refused and the action can be retried.
@@ -74,7 +74,7 @@ it again and retry).
 | `OPENFRAML_CASE_TLS_CERT`, `OPENFRAML_CASE_TLS_KEY` | Required | The server's certificate chain and PKCS#8 key, PEM |
 | `OPENFRAML_CASE_TLS_CLIENT_CA` | Required | The CA that issues client certificates |
 | `OPENFRAML_CASE_ANALYSTS`, `OPENFRAML_CASE_SUPERVISORS`, `OPENFRAML_CASE_DETECTORS` | None | Certificate common names, comma-separated |
-| `OPENFRAML_CASE_JDBC_URL` | Not set: cases in memory, for trials only | The case database; its JDBC driver goes on the class path |
+| `OPENFRAML_CASE_JDBC_URL` | Not set: cases in memory, for trials only | The case database; the PostgreSQL driver is included, another database's driver goes on the class path |
 
 ## Next
 

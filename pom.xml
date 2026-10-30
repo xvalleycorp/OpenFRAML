@@ -176,7 +176,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      <!-- Tests only: the JDBC case store is tested on PostgreSQL; banks supply their own driver -->
+      <!-- The reference database's driver: shipped with the Case Service, and used by the JDBC case store's tests -->
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
@@ -363,6 +363,7 @@
                     <licenseMerge>MIT|MIT License|MIT license|The MIT License</licenseMerge>
                     <!-- RE2/J declares "Go License": the Go licence is BSD-3-Clause -->
                     <licenseMerge>BSD-3-Clause|BSD 3-Clause|BSD 3-clause|BSD-3-Clause License|The BSD 3-Clause License|Go License</licenseMerge>
+                    <licenseMerge>BSD-2-Clause|BSD 2-Clause|BSD 2-clause|BSD-2-Clause License|The BSD 2-Clause License|BSD 2-Clause License</licenseMerge>
                   </licenseMerges>
                   <!-- Allowlist: any licence outside it fails the build -->
                   <includedLicenses>
@@ -371,6 +372,8 @@
                     <!-- MIT without the attribution clause; Reactive Streams, under Lettuce -->
                     <includedLicense>MIT-0</includedLicense>
                     <includedLicense>BSD-3-Clause</includedLicense>
+                    <!-- Like BSD-3-Clause without the endorsement clause; the PostgreSQL JDBC driver -->
+                    <includedLicense>BSD-2-Clause</includedLicense>
                   </includedLicenses>
                 </configuration>
               </execution>

@@ -33,7 +33,7 @@ Pull requests with commits missing the sign-off are not merged.
   masks the account number; `AccountRef.key()` is for lookups only.
 - Examples and test data use invented codes, never a real bank's: bank codes `999901` and `999902`, the invented
   country `XA`, the ISO 4217 test currency `XTS`.
-- New dependencies must have a licence on the allowlist in `pom.xml` (Apache-2.0, MIT, MIT-0, BSD-3-Clause). Avoid
+- New dependencies must have a licence on the allowlist in `pom.xml` (Apache-2.0, MIT, MIT-0, BSD-2-Clause, BSD-3-Clause). Avoid
   projects that are BSL, SSPL, AGPL or "source-available" (for example Redpanda, Aerospike, Neo4j Community, recent
   Redis, Elasticsearch, MinIO). CI runs `mvn -Plicense-check verify`. The one exception is the Benchmark module
   (`openframl-benchmark`): it uses JMH (GPL-2.0 with the Classpath Exception) as a measuring tool, is never deployed

@@ -41,7 +41,7 @@ tượng đến cùng lúc vẫn vào chung một hồ sơ.
 thể truy vấn bằng SQL: `ofr_case` cho mỗi hồ sơ và trạng thái hiện tại, `ofr_case_alert` và `ofr_case_alert_evidence`
 cho cảnh báo của hồ sơ, và `ofr_case_action` cho lịch sử. PostgreSQL là cơ sở dữ liệu tham chiếu; lược đồ nằm trong
 [`schema-postgresql.sql`](../../openframl-case/src/main/resources/vn/io/dxa/openframl/cases/jdbc/schema-postgresql.sql),
-và ngân hàng tự cung cấp connection pool cùng driver.
+và ngân hàng tự cung cấp connection pool; Dịch vụ hồ sơ điều tra đã kèm sẵn driver PostgreSQL.
 
 - Mỗi lần lưu là một transaction. Dòng hồ sơ mang một phiên bản, chính là độ dài lịch sử, và chỉ được cập nhật nếu
   phiên bản vẫn là phiên bản đã đọc; nếu không, lần lưu bị từ chối và thao tác có thể thực hiện lại.
@@ -74,7 +74,7 @@ hồ sơ rồi thử lại).
 | `OPENFRAML_CASE_TLS_CERT`, `OPENFRAML_CASE_TLS_KEY` | Bắt buộc | Chuỗi certificate và khóa PKCS#8 của server, dạng PEM |
 | `OPENFRAML_CASE_TLS_CLIENT_CA` | Bắt buộc | CA cấp client certificate |
 | `OPENFRAML_CASE_ANALYSTS`, `OPENFRAML_CASE_SUPERVISORS`, `OPENFRAML_CASE_DETECTORS` | Không có | Common name của certificate, cách nhau bằng dấu phẩy |
-| `OPENFRAML_CASE_JDBC_URL` | Không đặt: hồ sơ nằm trong bộ nhớ, chỉ để chạy thử | Cơ sở dữ liệu hồ sơ; driver JDBC của nó đặt trên class path |
+| `OPENFRAML_CASE_JDBC_URL` | Không đặt: hồ sơ nằm trong bộ nhớ, chỉ để chạy thử | Cơ sở dữ liệu hồ sơ; đã kèm sẵn driver PostgreSQL, driver của cơ sở dữ liệu khác đặt trên class path |
 
 ## Tiếp theo
 

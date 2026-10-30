@@ -12,7 +12,7 @@ and, later, from the metrics measured in shadow mode (see [Measuring it](#measur
 
 | Group | What the bank pays for | What lowers it | What remains |
 | --- | --- | --- | --- |
-| Licence | Nothing: Apache 2.0, no fee per transaction, account, module, node or year | Every dependency is on a licence allowlist (Apache-2.0, MIT, MIT-0, BSD-3-Clause), checked by the build | Optional paid support, if the bank wants it |
+| Licence | Nothing: Apache 2.0, no fee per transaction, account, module, node or year | Every dependency is on a licence allowlist (Apache-2.0, MIT, MIT-0, BSD-2-Clause, BSD-3-Clause), checked by the build | Optional paid support, if the bank wants it |
 | Servers | Gate nodes, Valkey, Kafka; later the stream and monitoring layers | Ordinary x86 servers, no GPU, no appliance; profiles and counters in memory | Servers for high availability and a second site; their power, rack space and maintenance |
 | Operations team | People who run Java services, Valkey and Kafka | Standard components the bank's platform team may already run; container images, health checks and metrics are on the roadmap | The team itself, on call |
 | Alert handling | Analysts who review doubtful payments and AML alerts | `CHALLENGE` asks the customer to confirm instead of queueing an analyst; every decision carries reason codes; models only add a score | Analysts for what remains, and for AML cases |

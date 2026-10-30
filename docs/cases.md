@@ -41,7 +41,7 @@ still land in one case.
 query with SQL: `ofr_case` for each case and its current state, `ofr_case_alert` and `ofr_case_alert_evidence` for
 its alerts, and `ofr_case_action` for its history. PostgreSQL is the reference database; the schema is in
 [`schema-postgresql.sql`](../openframl-case/src/main/resources/vn/io/dxa/openframl/cases/jdbc/schema-postgresql.sql),
-and the bank supplies the connection pool and the driver.
+and the bank supplies the connection pool; the Case Service ships with the PostgreSQL driver.
 
 - Each save is one transaction. The case row carries a version, the length of its history, and is updated only if
   the version is still the one that was read; otherwise the save is refused and the action can be retried.
@@ -50,9 +50,34 @@ and the bank supplies the connection pool and the driver.
   different nodes still open one case.
 - `InMemoryCaseStore` remains for tests and trials.
 
+## Case Service
+
+The Case Service (`openframl-case-server`) serves Case Management over gRPC
+([`openframl/cases/v1/case_service.proto`](../openframl-case-server/src/main/protobuf/openframl/cases/v1/case_service.proto)),
+over mutual TLS only. The caller is the common name of a client certificate issued by the bank's CA, and the bank
+lists which names are analysts, supervisors and detectors:
+
+| Caller | May |
+| --- | --- |
+| Detector (e.g. a screening node) | `RaiseAlert` only |
+| Analyst | Read cases, take a case, add notes, propose a conclusion on a case assigned to them |
+| Supervisor | Read cases, assign cases, add notes, approve or return a conclusion they did not propose |
+
+Every call is recorded in the case's history under the caller's name. A refusal has its own status:
+`UNAUTHENTICATED` without a certificate, `PERMISSION_DENIED` for a role the caller does not have,
+`FAILED_PRECONDITION` for a step the case is not ready for, `ABORTED` when someone else changed the case first (read
+it again and retry).
+
+| Environment variable | Default | Purpose |
+| --- | --- | --- |
+| `OPENFRAML_CASE_PORT` | `9190` | Port |
+| `OPENFRAML_CASE_TLS_CERT`, `OPENFRAML_CASE_TLS_KEY` | Required | The server's certificate chain and PKCS#8 key, PEM |
+| `OPENFRAML_CASE_TLS_CLIENT_CA` | Required | The CA that issues client certificates |
+| `OPENFRAML_CASE_ANALYSTS`, `OPENFRAML_CASE_SUPERVISORS`, `OPENFRAML_CASE_DETECTORS` | None | Certificate common names, comma-separated |
+| `OPENFRAML_CASE_JDBC_URL` | Not set: cases in memory, for trials only | The case database; the PostgreSQL driver is included, another database's driver goes on the class path |
+
 ## Next
 
 Watchlist Screening already raises alerts for payment beneficiaries whose names may be listed (see
-[Watchlist Screening](screening.md#screening-payments)). On the [roadmap](roadmap.md): an API and screens for analysts,
-and suspicious transaction reports from `REPORTED` cases through Regulatory Reporting
+[Watchlist Screening](screening.md#screening-payments)). On the [roadmap](roadmap.md): screens for analysts, and suspicious transaction reports from `REPORTED` cases through Regulatory Reporting
 (`openframl-report`).

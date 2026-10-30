@@ -41,7 +41,7 @@ tượng đến cùng lúc vẫn vào chung một hồ sơ.
 thể truy vấn bằng SQL: `ofr_case` cho mỗi hồ sơ và trạng thái hiện tại, `ofr_case_alert` và `ofr_case_alert_evidence`
 cho cảnh báo của hồ sơ, và `ofr_case_action` cho lịch sử. PostgreSQL là cơ sở dữ liệu tham chiếu; lược đồ nằm trong
 [`schema-postgresql.sql`](../../openframl-case/src/main/resources/vn/io/dxa/openframl/cases/jdbc/schema-postgresql.sql),
-và ngân hàng tự cung cấp connection pool cùng driver.
+và ngân hàng tự cung cấp connection pool; Dịch vụ hồ sơ điều tra đã kèm sẵn driver PostgreSQL.
 
 - Mỗi lần lưu là một transaction. Dòng hồ sơ mang một phiên bản, chính là độ dài lịch sử, và chỉ được cập nhật nếu
   phiên bản vẫn là phiên bản đã đọc; nếu không, lần lưu bị từ chối và thao tác có thể thực hiện lại.
@@ -50,9 +50,34 @@ và ngân hàng tự cung cấp connection pool cùng driver.
   nhiều node vẫn chỉ mở một hồ sơ.
 - `InMemoryCaseStore` vẫn được giữ cho test và chạy thử.
 
+## Dịch vụ hồ sơ điều tra
+
+Dịch vụ hồ sơ điều tra (`openframl-case-server`) cung cấp Quản lý hồ sơ điều tra qua gRPC
+([`openframl/cases/v1/case_service.proto`](../../openframl-case-server/src/main/protobuf/openframl/cases/v1/case_service.proto)),
+chỉ qua mutual TLS. Người gọi là common name trong client certificate do CA của ngân hàng cấp, và ngân hàng liệt kê tên
+nào là chuyên viên, người phụ trách và bộ phát hiện:
+
+| Người gọi | Được làm |
+| --- | --- |
+| Bộ phát hiện (ví dụ một node sàng lọc) | Chỉ `RaiseAlert` |
+| Chuyên viên | Đọc hồ sơ, nhận hồ sơ, ghi chú, đề xuất kết luận cho hồ sơ được giao cho mình |
+| Người phụ trách | Đọc hồ sơ, giao hồ sơ, ghi chú, phê duyệt hoặc trả lại kết luận không phải do mình đề xuất |
+
+Mọi lời gọi đều được ghi vào lịch sử của hồ sơ dưới tên người gọi. Mỗi kiểu từ chối có mã trạng thái riêng:
+`UNAUTHENTICATED` khi không có certificate, `PERMISSION_DENIED` khi người gọi không có vai trò cần thiết,
+`FAILED_PRECONDITION` khi hồ sơ chưa ở bước cho phép thao tác đó, `ABORTED` khi người khác đã sửa hồ sơ trước (đọc lại
+hồ sơ rồi thử lại).
+
+| Biến môi trường | Mặc định | Mục đích |
+| --- | --- | --- |
+| `OPENFRAML_CASE_PORT` | `9190` | Cổng |
+| `OPENFRAML_CASE_TLS_CERT`, `OPENFRAML_CASE_TLS_KEY` | Bắt buộc | Chuỗi certificate và khóa PKCS#8 của server, dạng PEM |
+| `OPENFRAML_CASE_TLS_CLIENT_CA` | Bắt buộc | CA cấp client certificate |
+| `OPENFRAML_CASE_ANALYSTS`, `OPENFRAML_CASE_SUPERVISORS`, `OPENFRAML_CASE_DETECTORS` | Không có | Common name của certificate, cách nhau bằng dấu phẩy |
+| `OPENFRAML_CASE_JDBC_URL` | Không đặt: hồ sơ nằm trong bộ nhớ, chỉ để chạy thử | Cơ sở dữ liệu hồ sơ; đã kèm sẵn driver PostgreSQL, driver của cơ sở dữ liệu khác đặt trên class path |
+
 ## Tiếp theo
 
 Sàng lọc danh sách đã phát sinh cảnh báo cho những người thụ hưởng có tên có thể nằm trong danh sách (xem
-[Sàng lọc danh sách](screening.md#sàng-lọc-giao-dịch)). Trong [lộ trình](roadmap.md): API và giao diện cho chuyên
-viên, và báo cáo giao dịch đáng ngờ từ các hồ sơ `REPORTED` qua Báo cáo theo quy định
+[Sàng lọc danh sách](screening.md#sàng-lọc-giao-dịch)). Trong [lộ trình](roadmap.md): giao diện cho chuyên viên, và báo cáo giao dịch đáng ngờ từ các hồ sơ `REPORTED` qua Báo cáo theo quy định
 (`openframl-report`).

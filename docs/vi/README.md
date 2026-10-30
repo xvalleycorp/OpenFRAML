@@ -43,6 +43,7 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 | Giám sát giao dịch | `openframl-monitor` | Kịch bản AML và gian lận sau giao dịch | 2 | Dự kiến |
 | [Sàng lọc danh sách](../../openframl-screen) | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước; danh sách tài khoản cho `gate` | 2 | Đã bắt đầu: sàng lọc theo tên và danh sách tài khoản |
 | [Quản lý hồ sơ điều tra](../../openframl-case) | `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Đã bắt đầu: hồ sơ và phê duyệt, lưu trên PostgreSQL |
+| [Dịch vụ hồ sơ điều tra](../../openframl-case-server) | `openframl-case-server` | Quản lý hồ sơ điều tra qua gRPC cho chuyên viên, người phụ trách và bộ phát hiện; chỉ qua mutual TLS | 2 | Đã bắt đầu |
 | Báo cáo theo quy định | `openframl-report` | Báo cáo cho cơ quan quản lý theo mẫu của từng gói quốc gia | 2 | Dự kiến |
 | Phục vụ model | `openframl-ml` | Phục vụ model, champion/challenger, chạy shadow | 3 | Dự kiến |
 

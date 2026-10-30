@@ -1,0 +1,141 @@
+// Copyright 2026 The OpenFRAML Authors
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package openframl.cases.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "CaseServiceProto";
+option java_package = "vn.io.dxa.openframl.cases.v1";
+
+// Case Management for analysts, supervisors and detectors.
+//
+// Served only over mutual TLS: the caller is the client certificate's common name, and the bank's configuration
+// says which names are analysts, supervisors and detectors. Every call is recorded in the case's history with the
+// caller's name.
+service CaseService {
+  // Detectors only. Adds the alert to the subject's open case, or opens one; an alert id already in a case changes
+  // nothing.
+  rpc RaiseAlert(RaiseAlertRequest) returns (Case);
+  // The work queue: cases with a status, oldest first.
+  rpc ListCases(ListCasesRequest) returns (ListCasesResponse);
+  rpc GetCase(GetCaseRequest) returns (Case);
+  // An analyst takes a case for themselves, or a supervisor assigns it to an analyst.
+  rpc Assign(AssignRequest) returns (Case);
+  rpc AddNote(AddNoteRequest) returns (Case);
+  // The assigned analyst only.
+  rpc ProposeConclusion(ProposeConclusionRequest) returns (Case);
+  // A supervisor who did not propose the conclusion; closes the case.
+  rpc ApproveConclusion(ApproveConclusionRequest) returns (Case);
+  // A supervisor sends the conclusion back to the analyst.
+  rpc ReturnConclusion(ReturnConclusionRequest) returns (Case);
+}
+
+enum CaseStatus {
+  CASE_STATUS_UNSPECIFIED = 0;
+  CASE_STATUS_OPEN = 1;
+  CASE_STATUS_IN_REVIEW = 2;
+  CASE_STATUS_AWAITING_APPROVAL = 3;
+  CASE_STATUS_CLOSED = 4;
+}
+
+enum Outcome {
+  OUTCOME_UNSPECIFIED = 0;
+  // The alerts were not what they seemed, e.g. a namesake.
+  OUTCOME_FALSE_POSITIVE = 1;
+  // Confirmed, and handled inside the bank.
+  OUTCOME_CONFIRMED = 2;
+  // Confirmed and reported to the authority.
+  OUTCOME_REPORTED = 3;
+}
+
+message Alert {
+  // Unique; stable across resends.
+  string id = 1;
+  // The detector, e.g. "screening", "monitoring", "gate".
+  string source = 2;
+  // What it found, e.g. "BENEFICIARY_NAME_MATCH".
+  string type = 3;
+  // Who it is about: the bank's customer id or another stable reference.
+  string subject = 4;
+  string event_id = 5;
+  // From 0 to 1; unset if the detector does not score.
+  optional double score = 6;
+  map<string, string> evidence = 7;
+  google.protobuf.Timestamp raised_at = 8;
+}
+
+message Conclusion {
+  Outcome outcome = 1;
+  string reason = 2;
+  string proposed_by = 3;
+  // Set once approved.
+  string approved_by = 4;
+}
+
+message Action {
+  google.protobuf.Timestamp at = 1;
+  string actor = 2;
+  // e.g. "OPENED", "ALERT_ADDED", "ASSIGNED", "NOTE", "PROPOSED", "APPROVED", "RETURNED".
+  string what = 3;
+  string detail = 4;
+}
+
+message Case {
+  string id = 1;
+  string subject = 2;
+  CaseStatus status = 3;
+  string assignee = 4;
+  // The conclusion waiting for approval.
+  Conclusion proposal = 5;
+  // How the case ended, once closed.
+  Conclusion conclusion = 6;
+  repeated Alert alerts = 7;
+  repeated Action history = 8;
+  google.protobuf.Timestamp opened_at = 9;
+}
+
+message RaiseAlertRequest {
+  Alert alert = 1;
+}
+
+message ListCasesRequest {
+  CaseStatus status = 1;
+}
+
+message ListCasesResponse {
+  repeated Case cases = 1;
+}
+
+message GetCaseRequest {
+  string case_id = 1;
+}
+
+message AssignRequest {
+  string case_id = 1;
+  // The analyst; the caller's own name to take the case.
+  string analyst = 2;
+}
+
+message AddNoteRequest {
+  string case_id = 1;
+  string text = 2;
+}
+
+message ProposeConclusionRequest {
+  string case_id = 1;
+  Outcome outcome = 2;
+  string reason = 3;
+}
+
+message ApproveConclusionRequest {
+  string case_id = 1;
+}
+
+message ReturnConclusionRequest {
+  string case_id = 1;
+  string reason = 2;
+}

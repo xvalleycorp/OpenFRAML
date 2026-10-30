@@ -35,9 +35,24 @@ tượng đến cùng lúc vẫn vào chung một hồ sơ.
 - **Mỗi lúc một người ghi.** `CaseStore` từ chối lưu một hồ sơ đã thay đổi kể từ khi được đọc, nên hai chuyên viên thao
   tác cùng lúc không thể ghi đè lên nhau.
 
+## Lưu trữ hồ sơ
+
+`JdbcCaseStore` lưu hồ sơ trong cơ sở dữ liệu quan hệ qua JDBC, ở dạng bảng thông thường mà thanh tra hay báo cáo có
+thể truy vấn bằng SQL: `ofr_case` cho mỗi hồ sơ và trạng thái hiện tại, `ofr_case_alert` và `ofr_case_alert_evidence`
+cho cảnh báo của hồ sơ, và `ofr_case_action` cho lịch sử. PostgreSQL là cơ sở dữ liệu tham chiếu; lược đồ nằm trong
+[`schema-postgresql.sql`](../../openframl-case/src/main/resources/vn/io/dxa/openframl/cases/jdbc/schema-postgresql.sql),
+và ngân hàng tự cung cấp connection pool cùng driver.
+
+- Mỗi lần lưu là một transaction. Dòng hồ sơ mang một phiên bản, chính là độ dài lịch sử, và chỉ được cập nhật nếu
+  phiên bản vẫn là phiên bản đã đọc; nếu không, lần lưu bị từ chối và thao tác có thể thực hiện lại.
+- Cảnh báo, bằng chứng và lịch sử chỉ được thêm vào qua kho, không bao giờ bị sửa hay xóa.
+- Một unique index chỉ cho phép mỗi đối tượng có tối đa một hồ sơ chưa đóng, nên các cảnh báo phát sinh cùng lúc trên
+  nhiều node vẫn chỉ mở một hồ sơ.
+- `InMemoryCaseStore` vẫn được giữ cho test và chạy thử.
+
 ## Tiếp theo
 
 Sàng lọc danh sách đã phát sinh cảnh báo cho những người thụ hưởng có tên có thể nằm trong danh sách (xem
-[Sàng lọc danh sách](screening.md#sàng-lọc-giao-dịch)). Trong [lộ trình](roadmap.md): `CaseStore` lưu trữ bền vững,
-API và giao diện cho chuyên viên, và báo cáo giao dịch đáng ngờ từ các hồ sơ `REPORTED` qua Báo cáo theo quy định
+[Sàng lọc danh sách](screening.md#sàng-lọc-giao-dịch)). Trong [lộ trình](roadmap.md): API và giao diện cho chuyên
+viên, và báo cáo giao dịch đáng ngờ từ các hồ sơ `REPORTED` qua Báo cáo theo quy định
 (`openframl-report`).

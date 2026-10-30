@@ -10,7 +10,9 @@ import java.util.Optional;
 
 /**
  * Where cases are kept. Implementations must make {@link #save} atomic per case and refuse a save based on a
- * state that is no longer current, so two analysts acting at once cannot overwrite each other.
+ * state that is no longer current, so two analysts acting at once cannot overwrite each other. Every change adds at
+ * least one action to the history and never removes alerts or actions, so the length of the history identifies the
+ * state a save was based on.
  */
 public interface CaseStore {
 

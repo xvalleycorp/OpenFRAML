@@ -37,6 +37,7 @@ tượng đến cùng lúc vẫn vào chung một hồ sơ.
 
 ## Tiếp theo
 
-Trong [lộ trình](roadmap.md): `CaseStore` lưu trữ bền vững, API và giao diện cho chuyên viên, cảnh báo từ việc sàng
-lọc người thụ hưởng, và báo cáo giao dịch đáng ngờ từ các hồ sơ `REPORTED` qua Báo cáo theo quy định
+Sàng lọc danh sách đã phát sinh cảnh báo cho những người thụ hưởng có tên có thể nằm trong danh sách (xem
+[Sàng lọc danh sách](screening.md#sàng-lọc-giao-dịch)). Trong [lộ trình](roadmap.md): `CaseStore` lưu trữ bền vững,
+API và giao diện cho chuyên viên, và báo cáo giao dịch đáng ngờ từ các hồ sơ `REPORTED` qua Báo cáo theo quy định
 (`openframl-report`).

@@ -44,6 +44,25 @@ Vietnamese names repeat a lot: many people share a family name and a middle name
 reason to look, not a finding; birth year and identifiers are what separate two people of the same name, and the
 threshold (0.85 in the examples) is the bank's to tune.
 
+## Screening payments
+
+`PaymentScreening` screens the beneficiary name each payment carries (`beneficiaryName` in the event model, from the
+scheme's name inquiry), after the payment, beside the gate rather than inside it. Each listed entry the name may be
+becomes an alert for Case Management (`openframl-case`):
+
+- The alert is about the paying customer, who sent money to someone who may be listed; alerts about one customer
+  gather in one case.
+- Its id is made from the event, the list and the entry, so screening a payment again raises nothing new.
+- Its evidence is what the analyst needs: the list and its version, the entry and its remark, the name on the
+  payment and the listed name it came close to, the score and its reasons, and the amount; never an account number.
+- Results are cached per beneficiary name while the lists in use do not change, because the same names come back
+  often.
+
+`ScreeningDirectory` keeps the lists in one directory, `<source>@<version>.csv` files in the open CSV form and the UN
+list as `UN-SC*.xml`, and builds a new screener when a file changes; if a file cannot be read, the previous lists stay
+in use. Feeding it payments from the bank's stream is the job of the stream layer (planned); until then a batch job
+can call it.
+
 ## The UN Security Council list
 
 `UnConsolidatedList` reads the UN Security Council Consolidated List in the XML form the UN publishes
@@ -80,6 +99,4 @@ fails the whole list, naming the row.
 On the [roadmap](roadmap.md) for phase 2:
 
 - Readers for the national lists the country packs name.
-- Screening the beneficiary name of payments, after the payment, with alerts going to Case Management
-  (`openframl-case`).
 - Name rules from the country pack (abbreviations, legal forms) instead of the built-in Vietnamese set.

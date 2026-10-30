@@ -63,8 +63,8 @@
     <module>openframl-kafka</module>
     <module>openframl-valkey</module>
     <module>openframl-onnx</module>
-    <module>openframl-screen</module>
     <module>openframl-case</module>
+    <module>openframl-screen</module>
     <module>openframl-gate-server</module>
     <module>openframl-benchmark</module>
   </modules>

@@ -37,6 +37,7 @@ still land in one case.
 
 ## Next
 
-On the [roadmap](roadmap.md): a durable `CaseStore`, an API and screens for analysts, alerts from screening payment
-beneficiaries, and suspicious transaction reports from `REPORTED` cases through Regulatory Reporting
+Watchlist Screening already raises alerts for payment beneficiaries whose names may be listed (see
+[Watchlist Screening](screening.md#screening-payments)). On the [roadmap](roadmap.md): a durable `CaseStore`, an API
+and screens for analysts, and suspicious transaction reports from `REPORTED` cases through Regulatory Reporting
 (`openframl-report`).

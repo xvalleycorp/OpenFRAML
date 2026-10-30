@@ -1,0 +1,47 @@
+{
+  "id": "monitor_scenarios",
+  "version": "1",
+  "description": "Sample AML monitoring scenarios for Vietnam, evaluated after each transaction of an account. Every rule that fires raises an alert for Case Management. Amounts in VND. CASH_STRUCTURING is set at the large-value reporting threshold of Decision 11/2023/QD-TTg (400,000,000 VND from 1 December 2023), to be confirmed against the official gazette; the other thresholds illustrate the typologies and are not legal thresholds",
+  "effectiveFrom": "2023-12-01",
+  "hitPolicy": "COLLECT",
+  "inputs": {
+    "transaction": { "amount": "money", "type": "string", "channel": "string", "direction": "string", "cash": "bool" },
+    "account": { "daysSinceLastActivity": "int" },
+    "cashIn24h": { "count": "int", "amount": "money", "maxAmount": "money" },
+    "in24h": { "count": "int", "amount": "money", "distinctCounterparties": "int" },
+    "in48h": { "amount": "money" },
+    "out48h": { "amount": "money" },
+    "flow48h": { "outToIn": "decimal" }
+  },
+  "outputs": { "severity": "string" },
+  "rules": [
+    {
+      "id": "CASH_STRUCTURING",
+      "description": "Two or more cash deposits in 24 hours that together reach the large-value reporting threshold while each stays below it: splitting cash to avoid the report",
+      "when": "transaction.cash && transaction.direction == 'IN' && cashIn24h.count >= 2 && cashIn24h.amount >= money(400000000, 'VND') && cashIn24h.maxAmount < money(400000000, 'VND')",
+      "then": { "severity": "'HIGH'" },
+      "reasonCode": "CASH_STRUCTURING"
+    },
+    {
+      "id": "PASS_THROUGH",
+      "description": "100,000,000 VND or more came in within 48 hours and 90% or more of it has already gone out: the account is used to pass money on",
+      "when": "transaction.direction == 'OUT' && in48h.amount >= money(100000000, 'VND') && has(flow48h.outToIn) && flow48h.outToIn >= decimal('0.9')",
+      "then": { "severity": "'HIGH'" },
+      "reasonCode": "PASS_THROUGH"
+    },
+    {
+      "id": "MANY_SENDERS",
+      "description": "Money from 10 or more different counterparties in 24 hours: the pattern of an account collecting for others",
+      "when": "transaction.direction == 'IN' && in24h.distinctCounterparties >= 10",
+      "then": { "severity": "'MEDIUM'" },
+      "reasonCode": "MANY_SENDERS"
+    },
+    {
+      "id": "DORMANT_REACTIVATED",
+      "description": "50,000,000 VND or more on an account with no activity for 180 days or more",
+      "when": "has(account.daysSinceLastActivity) && account.daysSinceLastActivity >= 180 && transaction.amount >= money(50000000, 'VND')",
+      "then": { "severity": "'MEDIUM'" },
+      "reasonCode": "DORMANT_REACTIVATED"
+    }
+  ]
+}

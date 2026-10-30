@@ -40,7 +40,7 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 | [Gói quốc gia Việt Nam](../../openframl-vn) | `openframl-vn` | Rule mẫu cho Việt Nam, lý do bằng tiếng Anh và tiếng Việt | 1 | Rule mẫu |
 | [Đo hiệu năng](../../openframl-benchmark) | `openframl-benchmark` | Benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp | 1 | Dùng được |
 | Hồ sơ hành vi | `openframl-features` | Hồ sơ hành vi và velocity, tính bằng Apache Flink | 2 | Dự kiến |
-| Giám sát giao dịch | `openframl-monitor` | Kịch bản AML và gian lận sau giao dịch | 2 | Dự kiến |
+| [Giám sát giao dịch](../../openframl-monitor) | `openframl-monitor` | Kịch bản AML và gian lận sau giao dịch | 2 | Đã bắt đầu: bốn kịch bản mẫu cho Việt Nam |
 | [Sàng lọc danh sách](../../openframl-screen) | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước; danh sách tài khoản cho `gate` | 2 | Đã bắt đầu: sàng lọc theo tên và danh sách tài khoản |
 | [Quản lý hồ sơ điều tra](../../openframl-case) | `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Đã bắt đầu: hồ sơ và phê duyệt, lưu trên PostgreSQL |
 | [Dịch vụ hồ sơ điều tra](../../openframl-case-server) | `openframl-case-server` | Quản lý hồ sơ điều tra qua gRPC cho chuyên viên, người phụ trách và bộ phát hiện; chỉ qua mutual TLS | 2 | Đã bắt đầu |
@@ -80,6 +80,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Đo hiệu năng](benchmark.md)
 - [Mô hình chi phí: chi phí sở hữu OpenFRAML, và những chi phí vẫn còn](cost.md)
 - [Sàng lọc danh sách: danh sách tài khoản cho `gate`, sàng lọc theo tên](screening.md)
+- [Giám sát giao dịch: kịch bản AML sau giao dịch](monitoring.md)
 - [Quản lý hồ sơ điều tra: cảnh báo, điều tra, phê duyệt hai cấp](cases.md)
 - [Gói quốc gia](country-packs.md)
 - [Lộ trình](roadmap.md)

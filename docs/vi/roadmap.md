@@ -47,8 +47,10 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 - [ ] Quản lý hồ sơ điều tra: giao diện cho chuyên viên, và báo cáo giao dịch đáng ngờ
 - [x] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
 - [ ] Đưa giao dịch từ luồng dữ liệu của ngân hàng vào sàng lọc giao dịch và giám sát
-- [ ] Kịch bản Giám sát giao dịch (`openframl-monitor`), Hồ sơ hành vi trên Flink (`openframl-features`), Báo cáo theo
-      quy định (`openframl-report`)
+- [x] Giám sát giao dịch: kịch bản là bảng của gói quốc gia, cảnh báo chuyển sang Quản lý hồ sơ điều tra, bốn kịch bản
+      mẫu cho Việt Nam (`openframl-monitor`)
+- [ ] Hồ sơ hành vi trên Flink (`openframl-features`), khoảng thời gian giám sát dài hơn, backtest kịch bản
+- [ ] Báo cáo theo quy định (`openframl-report`): báo cáo giao dịch giá trị lớn và giao dịch đáng ngờ
 
 ## Chi phí và quyền kiểm soát
 

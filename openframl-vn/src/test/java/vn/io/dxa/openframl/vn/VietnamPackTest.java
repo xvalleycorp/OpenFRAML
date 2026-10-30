@@ -125,7 +125,8 @@ class VietnamPackTest {
     }
 
     private static List<DecisionTable> readTables(CountryPack pack) {
-        return pack.decisionTables().stream().map(VietnamPackTest::read).toList();
+        return Stream.concat(pack.decisionTables().stream(), pack.monitoringTables().stream())
+                .map(VietnamPackTest::read).toList();
     }
 
     private static DecisionTable read(PackResource resource) {

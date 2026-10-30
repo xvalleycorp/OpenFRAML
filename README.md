@@ -43,7 +43,7 @@ the decision engine.
 | [Vietnam Country Pack](openframl-vn) | `openframl-vn` | Sample gate rules for Vietnam, reasons in English and Vietnamese | 1 | Sample rules |
 | [Benchmark](openframl-benchmark) | `openframl-benchmark` | JMH benchmark and open-loop gRPC load test on a synthetic bank | 1 | Usable |
 | Behaviour Profiles | `openframl-features` | Behaviour profiles and velocity, computed with Apache Flink | 2 | Planned |
-| Transaction Monitoring | `openframl-monitor` | AML and fraud scenarios after the transaction | 2 | Planned |
+| [Transaction Monitoring](openframl-monitor) | `openframl-monitor` | AML and fraud scenarios after the transaction | 2 | Started: four sample scenarios for Vietnam |
 | [Watchlist Screening](openframl-screen) | `openframl-screen` | Screening against sanctions, PEP and national lists; the gate's account lists | 2 | Started: name screening and account lists |
 | [Case Management](openframl-case) | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Started: cases and approval, PostgreSQL store |
 | [Case Service](openframl-case-server) | `openframl-case-server` | Case Management over gRPC for analysts, supervisors and detectors; mutual TLS only | 2 | Started |
@@ -83,6 +83,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Benchmark](docs/benchmark.md)
 - [Cost model: what owning OpenFRAML costs, and what it still costs](docs/cost.md)
 - [Watchlist Screening: account lists for the gate, name screening](docs/screening.md)
+- [Transaction Monitoring: AML scenarios after the transaction](docs/monitoring.md)
 - [Case Management: alerts, investigation, four-eyes approval](docs/cases.md)
 - [Country packs](docs/country-packs.md)
 - [Roadmap](docs/roadmap.md)

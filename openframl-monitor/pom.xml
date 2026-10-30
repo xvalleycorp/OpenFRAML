@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>vn.io.dxa.openframl</groupId>
+    <artifactId>openframl-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>openframl-monitor</artifactId>
+  <name>OpenFRAML Transaction Monitoring</name>
+  <description>
+    AML scenarios after the transaction: each account's recent activity is summed up and run through the country
+    pack's scenario tables, and every scenario that fires becomes an alert for Case Management.
+  </description>
+  <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-monitor</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-case</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.rulestone</groupId>
+      <artifactId>rulestone-core</artifactId>
+    </dependency>
+    <!-- ValueType, to check the scenario table's declared output when the policy is built -->
+    <dependency>
+      <groupId>vn.io.dxa.rulestone</groupId>
+      <artifactId>rulestone-cel</artifactId>
+    </dependency>
+    <!-- The scenarios are tested with the Vietnam pack's tables -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-vn</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

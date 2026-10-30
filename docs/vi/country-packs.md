@@ -11,7 +11,7 @@ phải gói duy nhất: thêm một nước là thêm một gói, không sửa l
 | Bảng quyết định cho `gate` (`gate_decision`, `gate_fallback`) | Có | |
 | Thông điệp lý do bằng tiếng Anh và ngôn ngữ của nước đó | Có | |
 | Ngưỡng pháp lý có ngày hiệu lực (giao dịch giá trị lớn, chuyển tiền điện tử) | | Giai đoạn 2 |
-| Kịch bản AML cho giám sát | | Giai đoạn 2 |
+| Kịch bản AML cho giám sát (`monitor_scenarios`), tách riêng khỏi các bảng của `gate` | | Giai đoạn 2: đã bắt đầu, xem [Giám sát giao dịch](monitoring.md) |
 | Mẫu báo cáo và kênh nộp | | Giai đoạn 2 |
 | Nguồn danh sách (cấm vận, công an, cơ quan quản lý) và chuẩn hóa tên | | Giai đoạn 2 |
 | Adapter chuyển mạch, lịch ngày làm việc | | Giai đoạn 2 |

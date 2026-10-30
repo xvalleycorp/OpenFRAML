@@ -28,7 +28,7 @@ The bank owns the platform.
 
 | Claim | Proof |
 | --- | --- |
-| Your rules: your team writes and changes them, no change request to a vendor. | Decision tables are data; effective dates select the version in force; maker-checker approval is on the roadmap |
+| Your rules: your team writes and changes them, no change request to a vendor. | Decision tables are data; effective dates select the version in force; a change is proposed by a maker, approved by a different checker, and followed by every node without a restart |
 | Your data: it never leaves the bank. | On-premise deployment; audit records hold no personal data |
 | Your code: read it, audit it, change it, fork it. No lock-in, no exit project. | Apache 2.0, public repository |
 | Your explanations: every decision can be shown to an auditor or the regulator. | Each decision records rule and model versions and reason codes, and can be replayed; models never override mandatory rules |

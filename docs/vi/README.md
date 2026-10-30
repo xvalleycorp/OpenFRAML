@@ -77,6 +77,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 
 - [Chặn giao dịch: các bước, facts, chính sách dự phòng, service gRPC](gate.md)
 - [Đo hiệu năng](benchmark.md)
+- [Mô hình chi phí: chi phí sở hữu OpenFRAML, và những chi phí vẫn còn](cost.md)
 - [Gói quốc gia](country-packs.md)
 - [Lộ trình](roadmap.md)
 - [Hướng dẫn đóng góp](../../CONTRIBUTING.md) · [Chính sách bảo mật](../../SECURITY.md)

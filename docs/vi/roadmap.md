@@ -39,7 +39,7 @@ tính năng. Các hạng mục dưới đây giúp đo được và ghi rõ cả
 
 | Hạng mục | Giai đoạn | Nội dung |
 | --- | --- | --- |
-| Mô hình chi phí (`docs/cost.md`) | 1 | Tổng chi phí sở hữu theo nhóm: bản quyền, máy chủ, đội vận hành, xử lý cảnh báo, thay đổi rule, tích hợp, hỗ trợ; các lựa chọn thiết kế giúp giảm từng nhóm, và các chi phí vẫn còn |
+| [Mô hình chi phí](cost.md) (đã xong) | 1 | Tổng chi phí sở hữu theo nhóm: bản quyền, máy chủ, đội vận hành, xử lý cảnh báo, thay đổi rule, tích hợp, hỗ trợ; các lựa chọn thiết kế giúp giảm từng nhóm, và các chi phí vẫn còn |
 | Hướng dẫn tính số máy | 1 | Số node theo TPS từ benchmark trên máy chủ thật, có tính sẵn sàng cao và dự phòng thảm họa |
 | Cấu hình triển khai theo quy mô | 2 | Nhỏ (hồ sơ tính theo lô, không cần Flink), vừa và lớn, mỗi loại kèm thành phần và kỹ năng đội ngũ cần có |
 | Chỉ số chi phí khi chạy shadow | 3 | Chi phí cho mỗi quyết định, số cảnh báo trên 1.000 giao dịch, tỷ lệ báo động giả, thời gian từ lúc đề xuất rule đến khi rule có hiệu lực |

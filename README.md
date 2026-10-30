@@ -45,7 +45,7 @@ the decision engine.
 | Behaviour Profiles | `openframl-features` | Behaviour profiles and velocity, computed with Apache Flink | 2 | Planned |
 | Transaction Monitoring | `openframl-monitor` | AML and fraud scenarios after the transaction | 2 | Planned |
 | [Watchlist Screening](openframl-screen) | `openframl-screen` | Screening against sanctions, PEP and national lists; the gate's account lists | 2 | Started: name screening and account lists |
-| Case Management | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Planned |
+| [Case Management](openframl-case) | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Started: cases and approval, in-memory store |
 | Regulatory Reporting | `openframl-report` | Regulatory reports in the templates of each country pack | 2 | Planned |
 | Model Serving | `openframl-ml` | Model serving, champion/challenger, shadow mode | 3 | Planned |
 
@@ -82,6 +82,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Benchmark](docs/benchmark.md)
 - [Cost model: what owning OpenFRAML costs, and what it still costs](docs/cost.md)
 - [Watchlist Screening: account lists for the gate, name screening](docs/screening.md)
+- [Case Management: alerts, investigation, four-eyes approval](docs/cases.md)
 - [Country packs](docs/country-packs.md)
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)

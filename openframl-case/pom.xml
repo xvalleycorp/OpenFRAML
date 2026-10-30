@@ -17,4 +17,13 @@
     history; and four-eyes approval of every conclusion.
   </description>
   <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-case</url>
+
+  <dependencies>
+    <!-- JdbcCaseStore needs only java.sql; the bank supplies the driver at run time -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>

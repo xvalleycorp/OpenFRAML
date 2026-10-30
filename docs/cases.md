@@ -35,9 +35,24 @@ still land in one case.
 - **One writer at a time.** A `CaseStore` refuses a save based on a case that has changed since it was read, so two
   analysts acting at once cannot overwrite each other.
 
+## Storing cases
+
+`JdbcCaseStore` keeps cases in a relational database through JDBC, in plain tables that an examiner or a report can
+query with SQL: `ofr_case` for each case and its current state, `ofr_case_alert` and `ofr_case_alert_evidence` for
+its alerts, and `ofr_case_action` for its history. PostgreSQL is the reference database; the schema is in
+[`schema-postgresql.sql`](../openframl-case/src/main/resources/vn/io/dxa/openframl/cases/jdbc/schema-postgresql.sql),
+and the bank supplies the connection pool and the driver.
+
+- Each save is one transaction. The case row carries a version, the length of its history, and is updated only if
+  the version is still the one that was read; otherwise the save is refused and the action can be retried.
+- Alerts, evidence and the history are only ever inserted, never updated or deleted, through the store.
+- A unique index allows at most one case that is not closed per subject, so alerts raised at the same moment on
+  different nodes still open one case.
+- `InMemoryCaseStore` remains for tests and trials.
+
 ## Next
 
 Watchlist Screening already raises alerts for payment beneficiaries whose names may be listed (see
-[Watchlist Screening](screening.md#screening-payments)). On the [roadmap](roadmap.md): a durable `CaseStore`, an API
-and screens for analysts, and suspicious transaction reports from `REPORTED` cases through Regulatory Reporting
+[Watchlist Screening](screening.md#screening-payments)). On the [roadmap](roadmap.md): an API and screens for analysts,
+and suspicious transaction reports from `REPORTED` cases through Regulatory Reporting
 (`openframl-report`).

@@ -45,7 +45,7 @@ the decision engine.
 | Behaviour Profiles | `openframl-features` | Behaviour profiles and velocity, computed with Apache Flink | 2 | Planned |
 | Transaction Monitoring | `openframl-monitor` | AML and fraud scenarios after the transaction | 2 | Planned |
 | [Watchlist Screening](openframl-screen) | `openframl-screen` | Screening against sanctions, PEP and national lists; the gate's account lists | 2 | Started: name screening and account lists |
-| [Case Management](openframl-case) | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Started: cases and approval, in-memory store |
+| [Case Management](openframl-case) | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Started: cases and approval, PostgreSQL store |
 | Regulatory Reporting | `openframl-report` | Regulatory reports in the templates of each country pack | 2 | Planned |
 | Model Serving | `openframl-ml` | Model serving, champion/challenger, shadow mode | 3 | Planned |
 

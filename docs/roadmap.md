@@ -40,6 +40,9 @@ Started while the phase 1 server measurements wait for hardware.
       Vietnamese diacritics, name order and abbreviations; an open CSV list format (`openframl-screen`)
 - [x] Reader for the UN Security Council Consolidated List
 - [ ] Readers for the national lists named by the country packs
+- [x] Case Management core: one case per subject, investigation history, four-eyes approval of conclusions
+      (`openframl-case`)
+- [ ] Case Management: a durable store, an API for analysts, and suspicious transaction reports
 - [ ] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
 - [ ] Transaction Monitoring scenarios (`openframl-monitor`), Behaviour Profiles on Flink (`openframl-features`),
       Regulatory Reporting (`openframl-report`)

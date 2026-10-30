@@ -20,12 +20,12 @@ import org.junit.jupiter.api.Test;
 class ScreenerTest {
 
     private static final ListEntry DUC = new ListEntry("XA-0001", ListEntry.Kind.PERSON,
-            List.of("Nguyễn Văn Đức", "Duc Van Nguyen", "Nguyen V. Duc"), Optional.of(1975), Set.of("XA"),
+            List.of("Nguyễn Văn Đức", "Duc Van Nguyen", "Nguyen V. Duc"), Set.of(1975), Set.of("XA"),
             Set.of("XA-P-1234567"), "Invented sanctions programme");
     private static final ListEntry TRADING = new ListEntry("XA-0002", ListEntry.Kind.ORGANISATION,
-            List.of("Công ty TNHH Thương mại Hoàng Long"), Optional.empty(), Set.of("XA"), Set.of("0101234567"), "");
+            List.of("Công ty TNHH Thương mại Hoàng Long"), Set.of(), Set.of("XA"), Set.of("0101234567"), "");
     private static final ListEntry PHAM = new ListEntry("PEP-17", ListEntry.Kind.PERSON,
-            List.of("Phạm Thị Hồng Nhung"), Optional.of(1980), Set.of(), Set.of(), "Invented PEP");
+            List.of("Phạm Thị Hồng Nhung"), Set.of(1980), Set.of(), Set.of(), "Invented PEP");
 
     private final Screener screener = Screener.of(List.of(
             new ScreeningList("XA-SANCTIONS", "2026-10-30", List.of(DUC, TRADING)),
@@ -111,7 +111,7 @@ class ScreenerTest {
         for (int i = 0; i < 50_000; i++) {
             entries.add(new ListEntry("E" + i, ListEntry.Kind.PERSON, List.of(family[random.nextInt(family.length)]
                     + " " + middle[random.nextInt(middle.length)] + " " + given[random.nextInt(given.length)]
-                    + " " + i), Optional.empty(), Set.of(), Set.of(), ""));
+                    + " " + i), Set.of(), Set.of(), Set.of(), ""));
         }
         Screener large = Screener.of(List.of(new ScreeningList("SYNTHETIC", "1", entries)));
         for (int i = 0; i < 200; i++) {

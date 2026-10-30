@@ -42,10 +42,10 @@ class ListFilesTest {
         assertEquals(2, list.entries().size());
         ListEntry first = list.entries().getFirst();
         assertEquals(List.of("Nguyễn Văn Đức", "Duc, Nguyen Van"), first.names());
-        assertEquals(Optional.of(1975), first.birthYear());
+        assertEquals(Set.of(1975), first.birthYears());
         assertEquals(Set.of("XA", "XB"), first.nationalities());
         assertEquals("said \"x\"", first.remark());
-        assertEquals(Optional.empty(), list.entries().get(1).birthYear());
+        assertEquals(Set.of(), list.entries().get(1).birthYears());
     }
 
     @Test

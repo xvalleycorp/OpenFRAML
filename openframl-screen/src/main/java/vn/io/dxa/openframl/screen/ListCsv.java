@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.Set;
 
 /**
@@ -28,7 +28,8 @@ import java.util.Set;
  * </pre>
  *
  * <p>{@code kind} is {@code PERSON}, {@code ORGANISATION}, {@code VESSEL} or {@code OTHER}. {@code names},
- * {@code nationalities} and {@code identifiers} hold several values separated by {@code |}, the primary name first.
+ * {@code birth_year}, {@code nationalities} and {@code identifiers} hold several values separated by {@code |}, the
+ * primary name first.
  * Only {@code id}, {@code kind} and {@code names} are required; columns may come in any order.
  */
 public final class ListCsv {
@@ -66,11 +67,11 @@ public final class ListCsv {
         for (int r = 1; r < rows.size(); r++) {
             List<String> row = rows.get(r);
             try {
-                String birthYear = cell(row, column, "birth_year");
                 entries.add(new ListEntry(cell(row, column, "id"),
                         ListEntry.Kind.valueOf(cell(row, column, "kind").toUpperCase(Locale.ROOT)),
                         values(cell(row, column, "names")),
-                        birthYear.isEmpty() ? Optional.empty() : Optional.of(Integer.parseInt(birthYear)),
+                        values(cell(row, column, "birth_year")).stream().map(Integer::valueOf)
+                                .collect(Collectors.toSet()),
                         Set.copyOf(values(cell(row, column, "nationalities"))),
                         Set.copyOf(values(cell(row, column, "identifiers"))),
                         cell(row, column, "remark")));

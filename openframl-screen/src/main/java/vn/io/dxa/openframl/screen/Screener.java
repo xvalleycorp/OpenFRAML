@@ -139,8 +139,9 @@ public final class Screener {
             score *= 0.85;
             reasons.add("KIND_DIFFERS");
         }
-        if (subject.birthYear().isPresent() && entry.birthYear().isPresent()) {
-            int apart = Math.abs(subject.birthYear().get() - entry.birthYear().get());
+        if (subject.birthYear().isPresent() && !entry.birthYears().isEmpty()) {
+            int apart = entry.birthYears().stream().mapToInt(year -> Math.abs(subject.birthYear().get() - year))
+                    .min().orElseThrow();
             if (apart > 1) {
                 score *= 0.8;
                 reasons.add("BIRTH_YEAR_DIFFERS");

@@ -34,14 +34,33 @@ list under a temporary name and rename it into place. The Gate Service reads the
   lowers the score: "Pham Thi Nhung" against "Phạm Thị Hồng Nhung" scores about 0.86. For an organisation, the core
   of the name without legal forms ("Cong ty", "TNHH", "Ltd") is compared too.
 - **Other evidence.** The same identifier (ID, passport or registration number) is a match whatever the name. A
-  different kind (person against organisation) multiplies the score by 0.85; birth years more than a year apart by
-  0.8. Each adjustment is listed in the match's reasons, so an analyst sees why it scored what it did.
+  different kind (person against organisation) multiplies the score by 0.85; a birth year more than a year from
+  every year the list gives, by 0.8. Each adjustment is listed in the match's reasons, so an analyst sees why it
+  scored what it did.
 - **Speed.** Names are looked up through an index of their three-letter pieces; only names sharing at least half of
   the query's pieces are scored. Screening is meant for onboarding and monitoring, not the gate's few milliseconds.
 
 Vietnamese names repeat a lot: many people share a family name and a middle name. A name match alone is therefore a
 reason to look, not a finding; birth year and identifiers are what separate two people of the same name, and the
 threshold (0.85 in the examples) is the bank's to tune.
+
+## The UN Security Council list
+
+`UnConsolidatedList` reads the UN Security Council Consolidated List in the XML form the UN publishes
+(`https://scsanctions.un.org/resources/xml/en/consolidated.xml`), with the list's `dateGenerated` as its version.
+
+- Individuals become `PERSON` entries and entities `ORGANISATION` entries, with the UN reference number (e.g.
+  `QDi.001`) as id.
+- Names: the individual's name parts in order; an entity's names, which the list joins with `;`; every alias; and the
+  names in their original script.
+- Aliases the list marks as of low quality are left out unless asked for: the UN says they are not enough to identify
+  anyone, and they cause most false positives.
+- Birth years come from exact and approximate dates and from every year of a range; document numbers are the
+  identifiers.
+- The parser reads no DTD and resolves no external entity.
+
+On the list published on 29 October 2026 it reads 1,007 entries (733 individuals, 274 entities) and 3,506 names and
+aliases, and every entry is found by its own primary name.
 
 ## The list format
 
@@ -52,16 +71,15 @@ id,kind,names,birth_year,nationalities,identifiers,remark
 XA-0001,PERSON,Nguyễn Văn Đức|Duc Van Nguyen,1975,XA,XA-P-1234567,Invented sanctions programme
 ```
 
-`kind` is `PERSON`, `ORGANISATION`, `VESSEL` or `OTHER`. `names`, `nationalities` and `identifiers` take several
-values separated by `|`, the primary name first. Only `id`, `kind` and `names` are required. A row that cannot be read
+`kind` is `PERSON`, `ORGANISATION`, `VESSEL` or `OTHER`. `names`, `birth_year`, `nationalities` and `identifiers`
+take several values separated by `|`, the primary name first. Only `id`, `kind` and `names` are required. A row that cannot be read
 fails the whole list, naming the row.
 
 ## Next
 
 On the [roadmap](roadmap.md) for phase 2:
 
-- Readers for the official formats: the UN Security Council consolidated list, and the national lists the country
-  packs name.
+- Readers for the national lists the country packs name.
 - Screening the beneficiary name of payments, after the payment, with alerts going to Case Management
   (`openframl-case`).
 - Name rules from the country pack (abbreviations, legal forms) instead of the built-in Vietnamese set.

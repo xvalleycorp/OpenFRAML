@@ -38,8 +38,8 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 
 - [x] Sàng lọc danh sách: danh sách tài khoản cho `gate`, nạp lại không cần khởi động lại; sàng lọc theo tên, xử lý
       được dấu tiếng Việt, thứ tự họ tên và chữ viết tắt; định dạng danh sách CSV mở (`openframl-screen`)
-- [ ] Đọc các định dạng danh sách chính thức (danh sách tổng hợp của Hội đồng Bảo an Liên hợp quốc, các danh sách
-      quốc gia do gói quốc gia chỉ định)
+- [x] Đọc danh sách tổng hợp của Hội đồng Bảo an Liên hợp quốc
+- [ ] Đọc các danh sách quốc gia do gói quốc gia chỉ định
 - [ ] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
 - [ ] Kịch bản Giám sát giao dịch (`openframl-monitor`), Hồ sơ hành vi trên Flink (`openframl-features`), Báo cáo theo
       quy định (`openframl-report`)

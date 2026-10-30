@@ -250,11 +250,12 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 | `OPENFRAML_GATE_MODEL` | Not set: rules alone | Path to an ONNX fraud model |
 | `OPENFRAML_GATE_MODEL_BUDGET_MS` | `5` | The longest the gate waits for a score |
 | `OPENFRAML_GATE_POLICY_SYNC_SECONDS` | `2` | How often the node checks for an approved policy |
+| `OPENFRAML_GATE_WATCHLIST_DIR` | Not set: empty watchlist | Directory of account lists, reloaded when a file changes; see [Watchlist Screening](screening.md) |
 | `OPENFRAML_ADMIN_PORT` | Not set: no admin service | Port of the policy admin service, mutual TLS only |
 | `OPENFRAML_ADMIN_TLS_CERT`, `OPENFRAML_ADMIN_TLS_KEY` | Required with the port | The server's certificate chain and PKCS#8 key, PEM |
 | `OPENFRAML_ADMIN_TLS_CLIENT_CA` | Required with the port | The CA that issues admin client certificates |
 | `OPENFRAML_ADMIN_MAKERS`, `OPENFRAML_ADMIN_CHECKERS` | Required with the port | Certificate common names, comma-separated |
 
 Without `OPENFRAML_GATE_VALKEY_URL` the server starts with empty in-memory stores, for trials and benchmarks only.
-The watchlist starts empty until List Screening (`openframl-screen`) loads it. An application can build its own
-`Gate` and serve it with `GateServer.start`.
+Without `OPENFRAML_GATE_WATCHLIST_DIR` the watchlist is empty. An application can build its own `Gate` and serve it
+with `GateServer.start`.

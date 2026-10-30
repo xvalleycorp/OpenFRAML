@@ -32,6 +32,18 @@ trước khi xây phần còn lại. Thời gian là ước tính cho một nhó
 - [ ] Định tuyến theo tài khoản gửi giữa các node `gate`
 - [ ] Đo mục tiêu 20.000 TPS trên máy chủ thật với Generational ZGC
 
+## Giai đoạn 2
+
+Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 chờ phần cứng.
+
+- [x] Sàng lọc danh sách: danh sách tài khoản cho `gate`, nạp lại không cần khởi động lại; sàng lọc theo tên, xử lý
+      được dấu tiếng Việt, thứ tự họ tên và chữ viết tắt; định dạng danh sách CSV mở (`openframl-screen`)
+- [ ] Đọc các định dạng danh sách chính thức (danh sách tổng hợp của Hội đồng Bảo an Liên hợp quốc, các danh sách
+      quốc gia do gói quốc gia chỉ định)
+- [ ] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
+- [ ] Kịch bản Giám sát giao dịch (`openframl-monitor`), Hồ sơ hành vi trên Flink (`openframl-features`), Báo cáo theo
+      quy định (`openframl-report`)
+
 ## Chi phí và quyền kiểm soát
 
 Ngân hàng đánh giá một nền tảng FRAML theo chi phí sở hữu và mức độ ngân hàng làm chủ được nền tảng, không kém gì theo

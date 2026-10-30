@@ -234,6 +234,9 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
   của từng node luôn có sẵn dữ liệu.
 - **Lỗi.** Giao dịch thiếu hoặc sai bị từ chối với mã `INVALID_ARGUMENT`, kèm tên trường. Thông báo lỗi không bao giờ
   lặp lại số tài khoản.
+- **Tên.** `beneficiary_name`, không bắt buộc, là tên mà giao dịch mang theo (ví dụ từ tra cứu tên của hệ thống
+  thanh toán). Trường này dùng cho sàng lọc sau giao dịch; quyết định của `gate` không dùng đến nó, và nó không bao giờ
+  được ghi log hay lưu lại.
 - **Số tiền.** Số thập phân chính xác dạng chuỗi, không có số mũ (`"1500000"`, `"12.50"`); số thực dấu phẩy động
   không bao giờ tới được `gate`.
 

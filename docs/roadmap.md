@@ -38,7 +38,8 @@ Started while the phase 1 server measurements wait for hardware.
 
 - [x] Watchlist Screening: account lists for the gate, reloaded without a restart; name screening that copes with
       Vietnamese diacritics, name order and abbreviations; an open CSV list format (`openframl-screen`)
-- [ ] Readers for official list formats (UN Security Council consolidated list, national lists named by the packs)
+- [x] Reader for the UN Security Council Consolidated List
+- [ ] Readers for the national lists named by the country packs
 - [ ] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
 - [ ] Transaction Monitoring scenarios (`openframl-monitor`), Behaviour Profiles on Flink (`openframl-features`),
       Regulatory Reporting (`openframl-report`)

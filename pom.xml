@@ -66,6 +66,7 @@
     <module>openframl-case</module>
     <module>openframl-screen</module>
     <module>openframl-gate-server</module>
+    <module>openframl-case-server</module>
     <module>openframl-benchmark</module>
   </modules>
 

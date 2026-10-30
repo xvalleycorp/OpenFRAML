@@ -43,7 +43,8 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 - [x] Lõi Quản lý hồ sơ điều tra: một hồ sơ cho mỗi đối tượng, lịch sử điều tra, phê duyệt hai cấp cho kết luận
       (`openframl-case`)
 - [x] Quản lý hồ sơ điều tra: lưu hồ sơ trong cơ sở dữ liệu quan hệ (`JdbcCaseStore`, tham chiếu là PostgreSQL)
-- [ ] Quản lý hồ sơ điều tra: API cho chuyên viên, và báo cáo giao dịch đáng ngờ
+- [x] Dịch vụ hồ sơ điều tra: gRPC cho chuyên viên, người phụ trách và bộ phát hiện, chỉ qua mutual TLS (`openframl-case-server`)
+- [ ] Quản lý hồ sơ điều tra: giao diện cho chuyên viên, và báo cáo giao dịch đáng ngờ
 - [x] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
 - [ ] Đưa giao dịch từ luồng dữ liệu của ngân hàng vào sàng lọc giao dịch và giám sát
 - [ ] Kịch bản Giám sát giao dịch (`openframl-monitor`), Hồ sơ hành vi trên Flink (`openframl-features`), Báo cáo theo

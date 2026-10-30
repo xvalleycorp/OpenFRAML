@@ -43,7 +43,8 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Case Management core: one case per subject, investigation history, four-eyes approval of conclusions
       (`openframl-case`)
 - [x] Case Management: cases in a relational database (`JdbcCaseStore`, PostgreSQL as reference)
-- [ ] Case Management: an API for analysts, and suspicious transaction reports
+- [x] Case Service: gRPC for analysts, supervisors and detectors, mutual TLS only (`openframl-case-server`)
+- [ ] Case Management: screens for analysts, and suspicious transaction reports
 - [x] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
 - [ ] Feeding payment screening and monitoring from the bank's transaction stream
 - [ ] Transaction Monitoring scenarios (`openframl-monitor`), Behaviour Profiles on Flink (`openframl-features`),

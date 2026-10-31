@@ -13,7 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Screens names against a set of lists. Built once per publication of the lists and immutable: a new publication
@@ -42,7 +44,12 @@ public final class Screener {
     private final Map<String, int[]> trigrams = new HashMap<>();
     private final Map<String, List<Integer>> identifiers = new HashMap<>();
 
-    private Screener(List<ScreeningList> lists) {
+    private final NameRules rules;
+    private final Set<String> sources;
+
+    private Screener(List<ScreeningList> lists, NameRules rules) {
+        this.rules = Objects.requireNonNull(rules, "rules");
+        this.sources = lists.stream().map(ScreeningList::source).collect(Collectors.toUnmodifiableSet());
         Map<String, List<Integer>> postings = new HashMap<>();
         for (ScreeningList list : lists) {
             for (ListEntry entry : list.entries()) {
@@ -50,7 +57,7 @@ public final class Screener {
                 entries.add(entry);
                 listOf.add(list);
                 for (String name : entry.names()) {
-                    List<String> tokens = Names.tokens(name);
+                    List<String> tokens = rules.tokens(name);
                     if (tokens.isEmpty()) {
                         continue;
                     }
@@ -70,8 +77,19 @@ public final class Screener {
         postings.forEach((trigram, ids) -> trigrams.put(trigram, ids.stream().mapToInt(Integer::intValue).toArray()));
     }
 
+    /** With the international legal forms only; see {@link #of(List, NameRules)}. */
     public static Screener of(List<ScreeningList> lists) {
-        return new Screener(lists);
+        return new Screener(lists, NameRules.BASE);
+    }
+
+    /** With a country's name rules, e.g. {@code NameRules.of(pack)}. */
+    public static Screener of(List<ScreeningList> lists, NameRules rules) {
+        return new Screener(lists, rules);
+    }
+
+    /** The source names of the lists, e.g. {@code UN-SC}. */
+    public Set<String> sources() {
+        return sources;
     }
 
     /** Listed entries and aliases, for sizing and monitoring. */
@@ -96,7 +114,7 @@ public final class Screener {
             }
         }
 
-        List<String> query = Names.tokens(subject.name());
+        List<String> query = rules.tokens(subject.name());
         Set<String> pieces = trigrams(query);
         int[] shared = new int[names.size()];
         List<Integer> touched = new ArrayList<>();
@@ -119,7 +137,7 @@ public final class Screener {
             double nameScore = NameSimilarity.score(query, name.tokens());
             if (entries.get(name.entry()).kind() == ListEntry.Kind.ORGANISATION) {
                 // "Hoang Long Co" is "Cong ty TNHH Hoang Long": compare the core of the name too
-                nameScore = Math.max(nameScore, NameSimilarity.score(Names.core(query), Names.core(name.tokens())));
+                nameScore = Math.max(nameScore, NameSimilarity.score(rules.core(query), rules.core(name.tokens())));
             }
             List<String> reasons = new ArrayList<>();
             reasons.add(String.format(Locale.ROOT, "NAME %.2f", nameScore));

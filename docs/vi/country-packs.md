@@ -13,7 +13,7 @@ phải gói duy nhất: thêm một nước là thêm một gói, không sửa l
 | Ngưỡng pháp lý có ngày hiệu lực (`report_transaction`, `report_daily`) | | Giai đoạn 2: đã bắt đầu, xem [Báo cáo theo quy định](reporting.md) |
 | Kịch bản AML cho giám sát (`monitor_scenarios`), tách riêng khỏi các bảng của `gate` | | Giai đoạn 2: đã bắt đầu, xem [Giám sát giao dịch](monitoring.md) |
 | Mẫu báo cáo và kênh nộp | | Giai đoạn 2 |
-| Nguồn danh sách (cấm vận, công an, cơ quan quản lý) và chuẩn hóa tên | | Giai đoạn 2 |
+| Các danh sách cần sàng lọc (`screeningLists`) và quy tắc về tên (`names.properties`) | | Giai đoạn 2: đã bắt đầu, xem [Sàng lọc danh sách](screening.md) |
 | Adapter chuyển mạch, lịch ngày làm việc | | Giai đoạn 2 |
 
 Một gói cài đặt `CountryPack` và tự khai báo trong `META-INF/services/vn.io.dxa.openframl.pack.CountryPack`.

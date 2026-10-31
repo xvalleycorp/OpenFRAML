@@ -27,12 +27,13 @@ list under a temporary name and rename it into place. The Gate Service reads the
 `Screener` screens a name against a set of lists, built once per publication of the lists:
 
 - **Normalising.** Diacritics, case and punctuation are ignored, and `đ` is `d`: "Nguyễn Văn Đức" is "nguyen van
-  duc". Business abbreviations common in Vietnamese company names are written out ("TM" is "thuong mai", "XNK" is
-  "xuat nhap khau").
+  duc". Abbreviations are written out as the country pack's name rules say: with the Vietnam pack, "TM" is "thuong
+  mai" and "XNK" is "xuat nhap khau".
 - **Comparing.** The parts of the two names are paired best first by Jaro-Winkler similarity, in any order, so "Duc
   Nguyen Van" matches "Nguyễn Văn Đức". Parts less alike than 0.8 count as different words. A missing or extra part
   lowers the score: "Pham Thi Nhung" against "Phạm Thị Hồng Nhung" scores about 0.86. For an organisation, the core
-  of the name without legal forms ("Cong ty", "TNHH", "Ltd") is compared too.
+  of the name without legal forms ("Cong ty", "TNHH", "Ltd") is compared too. The international legal forms are
+  built in; the pack adds the country's own.
 - **Other evidence.** The same identifier (ID, passport or registration number) is a match whatever the name. A
   different kind (person against organisation) multiplies the score by 0.85; a birth year more than a year from
   every year the list gives, by 0.8. Each adjustment is listed in the match's reasons, so an analyst sees why it
@@ -62,6 +63,46 @@ becomes an alert for Case Management (`openframl-case`):
 list as `UN-SC*.xml`, and builds a new screener when a file changes; if a file cannot be read, the previous lists stay
 in use. The Stream Service of Transaction Stream ([`openframl-stream`](stream.md)) feeds it the payments of the
 bank's transaction topic; a batch job can also call it.
+
+## Name rules from the country pack
+
+A country pack gives its name rules in `names.properties`, a UTF-8 properties file next to its tables:
+
+```
+# An abbreviation, then what it stands for
+abbreviation.TM = Thương mại
+# Legal forms, separated by spaces
+legalForms = Công ty TNHH Cổ phần MTV Tập đoàn
+```
+
+Keys and values are normalised like names, so they are written with their diacritics and in any case. A key that is
+neither `abbreviation.<word>` nor `legalForms` fails the pack. `NameRules.of(pack)` gives the screener the
+international legal forms ("Co", "Ltd", "LLC", "Inc", "GmbH"...) and the pack's rules; the Stream Service uses the
+rules of its country pack.
+
+The Vietnam pack writes out `CTY` (công ty), `TM` (thương mại), `DV` (dịch vụ), `SX` (sản xuất), `XNK` (xuất nhập
+khẩu), `XD` (xây dựng), `DT` (đầu tư) and `CP` (cổ phần), and leaves out "Công ty", "TNHH", "Cổ phần", "MTV" and "Tập
+đoàn". Without them, "CTY CP XD DT HOANG LONG" does not match "Công ty Cổ phần Xây dựng Đầu tư Hoàng Long".
+
+## The lists a country pack expects
+
+A country pack names the lists its country's rules expect a bank to screen against (`CountryPack.screeningLists()`).
+For each list it gives the source name that the list's files carry, who publishes it, the form of its files, and the
+regulation that makes it apply. `ScreeningDirectory.missing` names the expected lists that a directory lacks, and the
+Stream Service logs a warning for each one when it starts.
+
+| List | Source name | Publisher | Form |
+| --- | --- | --- | --- |
+| UN Security Council Consolidated List | `UN-SC` | UN Security Council | The UN's XML |
+| Blacklist: terrorism and terrorist financing | `VN-BLACKLIST-TERRORISM` | Ministry of Public Security | Open CSV |
+| Blacklist: proliferation financing | `VN-BLACKLIST-PROLIFERATION` | Ministry of National Defence | Open CSV |
+| Warning list: high money laundering risk | `VN-WARNING` | State Bank of Vietnam | Open CSV |
+
+The blacklist and the warning list are defined by the Anti-Money Laundering Law 14/2022/QH15. Published texts give
+the definitions as article 3 or article 4, so the article number is to be confirmed against the official gazette.
+Article 44 requires a bank to delay a transaction when it suspects that a party is on the blacklist. The national
+lists are published as decisions rather than in a form a program can read, so the bank converts each one to the open
+CSV form as `<source name>@<version>.csv`.
 
 ## The UN Security Council list
 
@@ -98,5 +139,5 @@ fails the whole list, naming the row.
 
 On the [roadmap](roadmap.md) for phase 2:
 
-- Readers for the national lists the country packs name.
-- Name rules from the country pack (abbreviations, legal forms) instead of the built-in Vietnamese set.
+- Readers for lists that other countries publish in a form a program can read, as their packs come.
+- Delaying a transaction when the gate's account lists hit a blacklisted party, through the gate's decision table.

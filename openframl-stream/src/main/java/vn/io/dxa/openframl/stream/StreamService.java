@@ -28,6 +28,8 @@ import vn.io.dxa.openframl.monitor.MonitorPolicy;
 import vn.io.dxa.openframl.monitor.TransactionMonitor;
 import vn.io.dxa.openframl.monitor.memory.InMemoryActivityStore;
 import vn.io.dxa.openframl.pack.CountryPack;
+import vn.io.dxa.openframl.pack.ListSource;
+import vn.io.dxa.openframl.screen.NameRules;
 import vn.io.dxa.openframl.screen.PaymentScreening;
 import vn.io.dxa.openframl.screen.ScreeningDirectory;
 import vn.io.dxa.openframl.valkey.Valkey;
@@ -53,7 +55,11 @@ public final class StreamService {
         ScreeningDirectory lists = null;
         String listDir = env.get("OPENFRAML_STREAM_SCREENING_DIR");
         if (listDir != null) {
-            lists = ScreeningDirectory.start(Path.of(listDir), Duration.ofSeconds(5));
+            lists = ScreeningDirectory.start(Path.of(listDir), NameRules.of(pack), Duration.ofSeconds(5));
+            for (ListSource source : lists.missing(pack.screeningLists())) {
+                LOG.log(System.Logger.Level.WARNING, "screening list {0} ({1}, {2}) expected by country pack {3} is "
+                        + "not in {4}", source.id(), source.name(), source.publisher(), pack.countryCode(), listDir);
+            }
             handlers.add(new PaymentScreening(lists::current,
                     Double.parseDouble(env.getOrDefault("OPENFRAML_STREAM_SCREENING_THRESHOLD", "0.85")),
                     cases::raise, 100_000)::screen);

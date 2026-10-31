@@ -28,5 +28,11 @@
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-case</artifactId>
     </dependency>
+    <!-- The Vietnam pack's name rules and lists -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-vn</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

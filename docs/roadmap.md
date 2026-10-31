@@ -39,7 +39,8 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Watchlist Screening: account lists for the gate, reloaded without a restart; name screening that copes with
       Vietnamese diacritics, name order and abbreviations; an open CSV list format (`openframl-screen`)
 - [x] Reader for the UN Security Council Consolidated List
-- [ ] Readers for the national lists named by the country packs
+- [x] Screening lists each country pack expects, with a warning for those missing; name rules from the pack
+      (`names.properties`); Vietnam's blacklist and warning list as open CSV
 - [x] Case Management core: one case per subject, investigation history, four-eyes approval of conclusions
       (`openframl-case`)
 - [x] Case Management: cases in a relational database (`JdbcCaseStore`, PostgreSQL as reference)

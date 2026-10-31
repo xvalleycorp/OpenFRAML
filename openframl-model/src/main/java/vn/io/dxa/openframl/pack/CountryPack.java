@@ -54,6 +54,19 @@ public interface CountryPack {
         return List.of();
     }
 
+    /** The screening lists the country's rules expect a bank to screen against; none by default. */
+    default List<ListSource> screeningLists() {
+        return List.of();
+    }
+
+    /**
+     * The country's rules for comparing names: abbreviations written out and legal forms of organisations, as a UTF-8
+     * properties file (see {@code docs/screening.md}); none by default, when only the international legal forms apply.
+     */
+    default Optional<PackResource> nameRules() {
+        return Optional.empty();
+    }
+
     /**
      * The message for a reason code in a language, for investigators and reviewers. Not for customers: AML reasons
      * must not be disclosed to them.

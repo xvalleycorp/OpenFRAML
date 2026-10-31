@@ -83,7 +83,7 @@ public final class TransactionMonitor {
             return List.of();
         }
         Optional<Instant> lastActivity = store.lastActivity(account);
-        List<Movement> recent = new ArrayList<>(store.since(account, movement.at().minus(Duration.ofHours(48))));
+        List<Movement> recent = new ArrayList<>(store.since(account, movement.at().minus(Duration.ofDays(30))));
         recent.add(movement);
         MonitoringFacts.Computed computed = MonitoringFacts.of(event, movement, recent, lastActivity);
         LocalDate businessDate = LocalDate.ofInstant(event.occurredAt(), pack.businessZone());

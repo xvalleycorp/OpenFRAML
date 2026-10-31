@@ -129,6 +129,30 @@ class TransactionMonitorTest {
     }
 
     @Test
+    void sevenAndThirtyDayWindowsAreSummedUp() {
+        List<Movement> recent = new ArrayList<>();
+        for (TransactionEvent earlier : List.of(
+                tx(TransactionType.TRANSFER_IN, 9_000_000, NOW.minus(Duration.ofDays(40)), "1111"),
+                tx(TransactionType.TRANSFER_IN, 7_000_000, NOW.minus(Duration.ofDays(20)), "2222"),
+                tx(TransactionType.TRANSFER_IN, 5_000_000, NOW.minus(Duration.ofDays(3)), "3333"),
+                tx(TransactionType.TRANSFER_OUT, 1_000_000, NOW.minus(Duration.ofDays(2)), "4444"))) {
+            recent.add(TransactionMonitor.movement(earlier));
+        }
+        TransactionEvent last = tx(TransactionType.TRANSFER_IN, 60_000_000, NOW, "3333");
+        Movement movement = TransactionMonitor.movement(last);
+        recent.add(movement);
+
+        MonitoringFacts.Computed computed = MonitoringFacts.of(last, movement, recent,
+                java.util.Optional.of(NOW.minus(Duration.ofDays(2))));
+
+        assertEquals("65000000 VND", computed.summary().get("in7d.amount"));
+        assertEquals("1000000 VND", computed.summary().get("out7d.amount"));
+        assertEquals("72000000 VND", computed.summary().get("in30d.amount"), "the 40-day-old transfer is outside");
+        assertEquals("2", computed.summary().get("in30d.distinctCounterparties"));
+        assertEquals("1", computed.summary().get("out30d.distinctCounterparties"));
+    }
+
+    @Test
     void anAlertThatCouldNotBeRaisedIsRaisedWhenTheTransactionComesAgain() {
         List<Alert> raised = new ArrayList<>();
         boolean[] down = {true};

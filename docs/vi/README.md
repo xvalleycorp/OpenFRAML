@@ -35,7 +35,7 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 | [Chặn giao dịch](../../openframl-gate) | `openframl-gate` | Quyết định inline trước khi gửi lệnh: `ALLOW`, `CHALLENGE`, `HOLD`, `DENY` | 1 | Dùng được dưới dạng thư viện |
 | [Dịch vụ chặn giao dịch](../../openframl-gate-server) | `openframl-gate-server` | Chặn giao dịch qua gRPC; deadline của bên gọi là ngân sách thời gian | 1 | Thử nghiệm |
 | [Kết nối Kafka](../../openframl-kafka) | `openframl-kafka` | Đẩy decision record của chặn giao dịch lên Kafka, theo định dạng JSON mở | 1 | Dùng được |
-| [Kho Valkey](../../openframl-valkey) | `openframl-valkey` | Hồ sơ và velocity bền vững trên Valkey, kèm cache trong tiến trình | 1 | Dùng được |
+| [Kho Valkey](../../openframl-valkey) | `openframl-valkey` | Hồ sơ và velocity bền vững trên Valkey, kèm cache trong tiến trình; hoạt động tài khoản cho giám sát | 1 | Dùng được |
 | [Chấm điểm ONNX](../../openframl-onnx) | `openframl-onnx` | Model gian lận chạy trong tiến trình `gate` bằng ONNX Runtime, từ các feature có tên | 1 | Dùng được |
 | [Gói quốc gia Việt Nam](../../openframl-vn) | `openframl-vn` | Rule mẫu cho Việt Nam, lý do bằng tiếng Anh và tiếng Việt | 1 | Rule mẫu |
 | [Đo hiệu năng](../../openframl-benchmark) | `openframl-benchmark` | Benchmark JMH và bộ sinh tải gRPC vòng hở trên một ngân hàng tổng hợp | 1 | Dùng được |

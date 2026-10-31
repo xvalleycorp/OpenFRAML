@@ -23,12 +23,15 @@ import vn.io.dxa.openframl.cases.jdbc.DriverDataSource;
 import vn.io.dxa.openframl.cases.jdbc.JdbcCaseStore;
 import vn.io.dxa.openframl.cases.memory.InMemoryCaseStore;
 import vn.io.dxa.openframl.model.TransactionEvent;
+import vn.io.dxa.openframl.monitor.ActivityStore;
 import vn.io.dxa.openframl.monitor.MonitorPolicy;
 import vn.io.dxa.openframl.monitor.TransactionMonitor;
 import vn.io.dxa.openframl.monitor.memory.InMemoryActivityStore;
 import vn.io.dxa.openframl.pack.CountryPack;
 import vn.io.dxa.openframl.screen.PaymentScreening;
 import vn.io.dxa.openframl.screen.ScreeningDirectory;
+import vn.io.dxa.openframl.valkey.Valkey;
+import vn.io.dxa.openframl.valkey.ValkeyActivityStore;
 
 /**
  * The Stream Service: reads the bank's transaction topic and runs payment screening and monitoring on each
@@ -59,7 +62,7 @@ public final class StreamService {
                     + "screened");
         }
         if (Boolean.parseBoolean(env.getOrDefault("OPENFRAML_STREAM_MONITOR", "true"))) {
-            handlers.add(new TransactionMonitor(pack, MonitorPolicy.of(pack), new InMemoryActivityStore(),
+            handlers.add(new TransactionMonitor(pack, MonitorPolicy.of(pack), activityStore(env),
                     cases::raise, Duration.ofDays(Long.parseLong(
                             env.getOrDefault("OPENFRAML_STREAM_SUPPRESSION_DAYS", "7"))))::process);
         }
@@ -84,6 +87,17 @@ public final class StreamService {
         LOG.log(System.Logger.Level.INFO, "stream service reading {0} with {1} handler(s), country pack {2} {3}",
                 topic, handlers.size(), pack.countryCode(), pack.version());
         runner.join();
+    }
+
+    static ActivityStore activityStore(Map<String, String> env) {
+        String url = env.get("OPENFRAML_STREAM_VALKEY_URL");
+        if (url == null) {
+            LOG.log(System.Logger.Level.WARNING, "OPENFRAML_STREAM_VALKEY_URL not set: account activity is kept in "
+                    + "this process; run one Stream Service per consumer group");
+            return new InMemoryActivityStore();
+        }
+        return new ValkeyActivityStore(Valkey.connect(url, Duration.ofMillis(Long.parseLong(
+                env.getOrDefault("OPENFRAML_STREAM_VALKEY_TIMEOUT_MS", "500")))));
     }
 
     static CaseStore caseStore(Map<String, String> env) {

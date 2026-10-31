@@ -39,6 +39,11 @@
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-case</artifactId>
     </dependency>
+    <!-- Monitoring's account activity, shared by every Stream Service process -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-valkey</artifactId>
+    </dependency>
     <!-- Also brings Jackson, used for the events' JSON form at the version RuleStone is built with -->
     <dependency>
       <groupId>vn.io.dxa.rulestone</groupId>

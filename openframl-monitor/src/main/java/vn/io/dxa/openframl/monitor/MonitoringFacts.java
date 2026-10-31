@@ -75,6 +75,20 @@ final class MonitoringFacts {
         }
         facts.put("flow48h", flow);
 
+        Window in7d = window(recent, at, Duration.ofDays(7), currency, m -> m.direction() == Movement.Direction.IN);
+        Window out7d = window(recent, at, Duration.ofDays(7), currency,
+                m -> m.direction() == Movement.Direction.OUT);
+        Window in30d = window(recent, at, Duration.ofDays(30), currency,
+                m -> m.direction() == Movement.Direction.IN);
+        Window out30d = window(recent, at, Duration.ofDays(30), currency,
+                m -> m.direction() == Movement.Direction.OUT);
+        facts.put("in7d", Map.of("count", in7d.count, "amount", money(in7d.amount, currency)));
+        facts.put("out7d", Map.of("count", out7d.count, "amount", money(out7d.amount, currency)));
+        facts.put("in30d", Map.of("count", in30d.count, "amount", money(in30d.amount, currency),
+                "distinctCounterparties", (long) in30d.counterparties.size()));
+        facts.put("out30d", Map.of("count", out30d.count, "amount", money(out30d.amount, currency),
+                "distinctCounterparties", (long) out30d.counterparties.size()));
+
         Map<String, String> summary = new LinkedHashMap<>();
         account.forEach((name, value) -> summary.put("account." + name, value.toString()));
         summary.put("cashIn24h.count", Long.toString(cashIn24h.count));
@@ -85,6 +99,12 @@ final class MonitoringFacts {
         summary.put("in48h.amount", in48h.amount.toPlainString() + " " + currency);
         summary.put("out48h.amount", out48h.amount.toPlainString() + " " + currency);
         flow.forEach((name, value) -> summary.put("flow48h." + name, ((BigDecimal) value).toPlainString()));
+        summary.put("in7d.amount", in7d.amount.toPlainString() + " " + currency);
+        summary.put("out7d.amount", out7d.amount.toPlainString() + " " + currency);
+        summary.put("in30d.amount", in30d.amount.toPlainString() + " " + currency);
+        summary.put("in30d.distinctCounterparties", Integer.toString(in30d.counterparties.size()));
+        summary.put("out30d.amount", out30d.amount.toPlainString() + " " + currency);
+        summary.put("out30d.distinctCounterparties", Integer.toString(out30d.counterparties.size()));
         return new Computed(Facts.from(facts), summary);
     }
 

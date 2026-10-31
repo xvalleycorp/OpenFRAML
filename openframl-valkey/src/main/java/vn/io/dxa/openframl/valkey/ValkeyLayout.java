@@ -20,6 +20,9 @@ import vn.io.dxa.openframl.model.AccountRef;
  *   <tr><td>{@code ofr:devices:<customer>}</td><td>set</td><td>devices the customer has used before</td></tr>
  *   <tr><td>{@code ofr:vel:{<account>}}</td><td>sorted set</td><td>payment attempts of the last 24 hours, scored
  *       by time in milliseconds</td></tr>
+ *   <tr><td>{@code ofr:act:{<account>}:t}</td><td>sorted set</td><td>Transaction Monitoring: the account's
+ *       movements by event id, scored by time in milliseconds</td></tr>
+ *   <tr><td>{@code ofr:act:{<account>}:m}</td><td>hash</td><td>Transaction Monitoring: event id to movement</td></tr>
  *   <tr><td>{@code ofr:{policy}:tables:<policy id>}</td><td>string</td><td>a policy's tables, a JSON array of
  *       RuleStone tables</td></tr>
  *   <tr><td>{@code ofr:{policy}:proposal:<id>}</td><td>hash</td><td>a proposed change and its decision</td></tr>
@@ -81,5 +84,15 @@ public record ValkeyLayout(String prefix) {
     /** One key per account, with a hash tag so that a cluster keeps it on one node. */
     public String velocity(AccountRef originator) {
         return prefix + "vel:{" + originator.key() + "}";
+    }
+
+    /** The account's movement times; {@code account} is {@link AccountRef#key()}. */
+    public String activityTimes(String account) {
+        return prefix + "act:{" + account + "}:t";
+    }
+
+    /** The account's movements, on the same node as their times. */
+    public String activityMovements(String account) {
+        return prefix + "act:{" + account + "}:m";
     }
 }

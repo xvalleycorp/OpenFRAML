@@ -6,8 +6,13 @@
 package vn.io.dxa.openframl.screen;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +32,23 @@ class ScreenerTest {
     private static final ListEntry PHAM = new ListEntry("PEP-17", ListEntry.Kind.PERSON,
             List.of("Phạm Thị Hồng Nhung"), Set.of(1980), Set.of(), Set.of(), "Invented PEP");
 
+    /** Rules as a country pack writes them; the Vietnam pack's own are tested with the pack. */
+    static final NameRules RULES = rules("""
+            abbreviation.TM = Thương mại
+            legalForms = Công ty TNHH
+            """);
+
+    static NameRules rules(String properties) {
+        try {
+            return NameRules.read(new ByteArrayInputStream(properties.getBytes(StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     private final Screener screener = Screener.of(List.of(
             new ScreeningList("XA-SANCTIONS", "2026-10-30", List.of(DUC, TRADING)),
-            new ScreeningList("BANK-PEP", "2026-10", List.of(PHAM))));
+            new ScreeningList("BANK-PEP", "2026-10", List.of(PHAM))), RULES);
 
     private List<ScreeningMatch> screen(String name) {
         return screener.screen(Subject.named(name), 0.85);
@@ -38,7 +57,17 @@ class ScreenerTest {
     @Test
     void namesCompareWithoutDiacriticsCaseOrPunctuation() {
         assertEquals("nguyen van duc", Names.normalize("  NGUYỄN  Văn-Đức "));
-        assertEquals(List.of("cong", "ty", "tnhh"), Names.tokens("Công ty, TNHH."));
+        assertEquals(List.of("cong", "ty", "tnhh"), RULES.tokens("Công ty, TNHH."));
+        assertEquals(List.of("thuong", "mai", "hoang", "long"),
+                RULES.core(RULES.tokens("Cong ty TNHH TM Hoang Long")));
+        assertEquals(List.of("hoang", "long"), NameRules.BASE.core(NameRules.BASE.tokens("Hoang Long Co., Ltd")));
+        assertEquals(Set.of("XA-SANCTIONS", "BANK-PEP"), screener.sources());
+    }
+
+    @Test
+    void nameRulesAreCheckedWhenRead() {
+        assertThrows(IllegalArgumentException.class, () -> rules("abbreviation.TM\\ TM = Thương mại"));
+        assertThrows(IllegalArgumentException.class, () -> rules("legalform = Ltd"));
     }
 
     @Test

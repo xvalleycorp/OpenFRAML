@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>Reason messages are UTF-8 properties files named {@code <messages>_<language>.properties}, e.g.
  * {@code reasons_vi.properties}. English ({@code _en}) is required and is the fallback for every other language.
+ * Name rules for screening, if the pack has any, are in {@code names.properties}.
  */
 public abstract class ResourceCountryPack implements CountryPack {
 
@@ -120,6 +121,12 @@ public abstract class ResourceCountryPack implements CountryPack {
     @Override
     public List<PackResource> reportingTables() {
         return reportingTables;
+    }
+
+    @Override
+    public Optional<PackResource> nameRules() {
+        URL url = anchor.getResource("names.properties");
+        return url == null ? Optional.empty() : Optional.of(new PackResource("names.properties", url));
     }
 
     @Override

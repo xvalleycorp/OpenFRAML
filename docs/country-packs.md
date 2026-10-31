@@ -13,7 +13,7 @@ pack, not the only one: adding a country means adding a pack, not changing the c
 | Legal thresholds with effective dates (`report_transaction`, `report_daily`) | | Phase 2: started, see [Regulatory Reporting](reporting.md) |
 | AML scenarios for monitoring (`monitor_scenarios`), apart from the gate's tables | | Phase 2: started, see [Transaction Monitoring](monitoring.md) |
 | Report templates and submission channels | | Phase 2 |
-| List sources (sanctions, police, regulator) and name normalisation | | Phase 2 |
+| Screening lists expected (`screeningLists`) and name rules (`names.properties`) | | Phase 2: started, see [Watchlist Screening](screening.md) |
 | Switch adapters, business calendar | | Phase 2 |
 
 A pack implements `CountryPack` and lists itself in `META-INF/services/vn.io.dxa.openframl.pack.CountryPack`.

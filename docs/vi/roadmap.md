@@ -39,7 +39,8 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 - [x] Sàng lọc danh sách: danh sách tài khoản cho `gate`, nạp lại không cần khởi động lại; sàng lọc theo tên, xử lý
       được dấu tiếng Việt, thứ tự họ tên và chữ viết tắt; định dạng danh sách CSV mở (`openframl-screen`)
 - [x] Đọc danh sách tổng hợp của Hội đồng Bảo an Liên hợp quốc
-- [ ] Đọc các danh sách quốc gia do gói quốc gia chỉ định
+- [x] Các danh sách mà mỗi gói quốc gia yêu cầu sàng lọc, có cảnh báo khi thiếu; quy tắc về tên lấy từ gói quốc gia
+      (`names.properties`); danh sách đen và danh sách cảnh báo của Việt Nam dưới dạng CSV mở
 - [x] Lõi Quản lý hồ sơ điều tra: một hồ sơ cho mỗi đối tượng, lịch sử điều tra, phê duyệt hai cấp cho kết luận
       (`openframl-case`)
 - [x] Quản lý hồ sơ điều tra: lưu hồ sơ trong cơ sở dữ liệu quan hệ (`JdbcCaseStore`, tham chiếu là PostgreSQL)

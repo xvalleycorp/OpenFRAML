@@ -48,10 +48,12 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
 - [x] Transaction Stream: payment screening and monitoring fed from the bank's Kafka topic, at least once; daily
       reports read back from it (`openframl-stream`)
-- [ ] Transaction Stream: an activity store shared by processes, a dead-letter topic, metrics
+- [x] Monitoring's account activity on Valkey, shared by Stream Service processes; 7- and 30-day windows
+- [ ] Transaction Stream: a dead-letter topic, metrics
 - [x] Transaction Monitoring: scenarios as country pack tables, alerts to Case Management, four Vietnam samples
       (`openframl-monitor`)
-- [ ] Behaviour Profiles on Flink (`openframl-features`), longer monitoring windows, backtesting scenarios
+- [ ] Behaviour Profiles on Flink (`openframl-features`): windows as running totals for very busy accounts;
+      backtesting scenarios
 - [x] Regulatory Reporting: daily threshold reports from country pack tables, suspicious transaction reports from
       cases, an open JSON form; Vietnam's large-value cash and electronic transfer thresholds (`openframl-report`)
 - [ ] Regulatory Reporting: the authority's forms and electronic submission, excluded transaction types,

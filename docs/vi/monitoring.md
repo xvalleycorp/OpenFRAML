@@ -10,7 +10,7 @@ trong bản sao bảng của mình, có ngày hiệu lực, và kiểm thử gi�
 1. Giao dịch được ghi nhận trên tài khoản của ngân hàng (tài khoản mà mô hình sự kiện gọi là originator, cho cả hai
    chiều): tiền vào với `TRANSFER_IN` và `CASH_DEPOSIT`, tiền ra với các loại còn lại. Tài khoản đối ứng chỉ được giữ
    dưới dạng hash. Một giao dịch được gửi đến hai lần chỉ được ghi nhận một lần.
-2. Hoạt động của tài khoản trong 48 giờ gần nhất, tính cả giao dịch này, trở thành các facts bên dưới.
+2. Hoạt động của tài khoản trong 30 ngày gần nhất, tính cả giao dịch này, trở thành các facts bên dưới.
 3. `monitor_scenarios` được đánh giá theo ngày nghiệp vụ của giao dịch, với hit policy `COLLECT`.
 4. Mỗi kịch bản được kích hoạt phát sinh một cảnh báo về khách hàng, kèm kịch bản, mức độ và thông điệp, phiên bản bảng
    và hoạt động mà kịch bản đã thấy; không bao giờ có số tài khoản. Một kịch bản liên tục được kích hoạt cho cùng một
@@ -19,7 +19,10 @@ trong bản sao bảng của mình, có ngày hiệu lực, và kiểm thử gi�
 
 Các giao dịch của một tài khoản phải được xử lý theo đúng thứ tự. Dịch vụ luồng giao dịch của Luồng giao dịch
 ([`openframl-stream`](stream.md)) đưa giao dịch từ topic giao dịch của ngân hàng, có khóa theo tài khoản, vào phần giám
-sát; một batch job cũng có thể gọi `TransactionMonitor.process`. `InMemoryActivityStore` giữ 35 ngày giao dịch.
+sát; một batch job cũng có thể gọi `TransactionMonitor.process`. Hoạt động được giữ 35 ngày, hoặc ngay trong tiến
+trình (`InMemoryActivityStore`), hoặc trên Valkey (`ValkeyActivityStore` trong Kho Valkey, `openframl-valkey`), nơi mọi
+tiến trình của Dịch vụ luồng giao dịch dùng chung. Một giao dịch chỉ được ghi nhận sau khi các cảnh báo của nó đã được
+gửi đi, nên cảnh báo chưa gửi được sẽ được gửi khi giao dịch đó được xử lý lại.
 
 ## Facts
 
@@ -34,6 +37,9 @@ Số tiền chỉ được cộng theo đồng tiền của giao dịch; các kh
 | `in24h.count`, `.amount`, `.distinctCounterparties` | int, money, int | Tiền vào trong 24 giờ |
 | `in48h.amount`, `out48h.amount` | money | Tiền vào và tiền ra trong 48 giờ |
 | `flow48h.outToIn` | decimal | Tiền ra chia tiền vào trong 48 giờ; không có khi không có tiền vào |
+| `in7d.count`, `.amount`; `out7d.count`, `.amount` | int, money | Tiền vào và tiền ra trong 7 ngày |
+| `in30d.count`, `.amount`, `.distinctCounterparties` | int, money, int | Tiền vào trong 30 ngày |
+| `out30d.count`, `.amount`, `.distinctCounterparties` | int, money, int | Tiền ra trong 30 ngày |
 
 ## Kịch bản của Việt Nam
 
@@ -58,6 +64,6 @@ Mỗi kịch bản và cả hai phía của từng ngưỡng đều có trườn
 
 ## Tiếp theo
 
-Trong [lộ trình](roadmap.md): đưa giao dịch từ luồng dữ liệu của ngân hàng vào giám sát, kho hoạt động dùng chung giữa
-các node, các khoảng thời gian dài hơn (7 và 30 ngày) do Hồ sơ hành vi (`openframl-features`) tính, và backtest một
-kịch bản trên giao dịch cũ trước khi duyệt.
+Trong [lộ trình](roadmap.md): backtest một kịch bản trên giao dịch cũ trước khi duyệt, và các khoảng thời gian được Hồ
+sơ hành vi (`openframl-features`) giữ dưới dạng tổng cộng dồn, cho những tài khoản có nhiều giao dịch đến mức đọc lại 30
+ngày cho mỗi giao dịch là quá tốn kém.

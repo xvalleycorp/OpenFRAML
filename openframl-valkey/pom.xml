@@ -14,7 +14,8 @@
   <name>OpenFRAML Valkey Store</name>
   <description>
     Profiles and durable velocity counters for the gate on Valkey (or Redis), with an in-process Caffeine cache:
-    every lookup in one round trip, or none when the cache has it.
+    every lookup in one round trip, or none when the cache has it. Also Transaction Monitoring's account activity,
+    shared by every Stream Service process.
   </description>
   <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-valkey</url>
 
@@ -22,6 +23,11 @@
     <dependency>
       <groupId>vn.io.dxa.openframl</groupId>
       <artifactId>openframl-gate</artifactId>
+    </dependency>
+    <!-- ActivityStore, for Transaction Monitoring's movements -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-monitor</artifactId>
     </dependency>
     <dependency>
       <groupId>io.lettuce</groupId>

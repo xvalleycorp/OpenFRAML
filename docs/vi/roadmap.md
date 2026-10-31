@@ -48,10 +48,13 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 - [x] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
 - [x] Luồng giao dịch: đưa giao dịch từ topic Kafka của ngân hàng vào sàng lọc giao dịch và giám sát, ít nhất một lần;
       báo cáo hằng ngày đọc lại từ topic đó (`openframl-stream`)
-- [ ] Luồng giao dịch: kho hoạt động dùng chung giữa các tiến trình, topic dead-letter, chỉ số
+- [x] Hoạt động tài khoản của phần giám sát trên Valkey, dùng chung giữa các tiến trình Dịch vụ luồng giao dịch;
+      khoảng thời gian 7 và 30 ngày
+- [ ] Luồng giao dịch: topic dead-letter, chỉ số
 - [x] Giám sát giao dịch: kịch bản là bảng của gói quốc gia, cảnh báo chuyển sang Quản lý hồ sơ điều tra, bốn kịch bản
       mẫu cho Việt Nam (`openframl-monitor`)
-- [ ] Hồ sơ hành vi trên Flink (`openframl-features`), khoảng thời gian giám sát dài hơn, backtest kịch bản
+- [ ] Hồ sơ hành vi trên Flink (`openframl-features`): khoảng thời gian dưới dạng tổng cộng dồn cho tài khoản có rất
+      nhiều giao dịch; backtest kịch bản
 - [x] Báo cáo theo quy định: báo cáo theo ngưỡng hằng ngày từ bảng của gói quốc gia, báo cáo giao dịch đáng ngờ từ
       hồ sơ, một dạng JSON mở; ngưỡng tiền mặt giá trị lớn và chuyển tiền điện tử của Việt Nam (`openframl-report`)
 - [ ] Báo cáo theo quy định: mẫu biểu và kênh nộp điện tử của cơ quan quản lý, các loại giao dịch được loại trừ,

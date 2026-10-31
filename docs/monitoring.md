@@ -10,7 +10,7 @@ or adds a scenario in its own copy of the table, with effective dates, and tests
 1. The movement is recorded on the bank's account (the account the event model calls the originator, both ways):
    in for `TRANSFER_IN` and `CASH_DEPOSIT`, out for the other types. The counterparty is kept only as a hash. A
    transaction delivered twice is recorded once.
-2. The account's activity of the last 48 hours, this transaction included, becomes the facts below.
+2. The account's activity of the last 30 days, this transaction included, becomes the facts below.
 3. `monitor_scenarios` is evaluated as of the transaction's business date, hit policy `COLLECT`.
 4. Each scenario that fires raises an alert about the customer, with the scenario, its severity and message, the
    table version and the activity it saw; never an account number. A scenario that keeps firing for a customer
@@ -18,7 +18,10 @@ or adds a scenario in its own copy of the table, with effective dates, and tests
 
 Transactions of one account must be processed in order. The Stream Service of Transaction Stream
 ([`openframl-stream`](stream.md)) feeds monitoring from the bank's transaction topic, keyed by account; a batch job
-can also call `TransactionMonitor.process`. `InMemoryActivityStore` keeps 35 days of movements.
+can also call `TransactionMonitor.process`. The activity is kept for 35 days, in the process (`InMemoryActivityStore`)
+or on Valkey (`ValkeyActivityStore` in the Valkey Store, `openframl-valkey`), where every Stream Service process shares
+it. A movement is recorded only once its alerts have gone, so an alert that could not be raised is raised when the
+transaction comes again.
 
 ## Facts
 
@@ -33,6 +36,9 @@ Amounts are summed in the transaction's currency only; windows end at the transa
 | `in24h.count`, `.amount`, `.distinctCounterparties` | int, money, int | Money in over 24 hours |
 | `in48h.amount`, `out48h.amount` | money | Money in and out over 48 hours |
 | `flow48h.outToIn` | decimal | Out divided by in over 48 hours; absent when nothing came in |
+| `in7d.count`, `.amount`; `out7d.count`, `.amount` | int, money | Money in and out over 7 days |
+| `in30d.count`, `.amount`, `.distinctCounterparties` | int, money, int | Money in over 30 days |
+| `out30d.count`, `.amount`, `.distinctCounterparties` | int, money, int | Money out over 30 days |
 
 ## Vietnam scenarios
 
@@ -57,6 +63,6 @@ Every scenario and both sides of every threshold have a case in
 
 ## Next
 
-On the [roadmap](roadmap.md): feeding monitoring from the bank's transaction stream, an activity store shared by
-nodes, longer windows (7 and 30 days) computed by Behaviour Profiles (`openframl-features`), and backtesting a
-scenario on past transactions before it is approved.
+On the [roadmap](roadmap.md): backtesting a scenario on past transactions before it is approved, and windows kept as
+running totals by Behaviour Profiles (`openframl-features`), for accounts with so many transactions that reading 30
+days of them for each one costs too much.

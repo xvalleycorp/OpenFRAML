@@ -43,9 +43,10 @@ Mỗi bản ghi được xử lý ít nhất một lần:
 Bản ghi không phải là sự kiện thì bị bỏ qua và được đếm lại. Log chỉ ghi partition, offset và trường bị sai, không bao
 giờ ghi nội dung bản ghi.
 
-Phần giám sát giữ hoạt động gần đây của mỗi tài khoản ngay trong tiến trình (`InMemoryActivityStore`). Hãy chạy một
-Dịch vụ luồng giao dịch cho mỗi consumer group, cho đến khi kho hoạt động dùng chung được giữa các tiến trình. Lý do:
-sau một lần rebalance, tiến trình thứ hai sẽ bắt đầu mà không có lịch sử của các partition nó nhận thêm.
+Đặt `OPENFRAML_STREAM_VALKEY_URL` để giữ hoạt động tài khoản của phần giám sát trên Valkey. Khi đó mọi tiến trình
+Dịch vụ luồng giao dịch trong group dùng chung kho này, nên chúng chạy song song được, và một partition chuyển sang tiến
+trình khác sau rebalance vẫn giữ nguyên lịch sử. Nếu không đặt, hoạt động được giữ ngay trong tiến trình, và mỗi
+consumer group chỉ được chạy một Dịch vụ luồng giao dịch.
 
 | Biến môi trường | Mặc định | Mục đích |
 | --- | --- | --- |
@@ -58,6 +59,8 @@ sau một lần rebalance, tiến trình thứ hai sẽ bắt đầu mà không 
 | `OPENFRAML_STREAM_SCREENING_THRESHOLD` | `0.85` | Điểm tên thấp nhất sinh cảnh báo |
 | `OPENFRAML_STREAM_MONITOR` | `true` | Có chạy giám sát hay không |
 | `OPENFRAML_STREAM_SUPPRESSION_DAYS` | `7` | Thời gian một kịch bản đã kích hoạt với một khách hàng được giữ im lặng |
+| `OPENFRAML_STREAM_VALKEY_URL` | (trong tiến trình) | Valkey cho hoạt động tài khoản của phần giám sát, ví dụ `redis://valkey:6379` |
+| `OPENFRAML_STREAM_VALKEY_TIMEOUT_MS` | `500` | Thời gian chờ tối đa của mỗi lệnh Valkey |
 
 ## Job báo cáo hằng ngày
 
@@ -84,6 +87,5 @@ ngày, job chạy cho ngày hôm trước.
 ## Tiếp theo
 
 Trong [lộ trình](roadmap.md):
-- kho hoạt động dùng chung giữa các tiến trình của Dịch vụ luồng giao dịch;
 - một topic dead-letter cho các bản ghi không phải là sự kiện;
 - các chỉ số về những gì luồng đã nhận, bỏ qua và thử lại.

@@ -43,9 +43,9 @@ Delivery is at least once:
 A record that is not an event is skipped and counted. It is logged with its partition, its offset and the field that
 is wrong, never with its content.
 
-Monitoring keeps each account's recent activity in the process (`InMemoryActivityStore`). Run one Stream Service per
-consumer group until the activity store can be shared between processes: after a rebalance, a second process would
-start without the history of the partitions it takes over.
+Set `OPENFRAML_STREAM_VALKEY_URL` to keep monitoring's account activity on Valkey. Every Stream Service process of the
+group then shares it, so they can run side by side, and a partition that moves after a rebalance keeps its history.
+Without it, the activity is kept in the process, and only one Stream Service may run per consumer group.
 
 | Environment variable | Default | Purpose |
 | --- | --- | --- |
@@ -58,6 +58,8 @@ start without the history of the partitions it takes over.
 | `OPENFRAML_STREAM_SCREENING_THRESHOLD` | `0.85` | Lowest name score that raises an alert |
 | `OPENFRAML_STREAM_MONITOR` | `true` | Run monitoring |
 | `OPENFRAML_STREAM_SUPPRESSION_DAYS` | `7` | How long a scenario that fired for a customer stays quiet |
+| `OPENFRAML_STREAM_VALKEY_URL` | (in the process) | Valkey for monitoring's account activity, e.g. `redis://valkey:6379` |
+| `OPENFRAML_STREAM_VALKEY_TIMEOUT_MS` | `500` | Valkey command timeout |
 
 ## Daily Report Job
 
@@ -84,6 +86,5 @@ runs on the day before today.
 ## Next
 
 On the [roadmap](roadmap.md):
-- an activity store shared by Stream Service processes;
 - a dead-letter topic for records that are not events;
 - metrics for what the stream takes, skips and retries.

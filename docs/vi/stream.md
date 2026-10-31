@@ -25,7 +25,7 @@ của `gate`, mang tên như trong mô hình sự kiện:
 - **Số tiền.** Số tiền là chuỗi số thập phân, không bao giờ là số JSON.
 - **Trường không bắt buộc.** `beneficiary`, `session`, `beneficiaryName` và `counterpartyCountry` có thể bỏ trống.
 - **Khóa của bản ghi.** Khóa là tài khoản gửi, dạng `<institution>/<account>`. Kafka giữ đúng thứ tự trong mỗi partition, nên chính khóa này giúp phần giám sát nhận giao dịch của mỗi tài khoản theo đúng thứ tự.
-- **Thời điểm của bản ghi.** Timestamp của bản ghi nên gần với `occurredAt`. Mặc định của Kafka, tức thời điểm bản ghi được gửi lên, là đủ gần.
+- **Thời điểm của bản ghi.** Timestamp của bản ghi nên gần với `occurredAt`. Mặc định của Kafka, tức thời điểm bản ghi được gửi lên, là đủ gần. Job báo cáo hằng ngày đọc mỗi partition cho đến bản ghi đầu tiên vượt quá cuối ngày cộng phần nới thêm, nên một bản ghi mang timestamp quá xa trong tương lai sẽ làm job dừng đọc partition đó sớm.
 - **Thời gian lưu.** Thời gian lưu của topic phải đủ dài cho mọi ngày có thể cần chạy lại báo cáo.
 - **Bảo mật.** Topic có số tài khoản và họ tên, nên quyền truy cập topic được giới hạn như quyền truy cập hệ thống thanh toán.
 

@@ -1,0 +1,118 @@
+{
+  "decision": "report_daily",
+  "description": "Vietnam's large-value cash report: both sides of the threshold. Amounts in VND",
+  "cases": [
+    {
+      "name": "399,999,999 VND of cash in a day is not reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "cashIn": {
+          "count": 1,
+          "amount": "399999999 VND"
+        },
+        "cashOut": {
+          "count": 0,
+          "amount": "0 VND"
+        },
+        "cash": {
+          "count": 1,
+          "amount": "399999999 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "400,000,000 VND deposited in a day is reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "cashIn": {
+          "count": 1,
+          "amount": "400000000 VND"
+        },
+        "cashOut": {
+          "count": 0,
+          "amount": "0 VND"
+        },
+        "cash": {
+          "count": 1,
+          "amount": "400000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "LARGE_CASH"
+        ]
+      }
+    },
+    {
+      "name": "deposits and withdrawals that together reach 400,000,000 VND are reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "cashIn": {
+          "count": 2,
+          "amount": "250000000 VND"
+        },
+        "cashOut": {
+          "count": 1,
+          "amount": "150000000 VND"
+        },
+        "cash": {
+          "count": 3,
+          "amount": "400000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "LARGE_CASH"
+        ]
+      }
+    },
+    {
+      "name": "a large withdrawal alone is reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "cashIn": {
+          "count": 0,
+          "amount": "0 VND"
+        },
+        "cashOut": {
+          "count": 1,
+          "amount": "500000000 VND"
+        },
+        "cash": {
+          "count": 1,
+          "amount": "500000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "LARGE_CASH"
+        ]
+      }
+    }
+  ]
+}

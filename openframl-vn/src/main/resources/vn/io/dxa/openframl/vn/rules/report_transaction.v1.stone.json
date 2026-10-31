@@ -1,0 +1,20 @@
+{
+  "id": "report_transaction",
+  "version": "1",
+  "description": "Vietnam's electronic funds transfer report, evaluated per transaction. Domestic transfers of 500,000,000 VND or more, or the equivalent in foreign currency, are reported to the Anti-Money Laundering Department (Circular 09/2023/TT-NHNN, replaced by Circular 27/2025/TT-NHNN from 1 November 2025, which keeps the threshold); deadline of Article 37(1) of the Anti-Money Laundering Law 14/2022/QH15 (one working day). This table reports transfers both out and in; which institution reports which side is to be confirmed against the circular. International transfers (1,000 USD or more) are not covered: the event model does not yet say whether a transfer crosses the border",
+  "effectiveFrom": "2023-12-01",
+  "hitPolicy": "COLLECT",
+  "inputs": {
+    "transaction": { "amount": "money", "nationalAmount": "money", "type": "string", "channel": "string", "direction": "string", "cash": "bool" }
+  },
+  "outputs": { "dueWorkingDays": "int" },
+  "rules": [
+    {
+      "id": "ELECTRONIC_TRANSFER",
+      "description": "A domestic transfer, out or in, of 500,000,000 VND or more",
+      "when": "(transaction.type == 'TRANSFER_OUT' || transaction.type == 'TRANSFER_IN') && has(transaction.nationalAmount) && transaction.nationalAmount >= money(500000000, 'VND')",
+      "then": { "dueWorkingDays": "1" },
+      "reasonCode": "ELECTRONIC_TRANSFER"
+    }
+  ]
+}

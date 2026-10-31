@@ -10,7 +10,7 @@ phải gói duy nhất: thêm một nước là thêm một gói, không sửa l
 | Múi giờ nghiệp vụ và đồng tiền quốc gia | Có | |
 | Bảng quyết định cho `gate` (`gate_decision`, `gate_fallback`) | Có | |
 | Thông điệp lý do bằng tiếng Anh và ngôn ngữ của nước đó | Có | |
-| Ngưỡng pháp lý có ngày hiệu lực (giao dịch giá trị lớn, chuyển tiền điện tử) | | Giai đoạn 2 |
+| Ngưỡng pháp lý có ngày hiệu lực (`report_transaction`, `report_daily`) | | Giai đoạn 2: đã bắt đầu, xem [Báo cáo theo quy định](reporting.md) |
 | Kịch bản AML cho giám sát (`monitor_scenarios`), tách riêng khỏi các bảng của `gate` | | Giai đoạn 2: đã bắt đầu, xem [Giám sát giao dịch](monitoring.md) |
 | Mẫu báo cáo và kênh nộp | | Giai đoạn 2 |
 | Nguồn danh sách (cấm vận, công an, cơ quan quản lý) và chuẩn hóa tên | | Giai đoạn 2 |
@@ -54,8 +54,9 @@ Bảng mẫu ưu tiên `CHALLENGE` hơn `DENY`: chặn nhầm một giao dịch 
 hàng xác nhận lệnh, nên một cảnh báo đúng lúc mới là thứ chặn được. Mỗi rule và cả hai phía của từng ngưỡng đều có
 trường hợp kiểm thử trong `openframl-vn/src/test/rules`; build thất bại nếu có rule chưa từng được kích hoạt.
 
-Ngưỡng pháp lý và mẫu báo cáo được thêm ở giai đoạn 2, mỗi mục đối chiếu với Công báo trước khi đưa vào. Phần phân
-tích đến nay dựa trên nguồn thứ cấp.
+Ngưỡng pháp lý đi kèm văn bản và ngày hiệu lực quy định chúng, và mỗi bảng ghi rõ điểm nào còn cần đối chiếu với
+Công báo: các ngưỡng của Việt Nam đến nay mới được đối chiếu với các bản tóm tắt và bản đăng lại văn bản. Mẫu báo cáo
+được thêm sau, trong giai đoạn 2.
 
 ## Thêm một quốc gia
 

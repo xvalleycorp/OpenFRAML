@@ -51,7 +51,7 @@ minh họa cho các thủ đoạn và không phải ngưỡng pháp lý, trừ `
 từ 01/12/2023, thay mức 300.000.000 đồng của Quyết định 20/2013/QĐ-TTg. Con số và ngày hiệu lực đã được đối chiếu với
 nhiều bản tóm tắt đã công bố của quyết định, nhưng chưa đối chiếu với Công báo; cần xác nhận tại đó trước khi dựa vào,
 như với mọi ngưỡng pháp lý. Việc báo cáo chính các giao dịch giá trị lớn là của Báo cáo theo quy định
-(`openframl-report`, dự kiến), không phải của cảnh báo.
+([`openframl-report`](reporting.md)), không phải của cảnh báo.
 
 Mỗi kịch bản và cả hai phía của từng ngưỡng đều có trường hợp kiểm thử trong
 `openframl-vn/src/test/rules/monitor_scenarios.stone-test.json`.

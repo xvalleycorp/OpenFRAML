@@ -47,7 +47,7 @@ the decision engine.
 | [Watchlist Screening](openframl-screen) | `openframl-screen` | Screening against sanctions, PEP and national lists; the gate's account lists | 2 | Started: name screening and account lists |
 | [Case Management](openframl-case) | `openframl-case` | Alerts, investigation, four-eyes approval | 2 | Started: cases and approval, PostgreSQL store |
 | [Case Service](openframl-case-server) | `openframl-case-server` | Case Management over gRPC for analysts, supervisors and detectors; mutual TLS only | 2 | Started |
-| Regulatory Reporting | `openframl-report` | Regulatory reports in the templates of each country pack | 2 | Planned |
+| [Regulatory Reporting](openframl-report) | `openframl-report` | Threshold and suspicious transaction reports, from the country pack's legal thresholds | 2 | Started: daily threshold reports, suspicious transaction reports from cases |
 | Model Serving | `openframl-ml` | Model serving, champion/challenger, shadow mode | 3 | Planned |
 
 Modules are called by their name; the code is for lookups, Maven coordinates and package names.
@@ -85,6 +85,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Watchlist Screening: account lists for the gate, name screening](docs/screening.md)
 - [Transaction Monitoring: AML scenarios after the transaction](docs/monitoring.md)
 - [Case Management: alerts, investigation, four-eyes approval](docs/cases.md)
+- [Regulatory Reporting: threshold and suspicious transaction reports](docs/reporting.md)
 - [Country packs](docs/country-packs.md)
 - [Roadmap](docs/roadmap.md)
 - [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)

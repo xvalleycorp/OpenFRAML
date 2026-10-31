@@ -1,0 +1,139 @@
+{
+  "decision": "report_transaction",
+  "description": "Vietnam's electronic funds transfer report: both sides of the threshold, both directions. Amounts in VND",
+  "cases": [
+    {
+      "name": "a transfer of 499,999,999 VND is not reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "499999999 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "nationalAmount": "499999999 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a transfer out of 500,000,000 VND is reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "500000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "nationalAmount": "500000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "ELECTRONIC_TRANSFER"
+        ]
+      }
+    },
+    {
+      "name": "a transfer in of 500,000,000 VND is reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "750000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false,
+          "nationalAmount": "750000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "ELECTRONIC_TRANSFER"
+        ]
+      }
+    },
+    {
+      "name": "a cash deposit is left to the daily cash report",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "900000000 VND",
+          "type": "CASH_DEPOSIT",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": true,
+          "nationalAmount": "900000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a card payment is not a transfer",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "600000000 VND",
+          "type": "CARD_PAYMENT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "nationalAmount": "600000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a foreign-currency transfer without a rate is compared with nothing",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "30000 USD",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    }
+  ]
+}

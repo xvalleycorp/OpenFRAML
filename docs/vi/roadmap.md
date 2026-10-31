@@ -46,7 +46,9 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 - [x] Dịch vụ hồ sơ điều tra: gRPC cho chuyên viên, người phụ trách và bộ phát hiện, chỉ qua mutual TLS (`openframl-case-server`)
 - [ ] Quản lý hồ sơ điều tra: giao diện cho chuyên viên
 - [x] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
-- [ ] Đưa giao dịch từ luồng dữ liệu của ngân hàng vào sàng lọc giao dịch và giám sát
+- [x] Luồng giao dịch: đưa giao dịch từ topic Kafka của ngân hàng vào sàng lọc giao dịch và giám sát, ít nhất một lần;
+      báo cáo hằng ngày đọc lại từ topic đó (`openframl-stream`)
+- [ ] Luồng giao dịch: kho hoạt động dùng chung giữa các tiến trình, topic dead-letter, chỉ số
 - [x] Giám sát giao dịch: kịch bản là bảng của gói quốc gia, cảnh báo chuyển sang Quản lý hồ sơ điều tra, bốn kịch bản
       mẫu cho Việt Nam (`openframl-monitor`)
 - [ ] Hồ sơ hành vi trên Flink (`openframl-features`), khoảng thời gian giám sát dài hơn, backtest kịch bản

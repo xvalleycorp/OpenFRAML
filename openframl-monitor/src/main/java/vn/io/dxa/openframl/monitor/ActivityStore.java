@@ -25,6 +25,9 @@ public interface ActivityStore {
      */
     boolean add(String account, Movement movement);
 
+    /** Whether the event is already recorded for the account. */
+    boolean contains(String account, String eventId);
+
     /** The account's movements at or after {@code since}, oldest first. */
     List<Movement> since(String account, Instant since);
 }

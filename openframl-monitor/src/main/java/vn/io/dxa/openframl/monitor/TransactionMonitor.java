@@ -43,6 +43,9 @@ import vn.io.dxa.rulestone.api.DecisionResult;
  *       never an account number.</li>
  * </ul>
  *
+ * <p>The movement is recorded only once its alerts have gone, so a transaction whose alerts could not be raised
+ * (Case Management unreachable) is evaluated again, with the same result, when it is processed again.
+ *
  * <p>Transactions of one account must be processed in order, one at a time; the suppression state is kept in this
  * process.
  */
@@ -76,11 +79,12 @@ public final class TransactionMonitor {
     public List<Alert> process(TransactionEvent event) {
         String account = event.originator().key();
         Movement movement = movement(event);
-        Optional<Instant> lastActivity = store.lastActivity(account);
-        if (!store.add(account, movement)) {
+        if (store.contains(account, movement.eventId())) {
             return List.of();
         }
-        List<Movement> recent = store.since(account, movement.at().minus(Duration.ofHours(48)));
+        Optional<Instant> lastActivity = store.lastActivity(account);
+        List<Movement> recent = new ArrayList<>(store.since(account, movement.at().minus(Duration.ofHours(48))));
+        recent.add(movement);
         MonitoringFacts.Computed computed = MonitoringFacts.of(event, movement, recent, lastActivity);
         LocalDate businessDate = LocalDate.ofInstant(event.occurredAt(), pack.businessZone());
         DecisionResult result = policy.engine().evaluate(DecisionRef.of(MonitorPolicy.SCENARIOS_ID)
@@ -110,6 +114,7 @@ public final class TransactionMonitor {
             lastAlert.put(key, movement.at());
             raised.add(alert);
         }
+        store.add(account, movement);
         return raised;
     }
 

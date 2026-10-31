@@ -44,6 +44,7 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 | [Sàng lọc danh sách](../../openframl-screen) | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước; danh sách tài khoản cho `gate` | 2 | Đã bắt đầu: sàng lọc theo tên và danh sách tài khoản |
 | [Quản lý hồ sơ điều tra](../../openframl-case) | `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Đã bắt đầu: hồ sơ và phê duyệt, lưu trên PostgreSQL |
 | [Dịch vụ hồ sơ điều tra](../../openframl-case-server) | `openframl-case-server` | Quản lý hồ sơ điều tra qua gRPC cho chuyên viên, người phụ trách và bộ phát hiện; chỉ qua mutual TLS | 2 | Đã bắt đầu |
+| [Luồng giao dịch](../../openframl-stream) | `openframl-stream` | Đưa giao dịch từ topic Kafka của ngân hàng vào sàng lọc và giám sát; job báo cáo hằng ngày | 2 | Đã bắt đầu: Dịch vụ luồng giao dịch và Job báo cáo hằng ngày |
 | [Báo cáo theo quy định](../../openframl-report) | `openframl-report` | Báo cáo theo ngưỡng và báo cáo giao dịch đáng ngờ, theo ngưỡng pháp lý của gói quốc gia | 2 | Đã bắt đầu: báo cáo theo ngưỡng hằng ngày, báo cáo giao dịch đáng ngờ từ hồ sơ |
 | Phục vụ model | `openframl-ml` | Phục vụ model, champion/challenger, chạy shadow | 3 | Dự kiến |
 
@@ -83,6 +84,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Giám sát giao dịch: kịch bản AML sau giao dịch](monitoring.md)
 - [Quản lý hồ sơ điều tra: cảnh báo, điều tra, phê duyệt hai cấp](cases.md)
 - [Báo cáo theo quy định: báo cáo theo ngưỡng và báo cáo giao dịch đáng ngờ](reporting.md)
+- [Luồng giao dịch: topic giao dịch, Dịch vụ luồng giao dịch, Job báo cáo hằng ngày](stream.md)
 - [Gói quốc gia](country-packs.md)
 - [Lộ trình](roadmap.md)
 - [Hướng dẫn đóng góp](../../CONTRIBUTING.md) · [Chính sách bảo mật](../../SECURITY.md)

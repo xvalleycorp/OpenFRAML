@@ -49,7 +49,9 @@ class StreamBrokerTest {
 
     private static final CountryPack VN = CountryPack.forCountry("VN");
     private static final String BOOTSTRAP = System.getenv("OPENFRAML_TEST_KAFKA");
-    private static final LocalDate DAY = LocalDate.of(2026, 10, 30);
+    // Brokers refuse timestamps more than an hour ahead, so the day is three days ago
+    private static final LocalDate DAY = LocalDate.now(VN.businessZone()).minusDays(3);
+    private static final Instant DAY_START = DAY.atStartOfDay(VN.businessZone()).toInstant();
 
     private final String topic = "openframl-test-" + UUID.randomUUID();
 
@@ -60,7 +62,7 @@ class StreamBrokerTest {
     }
 
     /** Publishes the events with their occurredAt as the record timestamp, keyed by account, to three partitions. */
-    private void publish(List<TransactionEvent> events) throws Exception {
+    private void publish(List<TransactionEvent> events, Instant invalidAt) throws Exception {
         try (Admin admin = Admin.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP))) {
             admin.createTopics(List.of(new NewTopic(topic, 3, (short) 1))).all().get();
         }
@@ -71,21 +73,20 @@ class StreamBrokerTest {
                 producer.send(new ProducerRecord<>(topic, null, event.occurredAt().toEpochMilli(),
                         event.originator().key(), TransactionEventJson.write(event))).get();
             }
-            producer.send(new ProducerRecord<>(topic, null, Instant.parse("2026-10-30T03:00:00Z").toEpochMilli(),
-                    "x", "not an event")).get();
+            producer.send(new ProducerRecord<>(topic, null, invalidAt.toEpochMilli(), "x", "not an event")).get();
         }
     }
 
     @Test
     void aClosedDayIsReadBackForReporting() throws Exception {
         List<TransactionEvent> events = new ArrayList<>();
-        events.add(cash("before", "cust-1", 400_000_000, Instant.parse("2026-10-28T03:00:00Z")));
+        events.add(cash("before", "cust-1", 400_000_000, DAY_START.minus(Duration.ofDays(2))));
         for (int i = 0; i < 30; i++) {
-            events.add(cash("day-" + i, "cust-" + (i % 3), 20_000_000, Instant.parse("2026-10-29T17:30:00Z")
-                    .plus(Duration.ofMinutes(40L * i))));
+            events.add(cash("day-" + i, "cust-" + (i % 3), 20_000_000,
+                    DAY_START.plus(Duration.ofMinutes(30 + 40L * i))));
         }
-        events.add(cash("after", "cust-1", 400_000_000, Instant.parse("2026-11-01T03:00:00Z")));
-        publish(events);
+        events.add(cash("after", "cust-1", 400_000_000, DAY_START.plus(Duration.ofDays(2).plusHours(10))));
+        publish(events, DAY_START.plus(Duration.ofHours(10)));
 
         DailyReporting reporting = new DailyReporting(VN, ReportPolicy.of(VN), WorkingDays.mondayToFriday(Set.of()),
                 ExchangeRates.none());
@@ -106,9 +107,9 @@ class StreamBrokerTest {
 
     @Test
     void theStreamRaisesMonitoringAlertsInCases() throws Exception {
-        Instant now = Instant.parse("2026-10-30T03:00:00Z");
+        Instant now = DAY_START.plus(Duration.ofHours(10));
         publish(List.of(cash("evt-1", "cust-1", 390_000_000, now),
-                cash("evt-2", "cust-1", 380_000_000, now.plusSeconds(60))));
+                cash("evt-2", "cust-1", 380_000_000, now.plusSeconds(60))), now.plusSeconds(120));
         CaseService cases = new CaseService(new InMemoryCaseStore(), Clock.systemUTC());
         TransactionMonitor monitor = new TransactionMonitor(VN, MonitorPolicy.of(VN), new InMemoryActivityStore(),
                 cases::raise, Duration.ofDays(7));

@@ -125,6 +125,29 @@ class RegulatoryReportingTest {
     }
 
     @Test
+    void transfersAcrossTheBorderHaveTheirOwnThreshold() {
+        TransactionEvent dollarsAbroad = TransactionEvent.builder().eventId("evt-usd").occurredAt(MORNING)
+                .channel(Channel.INTERNET).type(TransactionType.TRANSFER_OUT).amount(Amount.of(1_000, "USD"))
+                .customerId("cust-1").originator(ACCOUNT).beneficiary(OTHER).counterpartyCountry("SG").build();
+        TransactionEvent dongFromAbroad = TransactionEvent.builder().eventId("evt-vnd").occurredAt(MORNING)
+                .channel(Channel.INTERNET).type(TransactionType.TRANSFER_IN).amount(Amount.of(30_000_000, "VND"))
+                .customerId("cust-2").originator(ACCOUNT).beneficiary(OTHER).counterpartyCountry("JP").build();
+        TransactionEvent dongAtHome = TransactionEvent.builder().eventId("evt-home").occurredAt(MORNING)
+                .channel(Channel.INTERNET).type(TransactionType.TRANSFER_OUT).amount(Amount.of(30_000_000, "VND"))
+                .customerId("cust-3").originator(ACCOUNT).beneficiary(OTHER).counterpartyCountry("VN").build();
+        List<TransactionEvent> day = List.of(dollarsAbroad, dongFromAbroad, dongAtHome);
+
+        // Without rates, only the dollar amount is known in dollars
+        assertEquals(List.of("INTERNATIONAL_TRANSFER:cust-1:2026-10-30"),
+                reporting.run(DAY, day).reports().stream().map(TransactionReport::id).toList());
+
+        DailyReporting withRates = new DailyReporting(VN, ReportPolicy.of(VN), WorkingDays.mondayToFriday(Set.of()),
+                (currency, date) -> currency.equals("USD") ? Optional.of(new BigDecimal("26300")) : Optional.empty());
+        assertEquals(List.of("INTERNATIONAL_TRANSFER:cust-1:2026-10-30", "INTERNATIONAL_TRANSFER:cust-2:2026-10-30"),
+                withRates.run(DAY, day).reports().stream().map(TransactionReport::id).toList());
+    }
+
+    @Test
     void foreignCurrencyIsComparedAtTheBanksRate() {
         List<TransactionEvent> day = List.of(
                 tx("cust-1", TransactionType.TRANSFER_OUT, Amount.of(20_000, "USD"), MORNING),

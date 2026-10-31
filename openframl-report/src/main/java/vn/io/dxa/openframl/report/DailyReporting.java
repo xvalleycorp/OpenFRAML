@@ -6,6 +6,7 @@
 package vn.io.dxa.openframl.report;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import vn.io.dxa.openframl.model.Amount;
 import vn.io.dxa.openframl.model.TransactionEvent;
 import vn.io.dxa.openframl.model.TransactionType;
 import vn.io.dxa.openframl.pack.CountryPack;
@@ -36,7 +38,9 @@ import vn.io.dxa.rulestone.api.Money;
  *       fires puts all of the customer's cash transactions of the day in that report, so cash split into smaller
  *       amounts is reported like one large amount.</li>
  *   <li>Amounts are compared in the national currency: foreign-currency amounts are converted with the bank's
- *       rates, and an amount without a rate is counted in {@link Run#unconverted()} but compared with nothing.</li>
+ *       rates, and an amount without a rate is counted in {@link Run#unconverted()} but compared with nothing.
+ *       Each transaction is also given in US dollars, the currency of FATF's thresholds for wire transfers.</li>
+ *   <li>A transaction crosses the border when its counterparty's country is set and is not the pack's.</li>
  *   <li>Running a day again gives the same reports: transactions are told apart by event id, and a report's id is
  *       its kind, customer and day.</li>
  * </ul>
@@ -44,6 +48,8 @@ import vn.io.dxa.rulestone.api.Money;
  * <p>The events may come in any order; events of other business days are skipped and counted.
  */
 public final class DailyReporting {
+
+    private static final String USD = "USD";
 
     /**
      * What a run found.
@@ -92,13 +98,13 @@ public final class DailyReporting {
                 continue;
             }
             transactions++;
-            Optional<BigDecimal> national = national(event, businessDate);
+            Optional<BigDecimal> national = national(event.amount(), businessDate);
             if (national.isEmpty()) {
                 unconverted++;
             }
             if (policy.has(ReportPolicy.TRANSACTION_ID)) {
                 DecisionResult result = evaluate(ReportPolicy.TRANSACTION_ID, businessDate,
-                        transactionFacts(event, national), event.eventId());
+                        transactionFacts(event, national, businessDate), event.eventId());
                 collect(reports, result, event.customerId(), businessDate, List.of(event));
             }
             if (isCash(event.type())) {
@@ -144,10 +150,17 @@ public final class DailyReporting {
         return output == null ? List.of() : List.of(output);
     }
 
-    private Facts transactionFacts(TransactionEvent event, Optional<BigDecimal> national) {
+    private Facts transactionFacts(TransactionEvent event, Optional<BigDecimal> national, LocalDate businessDate) {
         Map<String, Object> transaction = new LinkedHashMap<>();
         transaction.put("amount", Money.of(event.amount().value(), event.amount().currency()));
         national.ifPresent(value -> transaction.put("nationalAmount", Money.of(value, pack.currency())));
+        usd(event.amount(), national, businessDate).ifPresent(value -> transaction.put("usdAmount",
+                Money.of(value, USD)));
+        String country = event.counterpartyCountry();
+        if (country != null) {
+            transaction.put("counterpartyCountry", country);
+        }
+        transaction.put("crossBorder", country != null && !country.equals(pack.countryCode()));
         transaction.put("type", event.type().name());
         transaction.put("channel", event.channel().name());
         transaction.put("direction", isIncoming(event.type()) ? "IN" : "OUT");
@@ -155,12 +168,22 @@ public final class DailyReporting {
         return Facts.from(Map.of("transaction", transaction));
     }
 
-    private Optional<BigDecimal> national(TransactionEvent event, LocalDate businessDate) {
-        String currency = event.amount().currency();
+    private Optional<BigDecimal> national(Amount amount, LocalDate businessDate) {
+        String currency = amount.currency();
         if (currency.equals(pack.currency())) {
-            return Optional.of(event.amount().value());
+            return Optional.of(amount.value());
         }
-        return rates.rate(currency, businessDate).map(rate -> event.amount().value().multiply(rate));
+        return rates.rate(currency, businessDate).map(rate -> amount.value().multiply(rate));
+    }
+
+    /** The amount in US dollars, through the national currency, to the cent. */
+    private Optional<BigDecimal> usd(Amount amount, Optional<BigDecimal> national, LocalDate businessDate) {
+        if (amount.currency().equals(USD)) {
+            return Optional.of(amount.value());
+        }
+        return national.flatMap(value -> national(new Amount(BigDecimal.ONE, USD), businessDate)
+                .filter(rate -> rate.signum() > 0)
+                .map(rate -> value.divide(rate, 2, RoundingMode.HALF_EVEN)));
     }
 
     static boolean isCash(TransactionType type) {

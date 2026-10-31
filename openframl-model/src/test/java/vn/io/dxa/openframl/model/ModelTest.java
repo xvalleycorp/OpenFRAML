@@ -49,7 +49,15 @@ class ModelTest {
         assertSame(SessionSignals.NONE, event.session());
         assertThrows(IllegalArgumentException.class, () -> new TransactionEvent("2", event.eventId(),
                 event.occurredAt(), event.channel(), event.type(), event.amount(), event.customerId(),
-                event.originator(), event.beneficiary(), event.session(), null));
+                event.originator(), event.beneficiary(), event.session(), null, null));
+    }
+
+    @Test
+    void theCounterpartysCountryIsAnIsoCode() {
+        assertEquals("SG", event().counterpartyCountry(" SG ").build().counterpartyCountry());
+        assertNull(event().counterpartyCountry("").build().counterpartyCountry());
+        assertThrows(IllegalArgumentException.class, () -> event().counterpartyCountry("sg").build());
+        assertThrows(IllegalArgumentException.class, () -> event().counterpartyCountry("SGP").build());
     }
 
     @Test

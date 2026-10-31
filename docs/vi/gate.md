@@ -237,6 +237,9 @@ gọi `GateService.Decide`, từ `Transaction` ra `DecideResponse`.
 - **Tên.** `beneficiary_name`, không bắt buộc, là tên mà giao dịch mang theo (ví dụ từ tra cứu tên của hệ thống
   thanh toán). Trường này dùng cho sàng lọc sau giao dịch; quyết định của `gate` không dùng đến nó, và nó không bao giờ
   được ghi log hay lưu lại.
+- **Quốc gia.** `counterparty_country`, không bắt buộc, là mã ISO 3166-1 alpha-2 của nước nơi tổ chức của bên đối ứng
+  đặt trụ sở (`"SG"`). Hãy đặt trường này cho mọi giao dịch ra hoặc vào từ nước ngoài: Báo cáo theo quy định dùng nó
+  cho ngưỡng chuyển tiền quốc tế.
 - **Số tiền.** Số thập phân chính xác dạng chuỗi, không có số mũ (`"1500000"`, `"12.50"`); số thực dấu phẩy động
   không bao giờ tới được `gate`.
 

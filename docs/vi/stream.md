@@ -83,6 +83,7 @@ ngày, job chạy cho ngày hôm trước.
 | `OPENFRAML_REPORT_RATES` | (không có) | Mỗi dòng `currency,rate`: số nội tệ cho một đơn vị ngoại tệ, dùng cho cả ngày |
 | `OPENFRAML_REPORT_HOLIDAYS` | (không có) | Mỗi dòng một ngày dạng ISO: các ngày nghỉ lễ được bỏ qua khi tính thời hạn |
 | `OPENFRAML_REPORT_MARGIN_MINUTES` | `60` | Đọc topic rộng ra ngoài ngày bao nhiêu phút |
+| `OPENFRAML_REPORT_DETECTION` | `APPROVAL` | Lúc nào nghi ngờ được coi là đã phát hiện: `APPROVAL` hoặc `FIRST_ALERT` |
 
 ## Tiếp theo
 

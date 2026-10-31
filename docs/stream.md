@@ -82,6 +82,7 @@ runs on the day before today.
 | `OPENFRAML_REPORT_RATES` | (none) | `currency,rate` per line: national currency per unit, for the day |
 | `OPENFRAML_REPORT_HOLIDAYS` | (none) | One ISO date per line: the public holidays that deadlines skip |
 | `OPENFRAML_REPORT_MARGIN_MINUTES` | `60` | How far beyond the day to read the topic |
+| `OPENFRAML_REPORT_DETECTION` | `APPROVAL` | When a suspicion counts as detected: `APPROVAL` or `FIRST_ALERT` |
 
 ## Next
 

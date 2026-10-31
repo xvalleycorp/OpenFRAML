@@ -92,6 +92,19 @@ public final class ReportJson {
         return json;
     }
 
+    /** The report with its deadlines, under {@code deadline}. */
+    public static ObjectNode toJson(SuspiciousTransactionReport report, SuspiciousDeadlines.Deadline deadline) {
+        ObjectNode json = toJson(report);
+        ObjectNode d = json.putObject("deadline");
+        d.put("dueBy", deadline.dueBy().toString());
+        d.put("transactionDate", deadline.transactionDate().toString());
+        d.put("dueFromTransaction", deadline.dueFromTransaction().toString());
+        deadline.detectedOn().ifPresent(day -> d.put("detectedOn", day.toString()));
+        deadline.dueFromDetection().ifPresent(day -> d.put("dueFromDetection", day.toString()));
+        d.put("table", deadline.table());
+        return json;
+    }
+
     /** The report as one line of JSON. */
     public static String write(TransactionReport report) {
         return toJson(report).toString();

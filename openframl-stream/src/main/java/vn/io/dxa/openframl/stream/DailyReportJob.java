@@ -15,12 +15,14 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import vn.io.dxa.openframl.cases.CaseFile;
 import vn.io.dxa.openframl.cases.CaseStore;
@@ -29,6 +31,7 @@ import vn.io.dxa.openframl.report.DailyReporting;
 import vn.io.dxa.openframl.report.ExchangeRates;
 import vn.io.dxa.openframl.report.ReportJson;
 import vn.io.dxa.openframl.report.ReportPolicy;
+import vn.io.dxa.openframl.report.SuspiciousDeadlines;
 import vn.io.dxa.openframl.report.SuspiciousTransactionReport;
 import vn.io.dxa.openframl.report.TransactionReport;
 import vn.io.dxa.openframl.report.WorkingDays;
@@ -55,8 +58,9 @@ public final class DailyReportJob {
         Path out = Path.of(env.getOrDefault("OPENFRAML_REPORT_OUT_DIR", "."));
         Files.createDirectories(out);
 
-        DailyReporting reporting = new DailyReporting(pack, ReportPolicy.of(pack),
-                WorkingDays.mondayToFriday(holidays(env.get("OPENFRAML_REPORT_HOLIDAYS"))),
+        ReportPolicy policy = ReportPolicy.of(pack);
+        WorkingDays workingDays = WorkingDays.mondayToFriday(holidays(env.get("OPENFRAML_REPORT_HOLIDAYS")));
+        DailyReporting reporting = new DailyReporting(pack, policy, workingDays,
                 rates(env.get("OPENFRAML_REPORT_RATES")));
         DailyReporting.Run run;
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(StreamService.consumerConfig(env, null))) {
@@ -72,10 +76,25 @@ public final class DailyReportJob {
                 run.reports().stream().map(ReportJson::write).toList());
 
         CaseStore cases = StreamService.caseStore(env);
-        List<SuspiciousTransactionReport> suspicious = suspiciousOf(cases.withStatus(CaseFile.Status.CLOSED), day,
-                pack);
-        write(out.resolve("suspicious-reports-" + day + ".jsonl"),
-                suspicious.stream().map(ReportJson::write).toList());
+        List<CaseFile> concluded = concludedOn(cases.withStatus(CaseFile.Status.CLOSED), day, pack);
+        List<SuspiciousTransactionReport> suspicious = concluded.stream().map(SuspiciousTransactionReport::of)
+                .toList();
+        if (policy.has(ReportPolicy.SUSPICIOUS_ID)) {
+            SuspiciousDeadlines deadlines = new SuspiciousDeadlines(pack, policy, workingDays,
+                    SuspiciousDeadlines.Detection.valueOf(env.getOrDefault("OPENFRAML_REPORT_DETECTION", "APPROVAL")));
+            List<String> lines = new ArrayList<>();
+            for (CaseFile c : concluded) {
+                lines.add(ReportJson.toJson(SuspiciousTransactionReport.of(c), deadlines.of(c)).toString());
+                if (deadlines.concludedLate(c)) {
+                    LOG.log(System.Logger.Level.WARNING, "case {0} was concluded after the deadline counted from its "
+                            + "first transaction ({1})", c.id(), deadlines.of(c).dueFromTransaction());
+                }
+            }
+            write(out.resolve("suspicious-reports-" + day + ".jsonl"), lines);
+        } else {
+            write(out.resolve("suspicious-reports-" + day + ".jsonl"),
+                    suspicious.stream().map(ReportJson::write).toList());
+        }
 
         LOG.log(System.Logger.Level.INFO, "{0}: {1} transaction(s), {2} threshold report(s), {3} suspicious "
                 + "transaction report(s); {4} duplicate(s), {5} of other days, {6} without an exchange rate", day,
@@ -87,11 +106,12 @@ public final class DailyReportJob {
         }
     }
 
-    /** The reports of the cases concluded as reported on the business day. */
-    static List<SuspiciousTransactionReport> suspiciousOf(List<CaseFile> closed, LocalDate day, CountryPack pack) {
-        return SuspiciousTransactionReport.fromCases(closed).stream()
+    /** The cases concluded as reported on the business day, oldest conclusion first. */
+    static List<CaseFile> concludedOn(List<CaseFile> closed, LocalDate day, CountryPack pack) {
+        Set<String> ids = SuspiciousTransactionReport.fromCases(closed).stream()
                 .filter(report -> LocalDate.ofInstant(report.concludedAt(), pack.businessZone()).equals(day))
-                .toList();
+                .map(SuspiciousTransactionReport::caseId).collect(Collectors.toSet());
+        return closed.stream().filter(c -> ids.contains(c.id())).toList();
     }
 
     /** Written under a temporary name and moved into place, readable by the owner only where the file system can. */

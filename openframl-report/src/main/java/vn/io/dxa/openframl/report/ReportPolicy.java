@@ -39,6 +39,12 @@ public final class ReportPolicy {
      */
     public static final String DAILY_ID = "report_daily";
 
+    /**
+     * Optional, hit policy {@code FIRST}: the deadlines of a suspicious transaction report, as the int outputs
+     * {@code fromDetection} and {@code fromTransaction}, in working days. See {@link SuspiciousDeadlines}.
+     */
+    public static final String SUSPICIOUS_ID = "report_suspicious";
+
     private static final Pattern WORKING_DAYS = Pattern.compile("[1-9][0-9]?");
 
     private final List<DecisionTable> tables;
@@ -73,7 +79,7 @@ public final class ReportPolicy {
     }
 
     /** Whether the policy has a table with this id. */
-    boolean has(String id) {
+    public boolean has(String id) {
         return tables.stream().anyMatch(table -> table.id().equals(id));
     }
 
@@ -86,6 +92,20 @@ public final class ReportPolicy {
                 .filter(table -> table.id().equals(TRANSACTION_ID) || table.id().equals(DAILY_ID)).toList();
         if (versions.isEmpty()) {
             throw new IllegalStateException("the policy has neither " + TRANSACTION_ID + " nor " + DAILY_ID);
+        }
+        for (DecisionTable table : tables.stream().filter(table -> table.id().equals(SUSPICIOUS_ID)).toList()) {
+            for (String output : List.of("fromDetection", "fromTransaction")) {
+                if (!ValueType.INT.equals(table.outputs().get(output))) {
+                    throw new IllegalStateException(table.ref() + " must declare the int output '" + output + "'");
+                }
+                for (Rule rule : table.rules()) {
+                    String expression = rule.then().get(output);
+                    if (expression == null || !WORKING_DAYS.matcher(expression.strip()).matches()) {
+                        throw new IllegalStateException(table.ref() + " rule " + rule.id() + " must set " + output
+                                + " to a number of working days from 1 to 99");
+                    }
+                }
+            }
         }
         for (DecisionTable table : versions) {
             if (!ValueType.INT.equals(table.outputs().get("dueWorkingDays"))) {

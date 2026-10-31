@@ -1,0 +1,16 @@
+{
+  "decision": "report_suspicious",
+  "description": "Vietnam's suspicious transaction report deadlines",
+  "cases": [
+    {
+      "name": "three working days from the transaction, one from detection",
+      "asOf": "2026-10-30",
+      "facts": {},
+      "expect": {
+        "output": { "fromDetection": 1, "fromTransaction": 3 },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    }
+  ]
+}

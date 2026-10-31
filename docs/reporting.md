@@ -9,6 +9,9 @@ OpenFRAML produces the content of each report in an open JSON form. Filling the 
 through its channel is a separate step. The customer's identity details (name, ID number, address) come from the
 bank's own records at that step.
 
+The Daily Report Job of Transaction Stream ([`openframl-stream`](stream.md)) runs all of this on a closed day, read
+back from the bank's transaction topic, and writes the reports to files.
+
 ## Threshold reports, day by day
 
 `DailyReporting` runs once a business day has closed, on that day's transactions:

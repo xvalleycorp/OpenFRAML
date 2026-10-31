@@ -17,9 +17,9 @@ trong bản sao bảng của mình, có ngày hiệu lực, và kiểm thử gi�
    khách hàng chỉ phát sinh một cảnh báo trong mỗi chu kỳ chặn lặp (mặc định 7 ngày), vì hồ sơ đang mở đã có cảnh báo
    đó.
 
-Các giao dịch của một tài khoản phải được xử lý theo đúng thứ tự; tầng stream sẽ phân vùng theo tài khoản. Trong lúc
-chưa có tầng stream, một batch job có thể gọi `TransactionMonitor.process`. `InMemoryActivityStore` giữ 35 ngày giao
-dịch.
+Các giao dịch của một tài khoản phải được xử lý theo đúng thứ tự. Dịch vụ luồng giao dịch của Luồng giao dịch
+([`openframl-stream`](stream.md)) đưa giao dịch từ topic giao dịch của ngân hàng, có khóa theo tài khoản, vào phần giám
+sát; một batch job cũng có thể gọi `TransactionMonitor.process`. `InMemoryActivityStore` giữ 35 ngày giao dịch.
 
 ## Facts
 

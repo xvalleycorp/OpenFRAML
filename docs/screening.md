@@ -60,8 +60,8 @@ becomes an alert for Case Management (`openframl-case`):
 
 `ScreeningDirectory` keeps the lists in one directory, `<source>@<version>.csv` files in the open CSV form and the UN
 list as `UN-SC*.xml`, and builds a new screener when a file changes; if a file cannot be read, the previous lists stay
-in use. Feeding it payments from the bank's stream is the job of the stream layer (planned); until then a batch job
-can call it.
+in use. The Stream Service of Transaction Stream ([`openframl-stream`](stream.md)) feeds it the payments of the
+bank's transaction topic; a batch job can also call it.
 
 ## The UN Security Council list
 

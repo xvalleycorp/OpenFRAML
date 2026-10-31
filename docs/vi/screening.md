@@ -63,8 +63,8 @@ trong danh sách mà tên đó có thể trùng sẽ thành một cảnh báo ch
 
 `ScreeningDirectory` giữ các danh sách trong một thư mục: các file `<source>@<version>.csv` theo dạng CSV mở, và danh
 sách của Liên hợp quốc dưới tên `UN-SC*.xml`. Mỗi khi có file thay đổi, nó dựng một screener mới; nếu không đọc được
-một file, các danh sách cũ vẫn được dùng. Việc đưa giao dịch từ luồng dữ liệu của ngân hàng vào là việc của tầng stream
-(dự kiến); trong lúc chưa có, một batch job có thể gọi trực tiếp.
+một file, các danh sách cũ vẫn được dùng. Dịch vụ luồng giao dịch của Luồng giao dịch ([`openframl-stream`](stream.md))
+đưa các giao dịch từ topic giao dịch của ngân hàng vào; một batch job cũng có thể gọi trực tiếp.
 
 ## Danh sách của Hội đồng Bảo an Liên hợp quốc
 

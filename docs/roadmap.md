@@ -46,7 +46,9 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Case Service: gRPC for analysts, supervisors and detectors, mutual TLS only (`openframl-case-server`)
 - [ ] Case Management: screens for analysts
 - [x] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
-- [ ] Feeding payment screening and monitoring from the bank's transaction stream
+- [x] Transaction Stream: payment screening and monitoring fed from the bank's Kafka topic, at least once; daily
+      reports read back from it (`openframl-stream`)
+- [ ] Transaction Stream: an activity store shared by processes, a dead-letter topic, metrics
 - [x] Transaction Monitoring: scenarios as country pack tables, alerts to Case Management, four Vietnam samples
       (`openframl-monitor`)
 - [ ] Behaviour Profiles on Flink (`openframl-features`), longer monitoring windows, backtesting scenarios

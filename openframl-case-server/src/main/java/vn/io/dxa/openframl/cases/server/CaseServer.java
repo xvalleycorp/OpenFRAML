@@ -12,21 +12,15 @@ import io.grpc.ServerInterceptors;
 import io.grpc.TlsServerCredentials;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
 import vn.io.dxa.openframl.cases.CaseService;
 import vn.io.dxa.openframl.cases.CaseStore;
+import vn.io.dxa.openframl.cases.jdbc.DriverDataSource;
 import vn.io.dxa.openframl.cases.jdbc.JdbcCaseStore;
 import vn.io.dxa.openframl.cases.memory.InMemoryCaseStore;
 
@@ -121,53 +115,5 @@ public final class CaseServer implements AutoCloseable {
     private static Set<String> names(String list) {
         return list == null ? Set.of() : Arrays.stream(list.split(",")).map(String::strip)
                 .filter(name -> !name.isEmpty()).collect(Collectors.toUnmodifiableSet());
-    }
-
-    /**
-     * Connections from {@link DriverManager}, one per call: enough for the volume of a case service. A bank that
-     * wants a pool builds its own {@link JdbcCaseStore} with its pool and serves it with {@link #start}.
-     */
-    private record DriverDataSource(String url) implements DataSource {
-
-        @Override
-        public Connection getConnection() throws SQLException {
-            return DriverManager.getConnection(url);
-        }
-
-        @Override
-        public Connection getConnection(String user, String password) throws SQLException {
-            return DriverManager.getConnection(url, user, password);
-        }
-
-        @Override
-        public PrintWriter getLogWriter() {
-            return null;
-        }
-
-        @Override
-        public void setLogWriter(PrintWriter out) {}
-
-        @Override
-        public void setLoginTimeout(int seconds) {}
-
-        @Override
-        public int getLoginTimeout() {
-            return 0;
-        }
-
-        @Override
-        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-            throw new SQLFeatureNotSupportedException();
-        }
-
-        @Override
-        public <T> T unwrap(Class<T> type) throws SQLException {
-            throw new SQLException("not a wrapper");
-        }
-
-        @Override
-        public boolean isWrapperFor(Class<?> type) {
-            return false;
-        }
     }
 }

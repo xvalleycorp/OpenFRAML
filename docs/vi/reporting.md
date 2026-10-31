@@ -11,6 +11,9 @@ OpenFRAML tạo ra nội dung của từng báo cáo ở một dạng JSON mở.
 của cơ quan đó là một bước riêng. Ở bước đó, thông tin nhận biết khách hàng (họ tên, số định danh, địa chỉ) được lấy
 từ hệ thống của chính ngân hàng.
 
+Job báo cáo hằng ngày của Luồng giao dịch ([`openframl-stream`](stream.md)) chạy toàn bộ phần này cho một ngày đã kết
+thúc, đọc lại từ topic giao dịch của ngân hàng, và ghi các báo cáo ra file.
+
 ## Báo cáo theo ngưỡng, theo từng ngày
 
 `DailyReporting` chạy sau khi một ngày làm việc kết thúc, trên các giao dịch của ngày đó:

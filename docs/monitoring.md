@@ -16,8 +16,9 @@ or adds a scenario in its own copy of the table, with effective dates, and tests
    table version and the activity it saw; never an account number. A scenario that keeps firing for a customer
    raises one alert per suppression period (7 days by default): the open case already holds it.
 
-Transactions of one account must be processed in order; the stream layer will partition by account. Until it exists,
-a batch job can feed `TransactionMonitor.process`. `InMemoryActivityStore` keeps 35 days of movements.
+Transactions of one account must be processed in order. The Stream Service of Transaction Stream
+([`openframl-stream`](stream.md)) feeds monitoring from the bank's transaction topic, keyed by account; a batch job
+can also call `TransactionMonitor.process`. `InMemoryActivityStore` keeps 35 days of movements.
 
 ## Facts
 

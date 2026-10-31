@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>vn.io.dxa.openframl</groupId>
+    <artifactId>openframl-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>openframl-stream</artifactId>
+  <name>OpenFRAML Transaction Stream</name>
+  <description>
+    Feeds the bank's transactions from Kafka to payment screening and monitoring as they happen, and reads a closed
+    business day back for Regulatory Reporting.
+  </description>
+  <url>https://github.com/xvalleycorp/OpenFRAML/tree/main/openframl-stream</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-screen</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-monitor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-report</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-case</artifactId>
+    </dependency>
+    <!-- Also brings Jackson, used for the events' JSON form at the version RuleStone is built with -->
+    <dependency>
+      <groupId>vn.io.dxa.rulestone</groupId>
+      <artifactId>rulestone-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+    </dependency>
+    <!-- The country pack the services run with, chosen by OPENFRAML_COUNTRY -->
+    <dependency>
+      <groupId>vn.io.dxa.openframl</groupId>
+      <artifactId>openframl-vn</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+</project>

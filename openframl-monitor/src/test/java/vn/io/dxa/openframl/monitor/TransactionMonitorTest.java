@@ -129,6 +129,28 @@ class TransactionMonitorTest {
     }
 
     @Test
+    void anAlertThatCouldNotBeRaisedIsRaisedWhenTheTransactionComesAgain() {
+        List<Alert> raised = new ArrayList<>();
+        boolean[] down = {true};
+        TransactionMonitor flaky = new TransactionMonitor(VN, MonitorPolicy.of(VN), new InMemoryActivityStore(),
+                alert -> {
+                    if (down[0]) {
+                        throw new IllegalStateException("case store unreachable");
+                    }
+                    raised.add(alert);
+                }, Duration.ofDays(7));
+        flaky.process(tx(TransactionType.CASH_DEPOSIT, 390_000_000, NOW, null));
+        TransactionEvent second = tx(TransactionType.CASH_DEPOSIT, 380_000_000, NOW.plusSeconds(60), null);
+
+        assertThrows(IllegalStateException.class, () -> flaky.process(second));
+        down[0] = false;
+        flaky.process(second);
+
+        assertEquals(List.of("CASH_STRUCTURING"), scenarios(raised));
+        assertEquals(List.of(), flaky.process(second), "recorded once its alerts went");
+    }
+
+    @Test
     void aPolicyWithoutSeverityIsNeverBuilt() {
         String table = DecisionTableJson.write(MonitorPolicy.of(VN).tables().getFirst())
                 .replace("'HIGH'", "'URGENT'");

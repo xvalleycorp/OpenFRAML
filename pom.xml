@@ -67,6 +67,7 @@
     <module>openframl-screen</module>
     <module>openframl-monitor</module>
     <module>openframl-report</module>
+    <module>openframl-stream</module>
     <module>openframl-gate-server</module>
     <module>openframl-case-server</module>
     <module>openframl-benchmark</module>
@@ -141,6 +142,11 @@
       <dependency>
         <groupId>vn.io.dxa.openframl</groupId>
         <artifactId>openframl-report</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>vn.io.dxa.openframl</groupId>
+        <artifactId>openframl-stream</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

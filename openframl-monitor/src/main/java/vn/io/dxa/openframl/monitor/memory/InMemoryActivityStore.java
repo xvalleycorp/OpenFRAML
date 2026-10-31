@@ -47,6 +47,12 @@ public final class InMemoryActivityStore implements ActivityStore {
     }
 
     @Override
+    public boolean contains(String account, String eventId) {
+        Account found = accounts.get(account);
+        return found != null && found.contains(eventId);
+    }
+
+    @Override
     public List<Movement> since(String account, Instant since) {
         Account found = accounts.get(account);
         return found == null ? List.of() : found.since(since);
@@ -69,6 +75,10 @@ public final class InMemoryActivityStore implements ActivityStore {
                 events.remove(movements.pollFirst().eventId());
             }
             return true;
+        }
+
+        synchronized boolean contains(String eventId) {
+            return events.contains(eventId);
         }
 
         synchronized Optional<Instant> last() {

@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,19 +62,27 @@ class StreamBrokerTest {
                 .originator(new AccountRef("999901", "000" + customer.hashCode())).build();
     }
 
-    /** Publishes the events with their occurredAt as the record timestamp, keyed by account, to three partitions. */
+    /**
+     * Publishes the events with their occurredAt as the record timestamp, keyed by account, to three partitions, and
+     * a record that is not an event; in time order, as a payment hub does.
+     */
     private void publish(List<TransactionEvent> events, Instant invalidAt) throws Exception {
         try (Admin admin = Admin.create(Map.of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP))) {
             admin.createTopics(List.of(new NewTopic(topic, 3, (short) 1))).all().get();
         }
+        List<ProducerRecord<String, String>> records = new ArrayList<>();
+        for (TransactionEvent event : events) {
+            records.add(new ProducerRecord<>(topic, null, event.occurredAt().toEpochMilli(), event.originator().key(),
+                    TransactionEventJson.write(event)));
+        }
+        records.add(new ProducerRecord<>(topic, null, invalidAt.toEpochMilli(), "x", "not an event"));
+        records.sort(Comparator.comparing(ProducerRecord::timestamp));
         try (KafkaProducer<String, String> producer = new KafkaProducer<>(Map.of(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP, ProducerConfig.ACKS_CONFIG, "all"),
                 new StringSerializer(), new StringSerializer())) {
-            for (TransactionEvent event : events) {
-                producer.send(new ProducerRecord<>(topic, null, event.occurredAt().toEpochMilli(),
-                        event.originator().key(), TransactionEventJson.write(event))).get();
+            for (ProducerRecord<String, String> record : records) {
+                producer.send(record).get();
             }
-            producer.send(new ProducerRecord<>(topic, null, invalidAt.toEpochMilli(), "x", "not an event")).get();
         }
     }
 

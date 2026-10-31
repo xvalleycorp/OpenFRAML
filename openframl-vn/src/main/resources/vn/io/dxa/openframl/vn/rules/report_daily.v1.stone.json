@@ -1,0 +1,22 @@
+{
+  "id": "report_daily",
+  "version": "1",
+  "description": "Vietnam's large-value cash transaction report, evaluated per customer and business day on the day's cash deposits and withdrawals, VND and foreign currency converted to VND. Threshold of Decision 11/2023/QD-TTg (400,000,000 VND or the equivalent, from 1 December 2023, replacing the 300,000,000 VND of Decision 20/2013/QD-TTg); deadline of Article 37(1) of the Anti-Money Laundering Law 14/2022/QH15 (one working day, filed electronically). Whether deposits and withdrawals are summed together is to be confirmed against the official gazette and Circular 27/2025/TT-NHNN; this table sums them, which reports more rather than less",
+  "effectiveFrom": "2023-12-01",
+  "hitPolicy": "COLLECT",
+  "inputs": {
+    "cashIn": { "count": "int", "amount": "money" },
+    "cashOut": { "count": "int", "amount": "money" },
+    "cash": { "count": "int", "amount": "money" }
+  },
+  "outputs": { "dueWorkingDays": "int" },
+  "rules": [
+    {
+      "id": "LARGE_CASH",
+      "description": "Cash deposited and withdrawn by one customer in one day comes to 400,000,000 VND or more",
+      "when": "cash.amount >= money(400000000, 'VND')",
+      "then": { "dueWorkingDays": "1" },
+      "reasonCode": "LARGE_CASH"
+    }
+  ]
+}

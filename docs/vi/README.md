@@ -44,7 +44,7 @@ sàng lọc danh sách, quản lý hồ sơ và báo cáo theo quy định — t
 | [Sàng lọc danh sách](../../openframl-screen) | `openframl-screen` | Sàng lọc theo danh sách cấm vận, PEP và danh sách của từng nước; danh sách tài khoản cho `gate` | 2 | Đã bắt đầu: sàng lọc theo tên và danh sách tài khoản |
 | [Quản lý hồ sơ điều tra](../../openframl-case) | `openframl-case` | Cảnh báo, điều tra, phê duyệt hai cấp | 2 | Đã bắt đầu: hồ sơ và phê duyệt, lưu trên PostgreSQL |
 | [Dịch vụ hồ sơ điều tra](../../openframl-case-server) | `openframl-case-server` | Quản lý hồ sơ điều tra qua gRPC cho chuyên viên, người phụ trách và bộ phát hiện; chỉ qua mutual TLS | 2 | Đã bắt đầu |
-| Báo cáo theo quy định | `openframl-report` | Báo cáo cho cơ quan quản lý theo mẫu của từng gói quốc gia | 2 | Dự kiến |
+| [Báo cáo theo quy định](../../openframl-report) | `openframl-report` | Báo cáo theo ngưỡng và báo cáo giao dịch đáng ngờ, theo ngưỡng pháp lý của gói quốc gia | 2 | Đã bắt đầu: báo cáo theo ngưỡng hằng ngày, báo cáo giao dịch đáng ngờ từ hồ sơ |
 | Phục vụ model | `openframl-ml` | Phục vụ model, champion/challenger, chạy shadow | 3 | Dự kiến |
 
 Module được gọi bằng tên; mã dùng để tra cứu, cho tọa độ Maven và tên package.
@@ -82,6 +82,7 @@ GateOutcome outcome = gate.decide(event, Duration.ofMillis(30));
 - [Sàng lọc danh sách: danh sách tài khoản cho `gate`, sàng lọc theo tên](screening.md)
 - [Giám sát giao dịch: kịch bản AML sau giao dịch](monitoring.md)
 - [Quản lý hồ sơ điều tra: cảnh báo, điều tra, phê duyệt hai cấp](cases.md)
+- [Báo cáo theo quy định: báo cáo theo ngưỡng và báo cáo giao dịch đáng ngờ](reporting.md)
 - [Gói quốc gia](country-packs.md)
 - [Lộ trình](roadmap.md)
 - [Hướng dẫn đóng góp](../../CONTRIBUTING.md) · [Chính sách bảo mật](../../SECURITY.md)

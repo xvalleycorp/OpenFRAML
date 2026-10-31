@@ -10,7 +10,7 @@ pack, not the only one: adding a country means adding a pack, not changing the c
 | Business time zone and national currency | Yes | |
 | Decision tables for the gate (`gate_decision`, `gate_fallback`) | Yes | |
 | Reason messages in English and the country's languages | Yes | |
-| Legal thresholds with effective dates (large-value, electronic transfer reporting) | | Phase 2 |
+| Legal thresholds with effective dates (`report_transaction`, `report_daily`) | | Phase 2: started, see [Regulatory Reporting](reporting.md) |
 | AML scenarios for monitoring (`monitor_scenarios`), apart from the gate's tables | | Phase 2: started, see [Transaction Monitoring](monitoring.md) |
 | Report templates and submission channels | | Phase 2 |
 | List sources (sanctions, police, regulator) and name normalisation | | Phase 2 |
@@ -54,8 +54,9 @@ The sample prefers `CHALLENGE` to `DENY`: blocking a genuine payment is costly t
 confirms the payment themselves, so a warning at the right moment is what stops it. Every rule and both sides of
 every threshold have a case in `openframl-vn/src/test/rules`; the build fails if any rule is never matched.
 
-Legal thresholds and report templates come in phase 2, each checked against the official gazette before it is
-added. The analysis so far relies on secondary sources.
+Legal thresholds come with the regulation and the effective date that set them, and each table says what is still
+to be confirmed against the official gazette: the Vietnam thresholds so far were checked against published summaries
+and republished texts. Report templates come later in phase 2.
 
 ## Adding a country
 

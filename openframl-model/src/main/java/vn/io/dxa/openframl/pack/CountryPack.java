@@ -47,6 +47,14 @@ public interface CountryPack {
     }
 
     /**
+     * Regulatory Reporting's threshold tables ({@code .stone.json}), past versions included; none by default. These
+     * hold legal thresholds, each version effective from the date of the regulation that sets it.
+     */
+    default List<PackResource> reportingTables() {
+        return List.of();
+    }
+
+    /**
      * The message for a reason code in a language, for investigators and reviewers. Not for customers: AML reasons
      * must not be disclosed to them.
      *

@@ -44,13 +44,16 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
       (`openframl-case`)
 - [x] Quản lý hồ sơ điều tra: lưu hồ sơ trong cơ sở dữ liệu quan hệ (`JdbcCaseStore`, tham chiếu là PostgreSQL)
 - [x] Dịch vụ hồ sơ điều tra: gRPC cho chuyên viên, người phụ trách và bộ phát hiện, chỉ qua mutual TLS (`openframl-case-server`)
-- [ ] Quản lý hồ sơ điều tra: giao diện cho chuyên viên, và báo cáo giao dịch đáng ngờ
+- [ ] Quản lý hồ sơ điều tra: giao diện cho chuyên viên
 - [x] Sàng lọc tên người thụ hưởng sau giao dịch, với cảnh báo chuyển sang Quản lý hồ sơ điều tra (`openframl-case`)
 - [ ] Đưa giao dịch từ luồng dữ liệu của ngân hàng vào sàng lọc giao dịch và giám sát
 - [x] Giám sát giao dịch: kịch bản là bảng của gói quốc gia, cảnh báo chuyển sang Quản lý hồ sơ điều tra, bốn kịch bản
       mẫu cho Việt Nam (`openframl-monitor`)
 - [ ] Hồ sơ hành vi trên Flink (`openframl-features`), khoảng thời gian giám sát dài hơn, backtest kịch bản
-- [ ] Báo cáo theo quy định (`openframl-report`): báo cáo giao dịch giá trị lớn và giao dịch đáng ngờ
+- [x] Báo cáo theo quy định: báo cáo theo ngưỡng hằng ngày từ bảng của gói quốc gia, báo cáo giao dịch đáng ngờ từ
+      hồ sơ, một dạng JSON mở; ngưỡng tiền mặt giá trị lớn và chuyển tiền điện tử của Việt Nam (`openframl-report`)
+- [ ] Báo cáo theo quy định: mẫu biểu và kênh nộp điện tử của cơ quan quản lý, chuyển tiền quốc tế, các loại giao
+      dịch được loại trừ, thời hạn cho báo cáo giao dịch đáng ngờ
 
 ## Chi phí và quyền kiểm soát
 

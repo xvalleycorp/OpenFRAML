@@ -44,13 +44,16 @@ Started while the phase 1 server measurements wait for hardware.
       (`openframl-case`)
 - [x] Case Management: cases in a relational database (`JdbcCaseStore`, PostgreSQL as reference)
 - [x] Case Service: gRPC for analysts, supervisors and detectors, mutual TLS only (`openframl-case-server`)
-- [ ] Case Management: screens for analysts, and suspicious transaction reports
+- [ ] Case Management: screens for analysts
 - [x] Screening of payment beneficiary names after the payment, with alerts to Case Management (`openframl-case`)
 - [ ] Feeding payment screening and monitoring from the bank's transaction stream
 - [x] Transaction Monitoring: scenarios as country pack tables, alerts to Case Management, four Vietnam samples
       (`openframl-monitor`)
 - [ ] Behaviour Profiles on Flink (`openframl-features`), longer monitoring windows, backtesting scenarios
-- [ ] Regulatory Reporting (`openframl-report`): large-value and suspicious transaction reports
+- [x] Regulatory Reporting: daily threshold reports from country pack tables, suspicious transaction reports from
+      cases, an open JSON form; Vietnam's large-value cash and electronic transfer thresholds (`openframl-report`)
+- [ ] Regulatory Reporting: the authority's forms and electronic submission, international transfers, excluded
+      transaction types, deadlines for suspicious transaction reports
 
 ## Cost and control
 

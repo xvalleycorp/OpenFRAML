@@ -49,7 +49,7 @@ thresholds illustrate the typologies and are not legal thresholds, except for `C
 1 December 2023, replacing the 300,000,000 VND of Decision 20/2013/QĐ-TTg. The figure and the date were checked
 against several published summaries of the decision, not yet against the official gazette; confirm them there before
 relying on them, as for any legal threshold. Reporting large-value transactions themselves is the job of Regulatory
-Reporting (`openframl-report`, planned), not of an alert.
+Reporting ([`openframl-report`](reporting.md)), not of an alert.
 
 Every scenario and both sides of every threshold have a case in
 `openframl-vn/src/test/rules/monitor_scenarios.stone-test.json`.

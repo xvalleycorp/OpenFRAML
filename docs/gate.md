@@ -234,6 +234,9 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
   never repeats an account number.
 - **Names.** `beneficiary_name`, optional, is the name the payment carries (e.g. from the scheme's name inquiry). It
   is for screening after the payment; the gate's decision does not use it, and it is never logged or recorded.
+- **Country.** `counterparty_country`, optional, is the ISO 3166-1 alpha-2 code of the country of the counterparty's
+  institution (`"SG"`). Set it on every payment that crosses the border: Regulatory Reporting uses it for the
+  international transfer threshold.
 - **Amounts.** Exact decimals as text without an exponent (`"1500000"`, `"12.50"`); floating point never reaches
   the gate.
 

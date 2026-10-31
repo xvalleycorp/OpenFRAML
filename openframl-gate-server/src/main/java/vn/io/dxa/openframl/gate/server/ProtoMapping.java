@@ -50,7 +50,8 @@ final class ProtoMapping {
                 account(tx.getOriginator(), "originator"),
                 tx.hasBeneficiary() ? account(tx.getBeneficiary(), "beneficiary") : null,
                 tx.hasSession() ? session(tx.getSession()) : null,
-                tx.getBeneficiaryName());
+                tx.getBeneficiaryName(),
+                tx.getCounterpartyCountry());
     }
 
     static DecideResponse response(GateOutcome outcome) {

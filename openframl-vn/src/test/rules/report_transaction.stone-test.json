@@ -1,6 +1,6 @@
 {
   "decision": "report_transaction",
-  "description": "Vietnam's electronic funds transfer report: both sides of the threshold, both directions. Amounts in VND",
+  "description": "Vietnam's electronic funds transfer reports: both sides of each threshold, both directions, domestic and international. Amounts in VND unless stated",
   "cases": [
     {
       "name": "a transfer of 499,999,999 VND is not reported",
@@ -12,7 +12,9 @@
           "channel": "INTERNET",
           "direction": "OUT",
           "cash": false,
-          "nationalAmount": "499999999 VND"
+          "nationalAmount": "499999999 VND",
+          "usdAmount": "19011.41 USD",
+          "crossBorder": false
         }
       },
       "expect": {
@@ -33,7 +35,9 @@
           "channel": "INTERNET",
           "direction": "OUT",
           "cash": false,
-          "nationalAmount": "500000000 VND"
+          "nationalAmount": "500000000 VND",
+          "usdAmount": "19011.41 USD",
+          "crossBorder": false
         }
       },
       "expect": {
@@ -49,7 +53,7 @@
       }
     },
     {
-      "name": "a transfer in of 500,000,000 VND is reported",
+      "name": "a transfer in of 750,000,000 VND is reported",
       "asOf": "2026-10-30",
       "facts": {
         "transaction": {
@@ -58,7 +62,37 @@
           "channel": "INTERNET",
           "direction": "IN",
           "cash": false,
-          "nationalAmount": "750000000 VND"
+          "nationalAmount": "750000000 VND",
+          "usdAmount": "28517.11 USD",
+          "crossBorder": false
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "ELECTRONIC_TRANSFER"
+        ]
+      }
+    },
+    {
+      "name": "a transfer to an account in the country set as VN is domestic",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "600000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "nationalAmount": "600000000 VND",
+          "usdAmount": "22813.69 USD",
+          "counterpartyCountry": "VN",
+          "crossBorder": false
         }
       },
       "expect": {
@@ -83,7 +117,9 @@
           "channel": "INTERNET",
           "direction": "IN",
           "cash": true,
-          "nationalAmount": "900000000 VND"
+          "nationalAmount": "900000000 VND",
+          "usdAmount": "34220.53 USD",
+          "crossBorder": false
         }
       },
       "expect": {
@@ -104,7 +140,9 @@
           "channel": "INTERNET",
           "direction": "OUT",
           "cash": false,
-          "nationalAmount": "600000000 VND"
+          "nationalAmount": "600000000 VND",
+          "usdAmount": "22813.69 USD",
+          "crossBorder": false
         }
       },
       "expect": {
@@ -120,11 +158,141 @@
       "asOf": "2026-10-30",
       "facts": {
         "transaction": {
-          "amount": "30000 USD",
+          "amount": "30000 EUR",
           "type": "TRANSFER_OUT",
           "channel": "INTERNET",
           "direction": "OUT",
-          "cash": false
+          "cash": false,
+          "crossBorder": false
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a transfer abroad of 999.99 USD is not reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "999.99 USD",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "usdAmount": "999.99 USD",
+          "counterpartyCountry": "SG",
+          "crossBorder": true
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": []
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a transfer abroad of 1,000 USD is reported",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "1000 USD",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "nationalAmount": "26300000 VND",
+          "usdAmount": "1000 USD",
+          "counterpartyCountry": "SG",
+          "crossBorder": true
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "INTERNATIONAL_TRANSFER"
+        ]
+      }
+    },
+    {
+      "name": "a transfer from abroad in VND is reported at its dollar value",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "30000000 VND",
+          "type": "TRANSFER_IN",
+          "channel": "INTERNET",
+          "direction": "IN",
+          "cash": false,
+          "nationalAmount": "30000000 VND",
+          "usdAmount": "1140.68 USD",
+          "counterpartyCountry": "JP",
+          "crossBorder": true
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "INTERNATIONAL_TRANSFER"
+        ]
+      }
+    },
+    {
+      "name": "a large transfer abroad is reported once, as international",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "800000000 VND",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "nationalAmount": "800000000 VND",
+          "usdAmount": "30418.25 USD",
+          "counterpartyCountry": "US",
+          "crossBorder": true
+        }
+      },
+      "expect": {
+        "output": {
+          "dueWorkingDays": [
+            1
+          ]
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "INTERNATIONAL_TRANSFER"
+        ]
+      }
+    },
+    {
+      "name": "a transfer abroad without a dollar value is compared with nothing",
+      "asOf": "2026-10-30",
+      "facts": {
+        "transaction": {
+          "amount": "50000 EUR",
+          "type": "TRANSFER_OUT",
+          "channel": "INTERNET",
+          "direction": "OUT",
+          "cash": false,
+          "counterpartyCountry": "DE",
+          "crossBorder": true
         }
       },
       "expect": {

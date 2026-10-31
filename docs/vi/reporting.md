@@ -33,6 +33,9 @@ Facts của `report_transaction`:
 | --- | --- | --- |
 | `transaction.amount` | money | Như giao dịch ghi |
 | `transaction.nationalAmount` | money | Bằng nội tệ; không có nếu thiếu tỷ giá |
+| `transaction.usdAmount` | money | Bằng đô la Mỹ, đơn vị của các ngưỡng chuyển tiền điện tử của FATF; không có nếu thiếu tỷ giá |
+| `transaction.counterpartyCountry` | string | Nước của bên đối ứng, nếu ngân hàng có ghi |
+| `transaction.crossBorder` | bool | Đã ghi nước của bên đối ứng và đó không phải nước của gói quốc gia |
 | `transaction.type`, `.channel` | string | Lấy từ mô hình sự kiện |
 | `transaction.direction`, `.cash` | string, bool | `IN` hoặc `OUT`; có phải nộp hay rút tiền mặt |
 
@@ -102,10 +105,11 @@ Gói quốc gia Việt Nam (`openframl-vn`) có phiên bản 1 của cả hai b�
 | --- | --- | --- | --- |
 | `LARGE_CASH` | `report_daily` | Tiền mặt của một khách hàng trong một ngày từ 400.000.000 đồng trở lên | 1 ngày làm việc |
 | `ELECTRONIC_TRANSFER` | `report_transaction` | Một giao dịch chuyển tiền trong nước, đi hoặc đến, từ 500.000.000 đồng trở lên | 1 ngày làm việc |
+| `INTERNATIONAL_TRANSFER` | `report_transaction` | Một giao dịch chuyển tiền đi hoặc đến từ nước ngoài, từ 1.000 USD trở lên | 1 ngày làm việc |
 
 Nguồn của từng con số:
 - Quyết định 11/2023/QĐ-TTg: ngưỡng 400.000.000 đồng, thay mức 300.000.000 đồng của Quyết định 20/2013/QĐ-TTg.
-- Thông tư 09/2023/TT-NHNN, được thay bằng Thông tư 27/2025/TT-NHNN từ 01/11/2025 và Thông tư mới giữ nguyên ngưỡng: ngưỡng chuyển tiền 500.000.000 đồng.
+- Thông tư 09/2023/TT-NHNN, được thay bằng Thông tư 27/2025/TT-NHNN từ 01/11/2025 và Thông tư mới giữ nguyên các ngưỡng: 500.000.000 đồng với chuyển tiền trong nước và 1.000 USD với chuyển tiền quốc tế.
 - Khoản 1 Điều 37 Luật Phòng, chống rửa tiền 14/2022/QH15: thời hạn 01 ngày làm việc với báo cáo bằng dữ liệu điện tử.
 
 Các con số này được đối chiếu với các bản tóm tắt và bản đăng lại văn bản, chưa đối chiếu với Công báo. Còn ba điểm
@@ -113,10 +117,11 @@ cần xác nhận trên nguồn chính thức; phần mô tả của mỗi bản
 
 - **Cộng chung tiền mặt.** Tiền nộp và tiền rút trong ngày có được cộng chung hay không. Bảng đang cộng chung, tức là báo cáo nhiều hơn chứ không ít hơn.
 - **Bên nào báo cáo.** Tổ chức nào báo cáo bên nào của giao dịch chuyển tiền. Bảng báo cáo cả hai bên.
+- **Ngày hiệu lực của ngưỡng quốc tế.** Ngưỡng 1.000 USD có hiệu lực từ ngày nào. Bảng áp dụng từ 01/12/2023, cùng ngày với ngưỡng trong nước.
 - **Giao dịch được loại trừ.** Thông tư loại trừ một số giao dịch, như rút tiền gửi tiết kiệm hay trả nợ vay. Mô hình sự kiện chưa phân biệt được các giao dịch này, nên ngân hàng cần loại chúng ra khỏi sự kiện của ngày.
 
-Chuyển tiền quốc tế (từ 1.000 USD) chưa được xử lý, vì mô hình sự kiện chưa cho biết giao dịch có ra nước ngoài hay
-không.
+Một giao dịch là chuyển tiền quốc tế khi `counterpartyCountry` đã được ghi và khác `VN`. Giao dịch ra hoặc vào từ
+nước ngoài mà không ghi nước sẽ bị coi là trong nước, nên ngân hàng phải ghi trường này cho mọi giao dịch như vậy.
 
 Cả hai phía của mỗi ngưỡng đều có trường hợp kiểm thử trong `openframl-vn/src/test/rules/report_daily.stone-test.json`
 và `report_transaction.stone-test.json`.
@@ -125,6 +130,5 @@ và `report_transaction.stone-test.json`.
 
 Trong [lộ trình](roadmap.md):
 - mẫu biểu và kênh nộp điện tử của cơ quan quản lý, dưới dạng bộ chuyển đổi trong gói quốc gia, đối chiếu với mẫu chính thức;
-- chuyển tiền quốc tế;
 - các loại giao dịch được loại trừ;
 - thời hạn cho báo cáo giao dịch đáng ngờ.

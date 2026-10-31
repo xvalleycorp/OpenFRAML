@@ -31,6 +31,9 @@ Facts for `report_transaction`:
 | --- | --- | --- |
 | `transaction.amount` | money | As the transaction gives it |
 | `transaction.nationalAmount` | money | In the national currency; absent without a rate |
+| `transaction.usdAmount` | money | In US dollars, the currency of FATF's wire transfer thresholds; absent without a rate |
+| `transaction.counterpartyCountry` | string | The counterparty's country, if the bank set it |
+| `transaction.crossBorder` | bool | The counterparty's country is set and is not the pack's |
 | `transaction.type`, `.channel` | string | From the event model |
 | `transaction.direction`, `.cash` | string, bool | `IN` or `OUT`; a cash deposit or withdrawal |
 
@@ -96,10 +99,11 @@ The Vietnam Country Pack (`openframl-vn`) ships version 1 of both tables, in for
 | --- | --- | --- | --- |
 | `LARGE_CASH` | `report_daily` | One customer's cash in one day comes to 400,000,000 VND or more | 1 working day |
 | `ELECTRONIC_TRANSFER` | `report_transaction` | A domestic transfer, out or in, of 500,000,000 VND or more | 1 working day |
+| `INTERNATIONAL_TRANSFER` | `report_transaction` | A transfer to or from another country, out or in, of 1,000 USD or more | 1 working day |
 
 The sources are:
 - Decision 11/2023/QĐ-TTg: the 400,000,000 VND threshold, which replaced the 300,000,000 VND of Decision 20/2013/QĐ-TTg.
-- Circular 09/2023/TT-NHNN, replaced from 1 November 2025 by Circular 27/2025/TT-NHNN, which keeps the threshold: the 500,000,000 VND transfer threshold.
+- Circular 09/2023/TT-NHNN, replaced from 1 November 2025 by Circular 27/2025/TT-NHNN, which keeps the thresholds: 500,000,000 VND for domestic transfers and 1,000 USD for international ones.
 - Article 37(1) of the Anti-Money Laundering Law 14/2022/QH15: the deadline of one working day for reports filed electronically.
 
 These were checked against published summaries and republished texts, not yet against the official gazette. Three
@@ -107,10 +111,11 @@ points are still to be confirmed there, and each table's description says which 
 
 - **Cash summed together.** Whether deposits and withdrawals of a day are summed together. The table sums them, which reports more rather than less.
 - **Which side reports.** Which institution reports which side of a transfer. The table reports both.
+- **International threshold date.** When the 1,000 USD threshold took effect. The table applies it from 1 December 2023, with the domestic one.
 - **Excluded transactions.** The circular excludes some transactions, such as savings withdrawals and loan repayments. The event model cannot tell them apart yet, so the bank leaves them out of the day's events.
 
-International transfers (1,000 USD or more) are not covered yet, because the event model does not say whether a
-transfer crosses the border.
+A transfer is international when its `counterpartyCountry` is set and is not `VN`. A cross-border payment without
+the country is treated as domestic, so the bank must set it on every one.
 
 Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_daily.stone-test.json` and
 `report_transaction.stone-test.json`.
@@ -119,6 +124,5 @@ Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_d
 
 On the [roadmap](roadmap.md):
 - the authority's forms and electronic submission, as a country pack converter checked against the official templates;
-- international transfers;
 - the excluded transaction types;
 - deadlines for suspicious transaction reports.

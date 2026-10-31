@@ -96,6 +96,13 @@ class GateGrpcServiceTest {
         assertEquals(null, ProtoMapping.event(transfer("100000").build()).beneficiaryName());
     }
 
+    @Test
+    void theCounterpartysCountryReachesTheEvent() {
+        assertEquals("SG", ProtoMapping.event(transfer("100000").setCounterpartyCountry("SG").build())
+                .counterpartyCountry());
+        assertEquals(null, ProtoMapping.event(transfer("100000").build()).counterpartyCountry());
+    }
+
     private static DecideRequest request(Transaction.Builder transaction) {
         return DecideRequest.newBuilder().setTransaction(transaction).build();
     }

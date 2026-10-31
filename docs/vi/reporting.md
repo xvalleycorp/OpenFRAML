@@ -72,9 +72,28 @@ Mỗi báo cáo gồm:
 Các cảnh báo chỉ ghi giao dịch bằng mã sự kiện, không có số tài khoản. Vì vậy ở bước nộp báo cáo, các thông tin chi
 tiết được tra trong hệ thống của ngân hàng.
 
-Thời điểm phê duyệt là lúc muộn nhất mà ngân hàng đã biết về nghi ngờ. Thời hạn ở Việt Nam tính từ ngày giao dịch hoặc
-từ khi phát hiện, tùy trường hợp luật áp dụng, nên hồ sơ cần được xử lý sớm hơn nhiều so với thời hạn đó. Hiện module
-chưa tính thời hạn cho loại báo cáo này.
+### Thời hạn
+
+`SuspiciousDeadlines` tính cho mỗi hồ sơ hai thời hạn, theo bảng `report_suspicious` của gói quốc gia có hiệu lực vào
+ngày của cảnh báo đầu tiên:
+
+- **Tính từ ngày giao dịch.** `fromTransaction` ngày làm việc sau ngày nghiệp vụ của giao dịch gắn với cảnh báo đầu
+  tiên. Thời hạn này có ngay khi hồ sơ được mở, nên chuyên viên có thể xếp thứ tự công việc theo nó.
+- **Tính từ khi phát hiện.** `fromDetection` ngày làm việc sau khi ngân hàng phát hiện nghi ngờ. Thế nào là "phát
+  hiện" là cách ngân hàng hiểu luật của mình, chọn bằng `Detection`:
+  - `APPROVAL` (mặc định): tính từ lúc người giám sát phê duyệt kết luận rằng hồ sơ phải được báo cáo. Đến lúc đó,
+    ngân hàng chắc chắn đã biết về nghi ngờ.
+  - `FIRST_ALERT`: tính từ lúc cảnh báo đầu tiên được tạo. Đây là cách hiểu chặt nhất.
+
+Báo cáo phải nộp trước thời hạn nào đến sớm hơn trong hai thời hạn trên. Hồ sơ có kết luận sau thời hạn tính từ ngày
+giao dịch sẽ được đánh dấu, để ngân hàng thấy báo cáo nào bị muộn so với thời hạn đó, dù ngân hàng chọn cách hiểu nào.
+Job báo cáo hằng ngày ghi cả hai thời hạn vào mỗi báo cáo, trong trường `deadline`, và ghi một cảnh báo cho mỗi hồ sơ
+bị muộn.
+
+Bảng của Việt Nam theo khoản 2 Điều 37 Luật Phòng, chống rửa tiền 14/2022/QH15: 03 ngày làm việc kể từ ngày giao
+dịch, hoặc 01 ngày làm việc kể từ khi phát hiện. Khoản 3 Điều 37 quy định thời hạn 24 giờ, kèm báo cáo cho cơ quan có
+thẩm quyền, khi một giao dịch mà khách hàng yêu cầu có dấu hiệu liên quan đến tội phạm. Bảng không xử lý trường hợp
+này, vì cần chuyên viên đánh giá. Các thời hạn này cần được đối chiếu với Công báo.
 
 Khách hàng không bao giờ được biết là đã có báo cáo. Ở Việt Nam, Điều 40 Luật Phòng, chống rửa tiền cấm tiết lộ việc
 này. Không có gì trong module này dành cho một kênh mà khách hàng nhìn thấy.
@@ -109,6 +128,7 @@ Gói quốc gia Việt Nam (`openframl-vn`) có phiên bản 1 của cả hai b�
 | `LARGE_CASH` | `report_daily` | Tiền mặt của một khách hàng trong một ngày từ 400.000.000 đồng trở lên | 1 ngày làm việc |
 | `ELECTRONIC_TRANSFER` | `report_transaction` | Một giao dịch chuyển tiền trong nước, đi hoặc đến, từ 500.000.000 đồng trở lên | 1 ngày làm việc |
 | `INTERNATIONAL_TRANSFER` | `report_transaction` | Một giao dịch chuyển tiền đi hoặc đến từ nước ngoài, từ 1.000 USD trở lên | 1 ngày làm việc |
+| Báo cáo giao dịch đáng ngờ | `report_suspicious` | Một hồ sơ có kết luận phải báo cáo | 3 ngày làm việc từ ngày giao dịch, 1 ngày từ khi phát hiện |
 
 Nguồn của từng con số:
 - Quyết định 11/2023/QĐ-TTg: ngưỡng 400.000.000 đồng, thay mức 300.000.000 đồng của Quyết định 20/2013/QĐ-TTg.
@@ -134,4 +154,4 @@ và `report_transaction.stone-test.json`.
 Trong [lộ trình](roadmap.md):
 - mẫu biểu và kênh nộp điện tử của cơ quan quản lý, dưới dạng bộ chuyển đổi trong gói quốc gia, đối chiếu với mẫu chính thức;
 - các loại giao dịch được loại trừ;
-- thời hạn cho báo cáo giao dịch đáng ngờ.
+- báo cáo trong 24 giờ theo khoản 3 Điều 37 ở Việt Nam.

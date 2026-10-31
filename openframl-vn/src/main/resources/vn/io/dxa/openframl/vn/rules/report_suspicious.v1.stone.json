@@ -1,0 +1,17 @@
+{
+  "id": "report_suspicious",
+  "version": "1",
+  "description": "Deadlines of Vietnam's suspicious transaction report, Article 37(2) of the Anti-Money Laundering Law 14/2022/QH15: three working days from the day of the transaction, or one working day from the day the reporting entity detects the suspicious transaction. When detection is, is the bank's reading of the law; see docs/reporting.md. Article 37(3) (24 hours, to the competent authority as well, when a requested transaction appears linked to a crime) is not covered by this table. To be confirmed against the official gazette",
+  "effectiveFrom": "2023-03-01",
+  "hitPolicy": "FIRST",
+  "inputs": {},
+  "outputs": { "fromDetection": "int", "fromTransaction": "int" },
+  "rules": [
+    {
+      "id": "ARTICLE_37_2",
+      "description": "Three working days from the transaction, one from detection",
+      "when": "true",
+      "then": { "fromDetection": "1", "fromTransaction": "3" }
+    }
+  ]
+}

@@ -227,6 +227,43 @@ class RegulatoryReportingTest {
         assertEquals("APPROVED", json.get("history").get(json.get("history").size() - 1).get("what").asText());
     }
 
+    private CaseFile reported(String customer, Instant alertAt, Instant approvedAt) {
+        CaseService cases = new CaseService(new InMemoryCaseStore(), Clock.fixed(approvedAt, ZoneOffset.UTC));
+        Investigator analyst = new Investigator("an.analyst", Set.of(Role.ANALYST));
+        CaseFile c = cases.raise(new Alert("evt-" + customer + ":PASS_THROUGH", "monitoring", "PASS_THROUGH",
+                customer, Optional.of("evt-" + customer), Optional.empty(), Map.of(), alertAt));
+        cases.assign(analyst, c.id(), analyst);
+        cases.propose(analyst, c.id(), CaseFile.Outcome.REPORTED, "money passed on to a known mule");
+        return cases.approve(new Investigator("binh.supervisor", Set.of(Role.SUPERVISOR)), c.id());
+    }
+
+    @Test
+    void suspiciousTransactionReportsAreDueFromTheTransactionAndFromDetection() {
+        WorkingDays days = WorkingDays.mondayToFriday(Set.of());
+        // Alert on Thursday 29 October, conclusion approved on Friday 30 October
+        CaseFile prompt = reported("cust-1", Instant.parse("2026-10-29T02:00:00Z"), MORNING);
+
+        SuspiciousDeadlines.Deadline atApproval = new SuspiciousDeadlines(VN, ReportPolicy.of(VN), days,
+                SuspiciousDeadlines.Detection.APPROVAL).of(prompt);
+        assertEquals(LocalDate.of(2026, 10, 29), atApproval.transactionDate());
+        assertEquals(LocalDate.of(2026, 11, 3), atApproval.dueFromTransaction(), "three working days: Tuesday");
+        assertEquals(Optional.of(DAY), atApproval.detectedOn());
+        assertEquals(Optional.of(LocalDate.of(2026, 11, 2)), atApproval.dueFromDetection(), "one working day: Monday");
+        assertEquals(LocalDate.of(2026, 11, 2), atApproval.dueBy());
+        assertTrue(atApproval.table().startsWith("report_suspicious@1"), atApproval.table());
+
+        SuspiciousDeadlines strict = new SuspiciousDeadlines(VN, ReportPolicy.of(VN), days,
+                SuspiciousDeadlines.Detection.FIRST_ALERT);
+        assertEquals(DAY, strict.of(prompt).dueBy(), "one working day from the alert: Friday");
+        assertFalse(strict.concludedLate(prompt));
+
+        CaseFile slow = reported("cust-2", Instant.parse("2026-10-20T02:00:00Z"), MORNING);
+        assertTrue(strict.concludedLate(slow), "due on Friday 23 October, concluded a week later");
+        JsonNode json = ReportJson.toJson(SuspiciousTransactionReport.of(slow), strict.of(slow));
+        assertEquals("2026-10-21", json.get("deadline").get("dueBy").asText());
+        assertEquals("2026-10-23", json.get("deadline").get("dueFromTransaction").asText());
+    }
+
     @Test
     void aPolicyWithoutDeadlinesIsNeverBuilt() throws IOException {
         String table = """

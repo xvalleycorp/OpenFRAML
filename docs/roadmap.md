@@ -57,8 +57,8 @@ Started while the phase 1 server measurements wait for hardware.
       backtesting scenarios
 - [x] Regulatory Reporting: daily threshold reports from country pack tables, suspicious transaction reports from
       cases, an open JSON form; Vietnam's large-value cash and electronic transfer thresholds (`openframl-report`)
-- [ ] Regulatory Reporting: the authority's forms and electronic submission, excluded transaction types,
-      deadlines for suspicious transaction reports
+- [x] Regulatory Reporting: deadlines for suspicious transaction reports, from the transaction and from detection
+- [ ] Regulatory Reporting: the authority's forms and electronic submission, excluded transaction types
 
 ## Cost and control
 

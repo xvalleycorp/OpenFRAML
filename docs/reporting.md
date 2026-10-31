@@ -65,9 +65,27 @@ code, which names the report. A policy that breaks any of this is never built.
 The alerts name transactions by event id and hold no account numbers, so the filing step looks up the details in the
 bank's systems.
 
-The approval time is when the bank knew of the suspicion at the latest. Vietnam's deadline runs from the transaction
-or from detection, whichever the law applies, so cases must be worked well within it. No deadline is computed for
-these reports yet.
+### Deadlines
+
+`SuspiciousDeadlines` gives each case two deadlines, from the country pack's `report_suspicious` table in force on
+the day of the case's first alert:
+
+- **From the transaction.** `fromTransaction` working days after the business date of the first alert's
+  transaction. It is known as soon as a case opens, so analysts can order their work by it.
+- **From detection.** `fromDetection` working days after the bank detected the suspicion. When detection is, is the
+  bank's reading of its law, set with `Detection`:
+  - `APPROVAL`, the default, counts it when a supervisor approves the conclusion that the case must be reported.
+    By then the bank knows of the suspicion at the latest.
+  - `FIRST_ALERT` counts it when the first alert was raised. It is the strictest reading.
+
+A report is due by the earlier of the two. A case concluded after the deadline from the transaction is flagged, so
+the bank sees which reports were late against it, whatever reading it applies. The Daily Report Job writes both
+deadlines with each report, under `deadline`, and logs a warning for each late case.
+
+Vietnam's table follows Article 37(2) of the Anti-Money Laundering Law 14/2022/QH15: three working days from the
+transaction, or one working day from detection. Article 37(3) sets 24 hours, with a report to the competent
+authority as well, when a transaction a customer requests appears linked to a crime. The table does not cover that
+case, which needs an analyst's judgement. These deadlines are to be confirmed against the official gazette.
 
 The customer must never learn that a report was made; in Vietnam, Article 40 of the Anti-Money Laundering Law forbids
 disclosing it. Nothing in this module is meant for a channel the customer sees.
@@ -103,6 +121,7 @@ The Vietnam Country Pack (`openframl-vn`) ships version 1 of both tables, in for
 | `LARGE_CASH` | `report_daily` | One customer's cash in one day comes to 400,000,000 VND or more | 1 working day |
 | `ELECTRONIC_TRANSFER` | `report_transaction` | A domestic transfer, out or in, of 500,000,000 VND or more | 1 working day |
 | `INTERNATIONAL_TRANSFER` | `report_transaction` | A transfer to or from another country, out or in, of 1,000 USD or more | 1 working day |
+| Suspicious transaction report | `report_suspicious` | A case concluded as reported | 3 working days from the transaction, 1 from detection |
 
 The sources are:
 - Decision 11/2023/QĐ-TTg: the 400,000,000 VND threshold, which replaced the 300,000,000 VND of Decision 20/2013/QĐ-TTg.
@@ -128,4 +147,4 @@ Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_d
 On the [roadmap](roadmap.md):
 - the authority's forms and electronic submission, as a country pack converter checked against the official templates;
 - the excluded transaction types;
-- deadlines for suspicious transaction reports.
+- the 24-hour report of Article 37(3) in Vietnam.

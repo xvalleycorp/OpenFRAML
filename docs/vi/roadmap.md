@@ -58,8 +58,8 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
       nhiều giao dịch; backtest kịch bản
 - [x] Báo cáo theo quy định: báo cáo theo ngưỡng hằng ngày từ bảng của gói quốc gia, báo cáo giao dịch đáng ngờ từ
       hồ sơ, một dạng JSON mở; ngưỡng tiền mặt giá trị lớn và chuyển tiền điện tử của Việt Nam (`openframl-report`)
-- [ ] Báo cáo theo quy định: mẫu biểu và kênh nộp điện tử của cơ quan quản lý, các loại giao dịch được loại trừ,
-      thời hạn cho báo cáo giao dịch đáng ngờ
+- [x] Báo cáo theo quy định: thời hạn cho báo cáo giao dịch đáng ngờ, tính từ ngày giao dịch và từ khi phát hiện
+- [ ] Báo cáo theo quy định: mẫu biểu và kênh nộp điện tử của cơ quan quản lý, các loại giao dịch được loại trừ
 
 ## Chi phí và quyền kiểm soát
 

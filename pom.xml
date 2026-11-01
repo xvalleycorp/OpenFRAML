@@ -87,8 +87,8 @@
     <!-- RuleStone's CEL runtime needs protobuf 4; gRPC accepts it. protoc uses the same version. -->
     <protobuf.version>4.36.2</protobuf.version>
     <kafka.version>4.4.0</kafka.version>
-    <lettuce.version>7.8.0.RELEASE</lettuce.version>
-    <caffeine.version>3.3.0</caffeine.version>
+    <lettuce.version>7.9.0.RELEASE</lettuce.version>
+    <caffeine.version>3.3.1</caffeine.version>
     <onnxruntime.version>1.31.0</onnxruntime.version>
   </properties>
 

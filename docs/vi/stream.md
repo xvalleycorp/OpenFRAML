@@ -43,6 +43,34 @@ Mỗi bản ghi được xử lý ít nhất một lần:
 Bản ghi không phải là sự kiện thì bị bỏ qua và được đếm lại. Log chỉ ghi partition, offset và trường bị sai, không bao
 giờ ghi nội dung bản ghi.
 
+### Dead letter
+
+Đặt `OPENFRAML_STREAM_DEAD_LETTER_TOPIC` để giữ lại các bản ghi mà luồng không nhận được. Một dead letter giữ nguyên
+khóa và giá trị của bản ghi, kèm các header `openframl.reason` và `openframl.source`
+(`<topic>-<partition>@<offset>`). Luồng chờ broker xác nhận rồi mới commit qua bản ghi, nên không bản ghi nào bị bỏ
+qua trước khi được giữ lại. Topic này chứa đúng những gì topic giao dịch chứa, kể cả số tài khoản, nên hãy giới hạn
+quyền truy cập theo cùng cách.
+
+Một sự kiện mà bộ xử lý cứ lỗi mãi sẽ giữ partition của nó đứng lại, vì bỏ qua sự kiện đó có thể làm mất cảnh báo. Đây
+là mặc định, và partition đứng lại sẽ hiện ra trên các chỉ số. Khi có dead letter, `OPENFRAML_STREAM_MAX_ATTEMPTS` đặt
+số lần thử tối đa trước khi luồng bỏ cuộc với sự kiện đó. Sự kiện được chuyển sang dead letter, các bộ xử lý sau bộ bị
+lỗi không nhận được nó, và partition chạy tiếp. Chỉ đặt giới hạn này khi có người theo dõi dead letter: sự kiện bị bỏ
+cuộc là sự kiện chưa được sàng lọc hay giám sát đầy đủ.
+
+### Chỉ số
+
+Đặt `OPENFRAML_STREAM_METRICS_PORT` để phục vụ `GET /metrics` theo định dạng text của Prometheus. Các chỉ số chỉ gồm số
+đếm và thời gian, không bao giờ có tài khoản, khách hàng hay họ tên. Endpoint này không có xác thực, nên hãy giữ cổng
+của nó trong mạng nội bộ.
+
+| Chỉ số | Loại | Nội dung |
+| --- | --- | --- |
+| `openframl_stream_taken_total` | counter | Số sự kiện mọi bộ xử lý đã nhận |
+| `openframl_stream_invalid_total` | counter | Số bản ghi không phải là sự kiện |
+| `openframl_stream_retries_total` | counter | Số lần bộ xử lý lỗi và luồng phải quay lại |
+| `openframl_stream_dead_lettered_total` | counter | Số sự kiện bị bỏ cuộc sau giới hạn số lần thử |
+| `openframl_stream_last_event_timestamp_seconds` | gauge | `occurredAt` mới nhất đã nhận: nên đặt cảnh báo khi giá trị này bị tụt lại |
+
 Đặt `OPENFRAML_STREAM_VALKEY_URL` để giữ hoạt động tài khoản của phần giám sát trên Valkey. Khi đó mọi tiến trình
 Dịch vụ luồng giao dịch trong group dùng chung kho này, nên chúng chạy song song được, và một partition chuyển sang tiến
 trình khác sau rebalance vẫn giữ nguyên lịch sử. Nếu không đặt, hoạt động được giữ ngay trong tiến trình, và mỗi
@@ -61,6 +89,9 @@ consumer group chỉ được chạy một Dịch vụ luồng giao dịch.
 | `OPENFRAML_STREAM_SUPPRESSION_DAYS` | `7` | Thời gian một kịch bản đã kích hoạt với một khách hàng được giữ im lặng |
 | `OPENFRAML_STREAM_VALKEY_URL` | (trong tiến trình) | Valkey cho hoạt động tài khoản của phần giám sát, ví dụ `redis://valkey:6379` |
 | `OPENFRAML_STREAM_VALKEY_TIMEOUT_MS` | `500` | Thời gian chờ tối đa của mỗi lệnh Valkey |
+| `OPENFRAML_STREAM_DEAD_LETTER_TOPIC` | (không có) | Topic cho các bản ghi mà luồng không nhận được |
+| `OPENFRAML_STREAM_MAX_ATTEMPTS` | `0` | Số lần thử trước khi sự kiện chuyển sang dead letter; 0 là thử mãi |
+| `OPENFRAML_STREAM_METRICS_PORT` | (tắt) | Cổng của `GET /metrics` |
 
 ## Job báo cáo hằng ngày
 
@@ -84,9 +115,3 @@ ngày, job chạy cho ngày hôm trước.
 | `OPENFRAML_REPORT_HOLIDAYS` | (không có) | Mỗi dòng một ngày dạng ISO: các ngày nghỉ lễ được bỏ qua khi tính thời hạn |
 | `OPENFRAML_REPORT_MARGIN_MINUTES` | `60` | Đọc topic rộng ra ngoài ngày bao nhiêu phút |
 | `OPENFRAML_REPORT_DETECTION` | `APPROVAL` | Lúc nào nghi ngờ được coi là đã phát hiện: `APPROVAL` hoặc `FIRST_ALERT` |
-
-## Tiếp theo
-
-Trong [lộ trình](roadmap.md):
-- một topic dead-letter cho các bản ghi không phải là sự kiện;
-- các chỉ số về những gì luồng đã nhận, bỏ qua và thử lại.

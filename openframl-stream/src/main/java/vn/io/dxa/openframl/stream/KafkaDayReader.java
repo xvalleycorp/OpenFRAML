@@ -56,11 +56,17 @@ public final class KafkaDayReader {
 
     /** The day's events, read once, as they are iterated. */
     public Iterable<TransactionEvent> day(LocalDate businessDate) {
-        Instant from = businessDate.atStartOfDay(zone).toInstant().minus(margin);
-        long to = businessDate.plusDays(1).atStartOfDay(zone).toInstant().plus(margin).toEpochMilli();
+        return days(businessDate, businessDate);
+    }
+
+    /** The events of the days from {@code first} to {@code last}, both included, read once, as they are iterated. */
+    public Iterable<TransactionEvent> days(LocalDate first, LocalDate last) {
+        Instant from = first.atStartOfDay(zone).toInstant().minus(margin);
+        long to = last.plusDays(1).atStartOfDay(zone).toInstant().plus(margin).toEpochMilli();
         List<TopicPartition> partitions = consumer.partitionsFor(topic).stream()
                 .map(info -> new TopicPartition(topic, info.partition())).toList();
         consumer.assign(partitions);
+        consumer.resume(partitions);
         Map<TopicPartition, Long> start = new HashMap<>();
         partitions.forEach(partition -> start.put(partition, from.toEpochMilli()));
         Map<TopicPartition, OffsetAndTimestamp> offsets = consumer.offsetsForTimes(start);

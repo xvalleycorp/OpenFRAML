@@ -36,6 +36,7 @@ import vn.io.dxa.openframl.model.Channel;
 import vn.io.dxa.openframl.model.TransactionEvent;
 import vn.io.dxa.openframl.model.TransactionType;
 import vn.io.dxa.openframl.monitor.MonitorPolicy;
+import vn.io.dxa.openframl.monitor.ScenarioBacktest;
 import vn.io.dxa.openframl.monitor.TransactionMonitor;
 import vn.io.dxa.openframl.monitor.memory.InMemoryActivityStore;
 import vn.io.dxa.openframl.pack.CountryPack;
@@ -43,6 +44,7 @@ import vn.io.dxa.openframl.report.DailyReporting;
 import vn.io.dxa.openframl.report.ExchangeRates;
 import vn.io.dxa.openframl.report.ReportPolicy;
 import vn.io.dxa.openframl.report.WorkingDays;
+import vn.io.dxa.rulestone.core.DecisionTableJson;
 
 /** Runs against a real broker, e.g. {@code OPENFRAML_TEST_KAFKA=localhost:9092}; CI starts one. */
 @EnabledIfEnvironmentVariable(named = "OPENFRAML_TEST_KAFKA", matches = ".+")
@@ -112,6 +114,37 @@ class StreamBrokerTest {
         assertEquals(1, reader.invalid());
         // Each customer deposited 10 x 20,000,000 VND = 200,000,000 VND: below the threshold
         assertEquals(List.of(), run.reports());
+    }
+
+    @Test
+    void pastDaysAreReadBackForABacktest() throws Exception {
+        List<TransactionEvent> events = new ArrayList<>();
+        events.add(cash("day-before", "cust-1", 150_000_000, DAY_START.minus(Duration.ofHours(10))));
+        events.add(cash("that-day", "cust-1", 200_000_000, DAY_START.plus(Duration.ofHours(10))));
+        publish(events, DAY_START.plus(Duration.ofHours(11)));
+
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(StreamService.consumerConfig(
+                Map.of("OPENFRAML_STREAM_KAFKA_BOOTSTRAP", BOOTSTRAP), null))) {
+            KafkaDayReader reader = new KafkaDayReader(consumer, topic, VN.businessZone(), Duration.ofHours(1));
+            MonitorPolicy current = MonitorPolicy.of(VN);
+            String table = DecisionTableJson.write(current.tables().getFirst());
+            MonitorPolicy candidate = MonitorPolicy.compile(VN, List.of(DecisionTableJson.read(
+                    table.replace("money(400000000, 'VND')", "money(300000000, 'VND')"))));
+
+            ScenarioBacktest.Result result = ScenarioBacktest.run(VN, current, candidate,
+                    reader.days(DAY.minusDays(1), DAY), DAY_START, Duration.ofDays(7));
+
+            assertEquals(1, result.history());
+            assertEquals(1, result.transactions());
+            assertEquals("CASH_STRUCTURING", result.scenarios().getFirst().scenario());
+            assertEquals(List.of("that-day"), result.scenarios().getFirst().addedSample());
+            assertEquals(1, BacktestJob.toJson(result).get("scenarios").get(0).get("added").asInt());
+
+            // The same reader can read again: partitions it finished with are not left paused
+            List<String> again = new ArrayList<>();
+            reader.day(DAY).forEach(event -> again.add(event.eventId()));
+            assertEquals(List.of("that-day"), again);
+        }
     }
 
     @Test

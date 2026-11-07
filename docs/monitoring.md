@@ -61,8 +61,26 @@ Reporting ([`openframl-report`](reporting.md)), not of an alert.
 Every scenario and both sides of every threshold have a case in
 `openframl-vn/src/test/rules/monitor_scenarios.stone-test.json`.
 
+## Backtesting a change
+
+Before a change to a scenario is approved, `ScenarioBacktest` runs past transactions through the tables in force and
+through the candidate, and says for each scenario how many alerts each raises, how many the candidate adds and
+removes, and the event ids of up to 20 of each for someone to look at. Nothing is raised and no case is touched. The
+result holds counts and event ids, never an account number.
+
+- Transactions before the period only build up the accounts' history, so that the windows of its first days are full.
+- A candidate is usually effective from a future date. It is evaluated as of that date for older transactions, so it
+  applies to the whole period.
+- Both runs apply the suppression period, as the live monitor does. An alert the candidate raises earlier can
+  therefore suppress a later one, and that shows as one added and one removed.
+
+`BacktestJob <candidate.stone.json>... <from> <to>`, in Transaction Stream ([`openframl-stream`](stream.md)), reads the
+period and the 30 days before it from the transaction topic and prints the result as JSON. It compares the candidate
+with the country pack's tables, and takes the Kafka settings, `OPENFRAML_COUNTRY`, `OPENFRAML_STREAM_SUPPRESSION_DAYS`
+and `OPENFRAML_REPORT_MARGIN_MINUTES` of the [Stream Service and Daily Report Job](stream.md). The topic's retention
+limits how far back it can go. The job holds the accounts' activity in memory, so size it for the period.
+
 ## Next
 
-On the [roadmap](roadmap.md): backtesting a scenario on past transactions before it is approved, and windows kept as
-running totals by Behaviour Profiles (`openframl-features`), for accounts with so many transactions that reading 30
-days of them for each one costs too much.
+On the [roadmap](roadmap.md): windows kept as running totals by Behaviour Profiles (`openframl-features`), for accounts
+with so many transactions that reading 30 days of them for each one costs too much.

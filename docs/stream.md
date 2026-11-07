@@ -60,7 +60,8 @@ event given up on has not been fully screened or monitored.
 ### Metrics
 
 Set `OPENFRAML_STREAM_METRICS_PORT` to serve `GET /metrics` in the Prometheus text format. The metrics are counts and
-times only, never an account, a customer or a name.
+times only, never an account, a customer or a name. The endpoint has no authentication, so keep its port on the
+internal network.
 
 | Metric | Type | Content |
 | --- | --- | --- |

@@ -60,7 +60,8 @@ cuộc là sự kiện chưa được sàng lọc hay giám sát đầy đủ.
 ### Chỉ số
 
 Đặt `OPENFRAML_STREAM_METRICS_PORT` để phục vụ `GET /metrics` theo định dạng text của Prometheus. Các chỉ số chỉ gồm số
-đếm và thời gian, không bao giờ có tài khoản, khách hàng hay họ tên.
+đếm và thời gian, không bao giờ có tài khoản, khách hàng hay họ tên. Endpoint này không có xác thực, nên hãy giữ cổng
+của nó trong mạng nội bộ.
 
 | Chỉ số | Loại | Nội dung |
 | --- | --- | --- |

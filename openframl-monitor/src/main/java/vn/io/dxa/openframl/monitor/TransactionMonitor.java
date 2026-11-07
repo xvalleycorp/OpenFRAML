@@ -56,6 +56,7 @@ public final class TransactionMonitor {
     private final ActivityStore store;
     private final Consumer<Alert> alerts;
     private final Duration suppression;
+    private final LocalDate evaluateFrom;
     private final Map<String, Instant> lastAlert = new ConcurrentHashMap<>();
 
     /**
@@ -64,11 +65,21 @@ public final class TransactionMonitor {
      */
     public TransactionMonitor(CountryPack pack, MonitorPolicy policy, ActivityStore store, Consumer<Alert> alerts,
             Duration suppression) {
+        this(pack, policy, store, alerts, suppression, null);
+    }
+
+    /**
+     * @param evaluateFrom evaluate the tables as of this date for transactions older than it, or {@code null}; a
+     *                     backtest uses it for a candidate that is not effective yet
+     */
+    TransactionMonitor(CountryPack pack, MonitorPolicy policy, ActivityStore store, Consumer<Alert> alerts,
+            Duration suppression, LocalDate evaluateFrom) {
         this.pack = Objects.requireNonNull(pack, "pack");
         this.policy = Objects.requireNonNull(policy, "policy");
         this.store = Objects.requireNonNull(store, "store");
         this.alerts = Objects.requireNonNull(alerts, "alerts");
         this.suppression = Objects.requireNonNull(suppression, "suppression");
+        this.evaluateFrom = evaluateFrom;
     }
 
     /**
@@ -87,6 +98,9 @@ public final class TransactionMonitor {
         recent.add(movement);
         MonitoringFacts.Computed computed = MonitoringFacts.of(event, movement, recent, lastActivity);
         LocalDate businessDate = LocalDate.ofInstant(event.occurredAt(), pack.businessZone());
+        if (evaluateFrom != null && businessDate.isBefore(evaluateFrom)) {
+            businessDate = evaluateFrom;
+        }
         DecisionResult result = policy.engine().evaluate(DecisionRef.of(MonitorPolicy.SCENARIOS_ID)
                 .asOf(businessDate).correlationId(event.eventId()), computed.facts());
 

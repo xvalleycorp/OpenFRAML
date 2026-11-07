@@ -53,8 +53,8 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Transaction Stream: a dead-letter topic, a limit of attempts, metrics for Prometheus
 - [x] Transaction Monitoring: scenarios as country pack tables, alerts to Case Management, four Vietnam samples
       (`openframl-monitor`)
-- [ ] Behaviour Profiles on Flink (`openframl-features`): windows as running totals for very busy accounts;
-      backtesting scenarios
+- [x] Backtesting a scenario change on past transactions, before it is approved
+- [ ] Behaviour Profiles on Flink (`openframl-features`): windows as running totals for very busy accounts
 - [x] Regulatory Reporting: daily threshold reports from country pack tables, suspicious transaction reports from
       cases, an open JSON form; Vietnam's large-value cash and electronic transfer thresholds (`openframl-report`)
 - [x] Regulatory Reporting: deadlines for suspicious transaction reports, from the transaction, from detection, and

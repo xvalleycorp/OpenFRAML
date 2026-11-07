@@ -62,8 +62,28 @@ như với mọi ngưỡng pháp lý. Việc báo cáo chính các giao dịch g
 Mỗi kịch bản và cả hai phía của từng ngưỡng đều có trường hợp kiểm thử trong
 `openframl-vn/src/test/rules/monitor_scenarios.stone-test.json`.
 
+## Chạy thử một thay đổi
+
+Trước khi một thay đổi kịch bản được duyệt, `ScenarioBacktest` cho các giao dịch cũ chạy qua bảng đang có hiệu lực và
+qua bảng đề xuất. Với mỗi kịch bản, kết quả cho biết mỗi bảng sinh bao nhiêu cảnh báo, bảng đề xuất thêm và bớt bao
+nhiêu, và tối đa 20 mã sự kiện của mỗi nhóm để người xem kiểm tra. Không cảnh báo nào được gửi đi và không hồ sơ nào bị
+động đến. Kết quả chỉ gồm số đếm và mã sự kiện, không bao giờ có số tài khoản.
+
+- Các giao dịch trước khoảng thời gian chạy thử chỉ dùng để dựng lịch sử tài khoản, để các cửa sổ trong những ngày đầu
+  được đầy đủ.
+- Bảng đề xuất thường có hiệu lực từ một ngày trong tương lai. Với giao dịch cũ hơn ngày đó, bảng được đánh giá theo
+  chính ngày đó, nên áp dụng được cho cả khoảng thời gian.
+- Cả hai lần chạy đều áp dụng thời gian im lặng, như khi giám sát thật. Vì vậy một cảnh báo do bảng đề xuất sinh sớm hơn
+  có thể làm im một cảnh báo sau đó, và điều này hiện ra thành một cảnh báo thêm và một cảnh báo bớt.
+
+`BacktestJob <candidate.stone.json>... <from> <to>`, trong Luồng giao dịch ([`openframl-stream`](stream.md)), đọc khoảng
+thời gian đó và 30 ngày trước đó từ topic giao dịch, rồi in kết quả dạng JSON. Job so bảng đề xuất với các bảng của gói
+quốc gia, và dùng các thiết lập Kafka, `OPENFRAML_COUNTRY`, `OPENFRAML_STREAM_SUPPRESSION_DAYS` và
+`OPENFRAML_REPORT_MARGIN_MINUTES` của [Dịch vụ luồng giao dịch và Job báo cáo hằng ngày](stream.md). Thời gian lưu của
+topic giới hạn việc đi ngược về quá khứ được bao xa. Job giữ hoạt động tài khoản trong bộ nhớ, nên cần cấp đủ bộ nhớ cho
+khoảng thời gian chạy thử.
+
 ## Tiếp theo
 
-Trong [lộ trình](roadmap.md): backtest một kịch bản trên giao dịch cũ trước khi duyệt, và các khoảng thời gian được Hồ
-sơ hành vi (`openframl-features`) giữ dưới dạng tổng cộng dồn, cho những tài khoản có nhiều giao dịch đến mức đọc lại 30
-ngày cho mỗi giao dịch là quá tốn kém.
+Trong [lộ trình](roadmap.md): các khoảng thời gian được Hồ sơ hành vi (`openframl-features`) giữ dưới dạng tổng cộng
+dồn, cho những tài khoản có nhiều giao dịch đến mức đọc lại 30 ngày cho mỗi giao dịch là quá tốn kém.

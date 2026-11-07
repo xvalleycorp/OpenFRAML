@@ -41,7 +41,8 @@ public final class ReportPolicy {
 
     /**
      * Optional, hit policy {@code FIRST}: the deadlines of a suspicious transaction report, as the int outputs
-     * {@code fromDetection} and {@code fromTransaction}, in working days. See {@link SuspiciousDeadlines}.
+     * {@code fromDetection} and {@code fromTransaction}, in working days, and {@code urgentHours}, in hours from when
+     * a case is marked urgent. See {@link SuspiciousDeadlines}.
      */
     public static final String SUSPICIOUS_ID = "report_suspicious";
 
@@ -94,7 +95,7 @@ public final class ReportPolicy {
             throw new IllegalStateException("the policy has neither " + TRANSACTION_ID + " nor " + DAILY_ID);
         }
         for (DecisionTable table : tables.stream().filter(table -> table.id().equals(SUSPICIOUS_ID)).toList()) {
-            for (String output : List.of("fromDetection", "fromTransaction")) {
+            for (String output : List.of("fromDetection", "fromTransaction", "urgentHours")) {
                 if (!ValueType.INT.equals(table.outputs().get(output))) {
                     throw new IllegalStateException(table.ref() + " must declare the int output '" + output + "'");
                 }
@@ -102,7 +103,7 @@ public final class ReportPolicy {
                     String expression = rule.then().get(output);
                     if (expression == null || !WORKING_DAYS.matcher(expression.strip()).matches()) {
                         throw new IllegalStateException(table.ref() + " rule " + rule.id() + " must set " + output
-                                + " to a number of working days from 1 to 99");
+                                + " to a whole number from 1 to 99");
                     }
                 }
             }

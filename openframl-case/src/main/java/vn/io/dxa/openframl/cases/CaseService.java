@@ -142,6 +142,25 @@ public final class CaseService {
         return save(c, c.status(), c.assignee(), c.proposal(), c.conclusion(), action(actor.name(), "NOTE", text));
     }
 
+    /**
+     * An analyst or supervisor marks an open case urgent, with the reason: the law may set a much shorter deadline
+     * when, for example, a transaction a customer requests appears linked to a crime. That is a person's judgement,
+     * so no detector does it. Marking it again changes nothing: the first mark starts the clock.
+     */
+    public CaseFile markUrgent(Investigator actor, String caseId, String reason) {
+        if (actor.roles().isEmpty()) {
+            throw new SecurityException(actor.name() + " is neither an analyst nor a supervisor");
+        }
+        requireText(reason, "a reason");
+        CaseFile c = get(caseId);
+        requireStatus(c, Status.OPEN, Status.IN_REVIEW, Status.AWAITING_APPROVAL);
+        if (c.urgentSince().isPresent()) {
+            return c;
+        }
+        return save(c, c.status(), c.assignee(), c.proposal(), c.conclusion(),
+                action(actor.name(), "URGENT", reason.strip()));
+    }
+
     /** The assigned analyst proposes how the case ends. */
     public CaseFile propose(Investigator actor, String caseId, Outcome outcome, String reason) {
         require(actor, Role.ANALYST);

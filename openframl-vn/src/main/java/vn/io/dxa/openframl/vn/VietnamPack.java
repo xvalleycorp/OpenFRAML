@@ -24,7 +24,7 @@ import vn.io.dxa.openframl.pack.ResourceCountryPack;
 public final class VietnamPack extends ResourceCountryPack {
 
     /** Version of the pack's content. */
-    public static final String VERSION = "2026.10.4";
+    public static final String VERSION = "2026.11.1";
 
     public VietnamPack() {
         super("VN", VERSION, ZoneId.of("Asia/Ho_Chi_Minh"), "VND", VietnamPack.class,

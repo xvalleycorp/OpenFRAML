@@ -60,7 +60,7 @@ Chính sách nào vi phạm một trong các điều trên thì không bao giờ
 ## Báo cáo giao dịch đáng ngờ
 
 `SuspiciousTransactionReport.fromCases` lấy các hồ sơ đã đóng với kết luận `REPORTED`. Trong Quản lý hồ sơ điều tra
-(`openframl-case`), điều này có nghĩa là một chuyên viên đề xuất kết luận và một người giám sát khác đã phê duyệt.
+(`openframl-case`), điều này có nghĩa là một chuyên viên đề xuất kết luận và một người phụ trách khác đã phê duyệt.
 
 Mỗi báo cáo gồm:
 - khách hàng;
@@ -81,7 +81,7 @@ ngày của cảnh báo đầu tiên:
   tiên. Thời hạn này có ngay khi hồ sơ được mở, nên chuyên viên có thể xếp thứ tự công việc theo nó.
 - **Tính từ khi phát hiện.** `fromDetection` ngày làm việc sau khi ngân hàng phát hiện nghi ngờ. Thế nào là "phát
   hiện" là cách ngân hàng hiểu luật của mình, chọn bằng `Detection`:
-  - `APPROVAL` (mặc định): tính từ lúc người giám sát phê duyệt kết luận rằng hồ sơ phải được báo cáo. Đến lúc đó,
+  - `APPROVAL` (mặc định): tính từ lúc người phụ trách phê duyệt kết luận rằng hồ sơ phải được báo cáo. Đến lúc đó,
     ngân hàng chắc chắn đã biết về nghi ngờ.
   - `FIRST_ALERT`: tính từ lúc cảnh báo đầu tiên được tạo. Đây là cách hiểu chặt nhất.
 
@@ -90,10 +90,16 @@ giao dịch sẽ được đánh dấu, để ngân hàng thấy báo cáo nào 
 Job báo cáo hằng ngày ghi cả hai thời hạn vào mỗi báo cáo, trong trường `deadline`, và ghi một cảnh báo cho mỗi hồ sơ
 bị muộn.
 
-Bảng của Việt Nam theo khoản 2 Điều 37 Luật Phòng, chống rửa tiền 14/2022/QH15: 03 ngày làm việc kể từ ngày giao
-dịch, hoặc 01 ngày làm việc kể từ khi phát hiện. Khoản 3 Điều 37 quy định thời hạn 24 giờ, kèm báo cáo cho cơ quan có
-thẩm quyền, khi một giao dịch mà khách hàng yêu cầu có dấu hiệu liên quan đến tội phạm. Bảng không xử lý trường hợp
-này, vì cần chuyên viên đánh giá. Các thời hạn này cần được đối chiếu với Công báo.
+Người xử lý cũng có thể đánh dấu một hồ sơ là khẩn, kèm lý do (`MarkUrgent` trong Dịch vụ hồ sơ điều tra). Khi đó báo
+cáo còn có hạn `urgentHours` giờ sau lần đánh dấu đầu tiên, và số giờ này tính cả cuối tuần và ngày nghỉ lễ. Không bộ
+phát hiện nào đánh dấu hồ sơ khẩn, vì việc này cần con người đánh giá. Thời hạn tính cả khi hồ sơ còn mở, còn Job báo
+cáo hằng ngày chỉ ghi báo cáo khi hồ sơ đã đóng, nên hồ sơ khẩn phải được kết luận và phê duyệt trong số giờ đó. Thời
+hạn khẩn được ghi là `urgentDueAt`, và hồ sơ có kết luận sau thời hạn này được đánh dấu là muộn.
+
+Bảng của Việt Nam theo Điều 37 Luật Phòng, chống rửa tiền 14/2022/QH15. Khoản 2 quy định 03 ngày làm việc kể từ ngày
+giao dịch, hoặc 01 ngày làm việc kể từ khi phát hiện. Khoản 3 quy định thời hạn 24 giờ, kèm báo cáo cho cơ quan có thẩm
+quyền, khi một giao dịch mà khách hàng yêu cầu có dấu hiệu liên quan đến tội phạm. OpenFRAML không gửi báo cáo đó cho
+cơ quan có thẩm quyền. Các thời hạn này cần được đối chiếu với Công báo.
 
 Khách hàng không bao giờ được biết là đã có báo cáo. Ở Việt Nam, Điều 40 Luật Phòng, chống rửa tiền cấm tiết lộ việc
 này. Không có gì trong module này dành cho một kênh mà khách hàng nhìn thấy.
@@ -128,7 +134,7 @@ Gói quốc gia Việt Nam (`openframl-vn`) có phiên bản 1 của cả hai b�
 | `LARGE_CASH` | `report_daily` | Tiền mặt của một khách hàng trong một ngày từ 400.000.000 đồng trở lên | 1 ngày làm việc |
 | `ELECTRONIC_TRANSFER` | `report_transaction` | Một giao dịch chuyển tiền trong nước, đi hoặc đến, từ 500.000.000 đồng trở lên | 1 ngày làm việc |
 | `INTERNATIONAL_TRANSFER` | `report_transaction` | Một giao dịch chuyển tiền đi hoặc đến từ nước ngoài, từ 1.000 USD trở lên | 1 ngày làm việc |
-| Báo cáo giao dịch đáng ngờ | `report_suspicious` | Một hồ sơ có kết luận phải báo cáo | 3 ngày làm việc từ ngày giao dịch, 1 ngày từ khi phát hiện |
+| Báo cáo giao dịch đáng ngờ | `report_suspicious` | Một hồ sơ có kết luận phải báo cáo | 3 ngày làm việc từ ngày giao dịch, 1 ngày từ khi phát hiện; 24 giờ nếu được đánh dấu khẩn |
 
 Nguồn của từng con số:
 - Quyết định 11/2023/QĐ-TTg: ngưỡng 400.000.000 đồng, thay mức 300.000.000 đồng của Quyết định 20/2013/QĐ-TTg.
@@ -158,5 +164,4 @@ và `report_transaction.stone-test.json`.
 
 Trong [lộ trình](roadmap.md):
 - mẫu biểu và kênh nộp điện tử của cơ quan quản lý, dưới dạng bộ chuyển đổi trong gói quốc gia, đối chiếu với mẫu chính thức;
-- ngưỡng nhận biết khách hàng tại điểm a khoản 1 Điều 5 ở Việt Nam, cùng các ngoại lệ của nó;
-- báo cáo trong 24 giờ theo khoản 3 Điều 37 ở Việt Nam.
+- ngưỡng nhận biết khách hàng tại điểm a khoản 1 Điều 5 ở Việt Nam, cùng các ngoại lệ của nó.

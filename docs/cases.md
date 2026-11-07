@@ -23,6 +23,7 @@ still land in one case.
 | An alert opens the case | The detector | `OPEN` |
 | The case is assigned | An analyst taking it for themselves, or a supervisor assigning it | `IN_REVIEW` |
 | Notes on what was checked | Analysts and supervisors | Unchanged |
+| The case is marked urgent, with a reason | Analysts and supervisors | Unchanged |
 | A conclusion is proposed: `FALSE_POSITIVE`, `CONFIRMED` or `REPORTED`, with a reason | The assigned analyst | `AWAITING_APPROVAL` |
 | The conclusion is approved | A supervisor who did not propose it | `CLOSED` |
 | The conclusion is returned, with a reason | A supervisor | `IN_REVIEW` |
@@ -60,8 +61,8 @@ lists which names are analysts, supervisors and detectors:
 | Caller | May |
 | --- | --- |
 | Detector (e.g. a screening node) | `RaiseAlert` only |
-| Analyst | Read cases, take a case, add notes, propose a conclusion on a case assigned to them |
-| Supervisor | Read cases, assign cases, add notes, approve or return a conclusion they did not propose |
+| Analyst | Read cases, take a case, add notes, mark a case urgent, propose a conclusion on a case assigned to them |
+| Supervisor | Read cases, assign cases, add notes, mark a case urgent, approve or return a conclusion they did not propose |
 
 Every call is recorded in the case's history under the caller's name. A refusal has its own status:
 `UNAUTHENTICATED` without a certificate, `PERMISSION_DENIED` for a role the caller does not have,

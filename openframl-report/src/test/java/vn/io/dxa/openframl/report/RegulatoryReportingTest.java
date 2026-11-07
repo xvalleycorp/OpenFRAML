@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -262,6 +263,40 @@ class RegulatoryReportingTest {
         JsonNode json = ReportJson.toJson(SuspiciousTransactionReport.of(slow), strict.of(slow));
         assertEquals("2026-10-21", json.get("deadline").get("dueBy").asText());
         assertEquals("2026-10-23", json.get("deadline").get("dueFromTransaction").asText());
+    }
+
+    @Test
+    void aCaseMarkedUrgentIsDueWithinHoursWhateverTheDay() {
+        // Marked on Saturday 31 October at 10:00 UTC: 24 hours run through the weekend
+        Instant marked = Instant.parse("2026-10-31T10:00:00Z");
+        InMemoryCaseStore store = new InMemoryCaseStore();
+        Investigator analyst = new Investigator("an.analyst", Set.of(Role.ANALYST));
+        Investigator supervisor = new Investigator("binh.supervisor", Set.of(Role.SUPERVISOR));
+        CaseFile c = new CaseService(store, Clock.fixed(MORNING, ZoneOffset.UTC)).raise(new Alert("a-1", "monitoring",
+                "PASS_THROUGH", "cust-1", Optional.of("evt-1"), Optional.empty(), Map.of(), MORNING));
+        SuspiciousDeadlines deadlines = new SuspiciousDeadlines(VN, ReportPolicy.of(VN),
+                WorkingDays.mondayToFriday(Set.of()), SuspiciousDeadlines.Detection.APPROVAL);
+        assertEquals(Optional.empty(), deadlines.of(c).urgentDueAt());
+
+        CaseService onSaturday = new CaseService(store, Clock.fixed(marked, ZoneOffset.UTC));
+        assertThrows(SecurityException.class, () -> onSaturday.markUrgent(
+                new Investigator("someone.else", Set.of()), c.id(), "no role"));
+        assertThrows(IllegalArgumentException.class, () -> onSaturday.markUrgent(analyst, c.id(), " "));
+        CaseFile urgent = onSaturday.markUrgent(analyst, c.id(), "the customer asked to move the money abroad today");
+        assertEquals(Optional.of(marked), urgent.urgentSince());
+        assertEquals(Optional.of(marked.plus(Duration.ofHours(24))), deadlines.of(urgent).urgentDueAt());
+
+        CaseService later = new CaseService(store, Clock.fixed(marked.plusSeconds(3_600), ZoneOffset.UTC));
+        assertEquals(urgent, later.markUrgent(supervisor, c.id(), "again"), "the first mark starts the clock");
+
+        // Approved two days after the mark: within the three working days, but past the 24 hours
+        CaseService afterwards = new CaseService(store, Clock.fixed(marked.plus(Duration.ofDays(2)), ZoneOffset.UTC));
+        afterwards.assign(analyst, c.id(), analyst);
+        afterwards.propose(analyst, c.id(), CaseFile.Outcome.REPORTED, "linked to a known fraud");
+        CaseFile closed = afterwards.approve(supervisor, c.id());
+        assertTrue(deadlines.concludedLate(closed));
+        JsonNode json = ReportJson.toJson(SuspiciousTransactionReport.of(closed), deadlines.of(closed));
+        assertEquals("2026-11-01T10:00:00Z", json.get("deadline").get("urgentDueAt").asText());
     }
 
     @Test

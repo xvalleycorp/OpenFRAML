@@ -103,6 +103,11 @@ public record CaseFile(
         Objects.requireNonNull(openedAt, "openedAt");
     }
 
+    /** When someone marked the case urgent (see {@code CaseService.markUrgent}), if anyone did. */
+    public Optional<Instant> urgentSince() {
+        return history.stream().filter(action -> action.what().equals("URGENT")).map(Action::at).findFirst();
+    }
+
     /** Whether new alerts about the subject still join this case. */
     public boolean isOpen() {
         return status != Status.CLOSED;

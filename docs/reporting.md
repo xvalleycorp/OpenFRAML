@@ -125,19 +125,24 @@ The Vietnam Country Pack (`openframl-vn`) ships version 1 of both tables, in for
 
 The sources are:
 - Decision 11/2023/QĐ-TTg: the 400,000,000 VND threshold, which replaced the 300,000,000 VND of Decision 20/2013/QĐ-TTg.
-- Circular 09/2023/TT-NHNN, replaced from 1 November 2025 by Circular 27/2025/TT-NHNN, which keeps the thresholds: 500,000,000 VND for domestic transfers and 1,000 USD for international ones.
+- Circular 09/2023/TT-NHNN, replaced from 1 November 2025 by Circular 27/2025/TT-NHNN, which keeps the thresholds. Article 9(1) of the new circular sets 500,000,000 VND for domestic transfers and 1,000 USD for international ones. A transfer is international when one of the institutions is abroad.
 - Article 37(1) of the Anti-Money Laundering Law 14/2022/QH15: the deadline of one working day for reports filed electronically.
+- Article 10(2) of Circular 27/2025/TT-NHNN: electronic transfer reports are due before 16:00 on the working day after the transaction. `dueBy` gives the day only, so the filing step must meet the hour.
 
 These were checked against published summaries and republished texts, not yet against the official gazette. Three
-points are still to be confirmed there, and each table's description says which apply to it:
+points are still to be confirmed there:
 
 - **Cash summed together.** Whether deposits and withdrawals of a day are summed together. The table sums them, which reports more rather than less.
-- **Which side reports.** Which institution reports which side of a transfer. The table reports both.
+- **Which side reports.** Article 9(2) says intermediary institutions do not report. The text we read does not say whether the originating or the beneficiary institution reports, so the table reports both. Leave transfers the bank only passes on as an intermediary out of the day's events.
 - **International threshold date.** When the 1,000 USD threshold took effect. The table applies it from 1 December 2023, with the domestic one.
-- **Excluded transactions.** The circular excludes some transactions, such as savings withdrawals and loan repayments. The event model cannot tell them apart yet, so the bank leaves them out of the day's events.
 
 A transfer is international when its `counterpartyCountry` is set and is not `VN`. A cross-border payment without
 the country is treated as domestic, so the bank must set it on every one.
+
+Article 5(1)(a) of the circular has a separate 400,000,000 VND trigger: a customer with no account, or with no
+transactions for six months, who moves that much in a day must be identified. It lists exceptions, such as closing a
+savings account, withdrawing savings interest and repaying credit card debt. Those exceptions belong to customer
+identification and do not reduce the large-value report above, so send every cash transaction in the day's events.
 
 Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_daily.stone-test.json` and
 `report_transaction.stone-test.json`.
@@ -146,5 +151,5 @@ Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_d
 
 On the [roadmap](roadmap.md):
 - the authority's forms and electronic submission, as a country pack converter checked against the official templates;
-- the excluded transaction types;
+- the customer identification trigger of Article 5(1)(a) in Vietnam, with its exceptions;
 - the 24-hour report of Article 37(3) in Vietnam.

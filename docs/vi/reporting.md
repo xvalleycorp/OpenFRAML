@@ -132,19 +132,24 @@ Gói quốc gia Việt Nam (`openframl-vn`) có phiên bản 1 của cả hai b�
 
 Nguồn của từng con số:
 - Quyết định 11/2023/QĐ-TTg: ngưỡng 400.000.000 đồng, thay mức 300.000.000 đồng của Quyết định 20/2013/QĐ-TTg.
-- Thông tư 09/2023/TT-NHNN, được thay bằng Thông tư 27/2025/TT-NHNN từ 01/11/2025 và Thông tư mới giữ nguyên các ngưỡng: 500.000.000 đồng với chuyển tiền trong nước và 1.000 USD với chuyển tiền quốc tế.
+- Thông tư 09/2023/TT-NHNN, được thay bằng Thông tư 27/2025/TT-NHNN từ 01/11/2025 và Thông tư mới giữ nguyên các ngưỡng. Khoản 1 Điều 9 của Thông tư mới quy định 500.000.000 đồng với chuyển tiền trong nước và 1.000 USD với chuyển tiền quốc tế. Giao dịch là quốc tế khi có một tổ chức ở nước ngoài.
 - Khoản 1 Điều 37 Luật Phòng, chống rửa tiền 14/2022/QH15: thời hạn 01 ngày làm việc với báo cáo bằng dữ liệu điện tử.
+- Khoản 2 Điều 10 Thông tư 27/2025/TT-NHNN: báo cáo chuyển tiền điện tử phải nộp trước 16:00 của ngày làm việc kế tiếp ngày giao dịch. `dueBy` chỉ ghi ngày, nên bước nộp báo cáo phải bảo đảm đúng giờ.
 
 Các con số này được đối chiếu với các bản tóm tắt và bản đăng lại văn bản, chưa đối chiếu với Công báo. Còn ba điểm
-cần xác nhận trên nguồn chính thức; phần mô tả của mỗi bảng ghi điểm nào áp dụng cho bảng đó:
+cần xác nhận trên nguồn chính thức:
 
 - **Cộng chung tiền mặt.** Tiền nộp và tiền rút trong ngày có được cộng chung hay không. Bảng đang cộng chung, tức là báo cáo nhiều hơn chứ không ít hơn.
-- **Bên nào báo cáo.** Tổ chức nào báo cáo bên nào của giao dịch chuyển tiền. Bảng báo cáo cả hai bên.
+- **Bên nào báo cáo.** Khoản 2 Điều 9 quy định tổ chức trung gian không phải báo cáo. Văn bản chúng tôi đọc không nói rõ tổ chức khởi tạo hay tổ chức thụ hưởng báo cáo, nên bảng báo cáo cả hai bên. Hãy loại các giao dịch mà ngân hàng chỉ chuyển tiếp với vai trò trung gian ra khỏi sự kiện của ngày.
 - **Ngày hiệu lực của ngưỡng quốc tế.** Ngưỡng 1.000 USD có hiệu lực từ ngày nào. Bảng áp dụng từ 01/12/2023, cùng ngày với ngưỡng trong nước.
-- **Giao dịch được loại trừ.** Thông tư loại trừ một số giao dịch, như rút tiền gửi tiết kiệm hay trả nợ vay. Mô hình sự kiện chưa phân biệt được các giao dịch này, nên ngân hàng cần loại chúng ra khỏi sự kiện của ngày.
 
 Một giao dịch là chuyển tiền quốc tế khi `counterpartyCountry` đã được ghi và khác `VN`. Giao dịch ra hoặc vào từ
 nước ngoài mà không ghi nước sẽ bị coi là trong nước, nên ngân hàng phải ghi trường này cho mọi giao dịch như vậy.
+
+Điểm a khoản 1 Điều 5 của Thông tư có một ngưỡng 400.000.000 đồng riêng: khách hàng không có tài khoản, hoặc không phát
+sinh giao dịch trong sáu tháng, mà giao dịch từ mức đó trở lên trong một ngày thì phải được nhận biết. Quy định này có
+các ngoại lệ, như tất toán tiết kiệm, rút lãi tiết kiệm và trả nợ thẻ tín dụng. Các ngoại lệ đó thuộc về việc nhận biết
+khách hàng và không làm giảm báo cáo giá trị lớn nói trên, nên hãy đưa mọi giao dịch tiền mặt vào sự kiện của ngày.
 
 Cả hai phía của mỗi ngưỡng đều có trường hợp kiểm thử trong `openframl-vn/src/test/rules/report_daily.stone-test.json`
 và `report_transaction.stone-test.json`.
@@ -153,5 +158,5 @@ và `report_transaction.stone-test.json`.
 
 Trong [lộ trình](roadmap.md):
 - mẫu biểu và kênh nộp điện tử của cơ quan quản lý, dưới dạng bộ chuyển đổi trong gói quốc gia, đối chiếu với mẫu chính thức;
-- các loại giao dịch được loại trừ;
+- ngưỡng nhận biết khách hàng tại điểm a khoản 1 Điều 5 ở Việt Nam, cùng các ngoại lệ của nó;
 - báo cáo trong 24 giờ theo khoản 3 Điều 37 ở Việt Nam.

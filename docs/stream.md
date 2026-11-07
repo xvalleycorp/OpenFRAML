@@ -43,6 +43,33 @@ Delivery is at least once:
 A record that is not an event is skipped and counted. It is logged with its partition, its offset and the field that
 is wrong, never with its content.
 
+### Dead letters
+
+Set `OPENFRAML_STREAM_DEAD_LETTER_TOPIC` to keep the records the stream cannot take. A dead letter holds the record's
+key and value unchanged, with the headers `openframl.reason` and `openframl.source`
+(`<topic>-<partition>@<offset>`). The stream waits for the broker before it commits past a record, so a record is
+never skipped until it is kept. The topic holds what the transaction topic holds, account numbers included, so
+restrict access to it in the same way.
+
+An event a handler keeps failing on holds up its partition, because skipping it could lose an alert. That is the
+default, and a stopped partition shows in the metrics. With dead letters, `OPENFRAML_STREAM_MAX_ATTEMPTS` sets how
+many tries an event gets before the stream gives up on it. The event goes to the dead letters, the handlers after the
+failing one do not see it, and the partition moves on. Set a limit only with someone watching the dead letters: an
+event given up on has not been fully screened or monitored.
+
+### Metrics
+
+Set `OPENFRAML_STREAM_METRICS_PORT` to serve `GET /metrics` in the Prometheus text format. The metrics are counts and
+times only, never an account, a customer or a name.
+
+| Metric | Type | Content |
+| --- | --- | --- |
+| `openframl_stream_taken_total` | counter | Events every handler has taken |
+| `openframl_stream_invalid_total` | counter | Records that are not events |
+| `openframl_stream_retries_total` | counter | Times a handler failed and the stream went back |
+| `openframl_stream_dead_lettered_total` | counter | Events given up on after the limit of attempts |
+| `openframl_stream_last_event_timestamp_seconds` | gauge | The latest `occurredAt` taken: alert when it falls behind |
+
 Set `OPENFRAML_STREAM_VALKEY_URL` to keep monitoring's account activity on Valkey. Every Stream Service process of the
 group then shares it, so they can run side by side, and a partition that moves after a rebalance keeps its history.
 Without it, the activity is kept in the process, and only one Stream Service may run per consumer group.
@@ -60,6 +87,9 @@ Without it, the activity is kept in the process, and only one Stream Service may
 | `OPENFRAML_STREAM_SUPPRESSION_DAYS` | `7` | How long a scenario that fired for a customer stays quiet |
 | `OPENFRAML_STREAM_VALKEY_URL` | (in the process) | Valkey for monitoring's account activity, e.g. `redis://valkey:6379` |
 | `OPENFRAML_STREAM_VALKEY_TIMEOUT_MS` | `500` | Valkey command timeout |
+| `OPENFRAML_STREAM_DEAD_LETTER_TOPIC` | (none) | Topic for records the stream cannot take |
+| `OPENFRAML_STREAM_MAX_ATTEMPTS` | `0` | Tries before an event goes to the dead letters; 0 tries for ever |
+| `OPENFRAML_STREAM_METRICS_PORT` | (off) | Port of `GET /metrics` |
 
 ## Daily Report Job
 
@@ -83,9 +113,3 @@ runs on the day before today.
 | `OPENFRAML_REPORT_HOLIDAYS` | (none) | One ISO date per line: the public holidays that deadlines skip |
 | `OPENFRAML_REPORT_MARGIN_MINUTES` | `60` | How far beyond the day to read the topic |
 | `OPENFRAML_REPORT_DETECTION` | `APPROVAL` | When a suspicion counts as detected: `APPROVAL` or `FIRST_ALERT` |
-
-## Next
-
-On the [roadmap](roadmap.md):
-- a dead-letter topic for records that are not events;
-- metrics for what the stream takes, skips and retries.

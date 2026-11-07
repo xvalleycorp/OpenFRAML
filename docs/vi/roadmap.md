@@ -51,7 +51,7 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
       báo cáo hằng ngày đọc lại từ topic đó (`openframl-stream`)
 - [x] Hoạt động tài khoản của phần giám sát trên Valkey, dùng chung giữa các tiến trình Dịch vụ luồng giao dịch;
       khoảng thời gian 7 và 30 ngày
-- [ ] Luồng giao dịch: topic dead-letter, chỉ số
+- [x] Luồng giao dịch: topic dead-letter, giới hạn số lần thử, chỉ số cho Prometheus
 - [x] Giám sát giao dịch: kịch bản là bảng của gói quốc gia, cảnh báo chuyển sang Quản lý hồ sơ điều tra, bốn kịch bản
       mẫu cho Việt Nam (`openframl-monitor`)
 - [ ] Hồ sơ hành vi trên Flink (`openframl-features`): khoảng thời gian dưới dạng tổng cộng dồn cho tài khoản có rất

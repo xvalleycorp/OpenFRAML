@@ -50,7 +50,7 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Transaction Stream: payment screening and monitoring fed from the bank's Kafka topic, at least once; daily
       reports read back from it (`openframl-stream`)
 - [x] Monitoring's account activity on Valkey, shared by Stream Service processes; 7- and 30-day windows
-- [ ] Transaction Stream: a dead-letter topic, metrics
+- [x] Transaction Stream: a dead-letter topic, a limit of attempts, metrics for Prometheus
 - [x] Transaction Monitoring: scenarios as country pack tables, alerts to Case Management, four Vietnam samples
       (`openframl-monitor`)
 - [ ] Behaviour Profiles on Flink (`openframl-features`): windows as running totals for very busy accounts;

@@ -10,6 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -134,6 +138,81 @@ class TransactionStreamTest {
 
         assertEquals(List.of("evt-1", "evt-2", "evt-3"), seen);
         assertEquals(3, committed());
-        assertTrue(stream.taken() == 3);
+        assertEquals(3, stream.taken());
+    }
+
+    @Test
+    void anEventAHandlerKeepsFailingOnGoesToTheDeadLettersAfterTheLimit() {
+        List<String> letters = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+        TransactionStream stream = new TransactionStream(consumer, TOPIC, List.of(e -> {
+            if (e.eventId().equals("poison")) {
+                throw new IllegalStateException("a bug the event triggers");
+            }
+            seen.add(e.eventId());
+        }), Duration.ZERO, (record, reason) -> letters.add(record.offset() + " " + reason), 3);
+        publish("{not json");
+        String poison = TransactionEventJson.write(event("poison"));
+        publish(poison);
+
+        stream.pollOnce(Duration.ZERO);
+        for (int attempt = 2; attempt <= 3; attempt++) {
+            assertEquals(1, committed(), "the partition waits on the poison event");
+            offset = 1;
+            publish(poison);
+            stream.pollOnce(Duration.ZERO);
+        }
+        publish(TransactionEventJson.write(event("evt-2")));
+        stream.pollOnce(Duration.ZERO);
+
+        assertEquals(List.of("0 not an event: not JSON, at line 1 column 2",
+                "1 handler failed 3 times: java.lang.IllegalStateException"), letters);
+        assertEquals(List.of("evt-2"), seen);
+        assertEquals(1, stream.deadLettered());
+        assertEquals(3, committed());
+        assertEquals(Instant.parse("2026-10-30T02:00:00Z").toEpochMilli(), stream.lastEventAt());
+    }
+
+    @Test
+    void aRecordIsNotSkippedUntilItIsKeptAsADeadLetter() {
+        boolean[] down = {true};
+        TransactionStream stream = new TransactionStream(consumer, TOPIC, List.of(e -> { }), Duration.ZERO,
+                (record, reason) -> {
+                    if (down[0]) {
+                        throw new IllegalStateException("broker unreachable");
+                    }
+                }, 0);
+        publish("not an event");
+
+        stream.pollOnce(Duration.ZERO);
+        assertEquals(0, committed());
+        down[0] = false;
+        offset = 0;
+        publish("not an event");
+        stream.pollOnce(Duration.ZERO);
+
+        assertEquals(1, committed());
+        assertEquals(1, stream.invalid());
+    }
+
+    @Test
+    void theCountersAreServedToPrometheus() throws Exception {
+        TransactionStream stream = new TransactionStream(consumer, TOPIC, List.of(e -> { }), Duration.ZERO);
+        publish(TransactionEventJson.write(event("evt-1")));
+        stream.pollOnce(Duration.ZERO);
+
+        try (MetricsServer server = MetricsServer.start(0, stream::metrics)) {
+            HttpResponse<String> response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(
+                    URI.create("http://localhost:" + server.port() + "/metrics")).build(),
+                    HttpResponse.BodyHandlers.ofString());
+
+            assertEquals(200, response.statusCode());
+            assertTrue(response.body().contains("openframl_stream_taken_total 1\n"), response.body());
+            assertTrue(response.body().contains("openframl_stream_last_event_timestamp_seconds "
+                    + Instant.parse("2026-10-30T02:00:00Z").toEpochMilli() / 1000.0 + "\n"), response.body());
+            assertFalse(response.body().contains(ACCOUNT.account()));
+        }
+        assertThrows(IllegalArgumentException.class, () -> new TransactionStream(consumer, TOPIC, List.of(),
+                Duration.ZERO, DeadLetters.NONE, 3), "a limit of attempts needs dead letters");
     }
 }

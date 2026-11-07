@@ -16,7 +16,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import vn.io.dxa.openframl.cases.CaseService;
 import vn.io.dxa.openframl.cases.CaseStore;
 import vn.io.dxa.openframl.cases.jdbc.DriverDataSource;
@@ -74,13 +77,25 @@ public final class StreamService {
         }
 
         String topic = env.getOrDefault("OPENFRAML_STREAM_TOPIC", "openframl.transactions");
+        String deadLetterTopic = env.get("OPENFRAML_STREAM_DEAD_LETTER_TOPIC");
+        KafkaProducer<String, String> deadLetterProducer = deadLetterTopic == null ? null
+                : new KafkaProducer<>(producerConfig(env));
+        DeadLetters deadLetters = deadLetterProducer == null ? DeadLetters.NONE
+                : DeadLetters.kafka(deadLetterProducer, deadLetterTopic);
         TransactionStream stream = new TransactionStream(new KafkaConsumer<>(consumerConfig(env,
                 env.getOrDefault("OPENFRAML_STREAM_GROUP", "openframl-stream"))), topic, handlers,
-                Duration.ofSeconds(5));
+                Duration.ofSeconds(5), deadLetters,
+                Integer.parseInt(env.getOrDefault("OPENFRAML_STREAM_MAX_ATTEMPTS", "0")));
         Thread runner = Thread.ofPlatform().name("openframl-stream").start(stream);
+        String metricsPort = env.get("OPENFRAML_STREAM_METRICS_PORT");
+        MetricsServer metrics = metricsPort == null ? null
+                : MetricsServer.start(Integer.parseInt(metricsPort), stream::metrics);
         ScreeningDirectory screening = lists;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             stream.stop();
+            if (metrics != null) {
+                metrics.close();
+            }
             try {
                 runner.join(Duration.ofSeconds(10));
             } catch (InterruptedException e) {
@@ -88,6 +103,9 @@ public final class StreamService {
             }
             if (screening != null) {
                 screening.close();
+            }
+            if (deadLetterProducer != null) {
+                deadLetterProducer.close(Duration.ofSeconds(5));
             }
         }));
         LOG.log(System.Logger.Level.INFO, "stream service reading {0} with {1} handler(s), country pack {2} {3}",
@@ -114,6 +132,19 @@ public final class StreamService {
             return new InMemoryCaseStore();
         }
         return new JdbcCaseStore(new DriverDataSource(url));
+    }
+
+    /** Every send acknowledged by all in-sync replicas, once. */
+    static Map<String, Object> producerConfig(Map<String, String> env) {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, consumerConfig(env, null)
+                .get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
+        config.put(ProducerConfig.CLIENT_ID_CONFIG, "openframl-stream");
+        config.put(ProducerConfig.ACKS_CONFIG, "all");
+        config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return config;
     }
 
     /**

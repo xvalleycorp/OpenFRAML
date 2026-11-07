@@ -23,6 +23,7 @@ tượng đến cùng lúc vẫn vào chung một hồ sơ.
 | Cảnh báo mở hồ sơ | Bộ phát hiện | `OPEN` |
 | Giao hồ sơ | Chuyên viên tự nhận, hoặc người phụ trách giao | `IN_REVIEW` |
 | Ghi chú những gì đã kiểm tra | Chuyên viên và người phụ trách | Không đổi |
+| Đánh dấu hồ sơ khẩn, kèm lý do | Chuyên viên và người phụ trách | Không đổi |
 | Đề xuất kết luận: `FALSE_POSITIVE`, `CONFIRMED` hoặc `REPORTED`, kèm lý do | Chuyên viên được giao | `AWAITING_APPROVAL` |
 | Phê duyệt kết luận | Người phụ trách không phải người đề xuất | `CLOSED` |
 | Trả lại kết luận, kèm lý do | Người phụ trách | `IN_REVIEW` |
@@ -60,8 +61,8 @@ nào là chuyên viên, người phụ trách và bộ phát hiện:
 | Người gọi | Được làm |
 | --- | --- |
 | Bộ phát hiện (ví dụ một node sàng lọc) | Chỉ `RaiseAlert` |
-| Chuyên viên | Đọc hồ sơ, nhận hồ sơ, ghi chú, đề xuất kết luận cho hồ sơ được giao cho mình |
-| Người phụ trách | Đọc hồ sơ, giao hồ sơ, ghi chú, phê duyệt hoặc trả lại kết luận không phải do mình đề xuất |
+| Chuyên viên | Đọc hồ sơ, nhận hồ sơ, ghi chú, đánh dấu hồ sơ khẩn, đề xuất kết luận cho hồ sơ được giao cho mình |
+| Người phụ trách | Đọc hồ sơ, giao hồ sơ, ghi chú, đánh dấu hồ sơ khẩn, phê duyệt hoặc trả lại kết luận không phải do mình đề xuất |
 
 Mọi lời gọi đều được ghi vào lịch sử của hồ sơ dưới tên người gọi. Mỗi kiểu từ chối có mã trạng thái riêng:
 `UNAUTHENTICATED` khi không có certificate, `PERMISSION_DENIED` khi người gọi không có vai trò cần thiết,

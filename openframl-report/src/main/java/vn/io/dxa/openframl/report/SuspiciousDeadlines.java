@@ -5,6 +5,7 @@
 
 package vn.io.dxa.openframl.report;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -25,11 +26,13 @@ import vn.io.dxa.rulestone.api.Facts;
  *   <li>from the transaction: {@code fromTransaction} working days after the first alert's transaction, known as
  *       soon as a case opens, so a work queue can be ordered by it;</li>
  *   <li>from detection: {@code fromDetection} working days after the bank detected the suspicion. When that is, is
- *       the bank's reading of its law, chosen with {@link Detection}.</li>
+ *       the bank's reading of its law, chosen with {@link Detection};</li>
+ *   <li>urgent: {@code urgentHours} hours after someone marked the case urgent, if anyone did. Hours run through
+ *       weekends and holidays.</li>
  * </ul>
  *
- * <p>Investigation takes time, so a case concluded after the deadline from the transaction is flagged: the bank
- * sees which reports were late against it, whichever reading it applies.
+ * <p>Investigation takes time, so a case concluded after the deadline from the transaction, or after its urgent
+ * deadline, is flagged: the bank sees which reports were late, whichever reading it applies.
  */
 public final class SuspiciousDeadlines {
 
@@ -48,20 +51,22 @@ public final class SuspiciousDeadlines {
      * @param dueFromTransaction  the last day counted from the transaction
      * @param detectedOn          the business date of detection, once known
      * @param dueFromDetection    the last day counted from detection, once known
+     * @param urgentDueAt         when the report is due if the case was marked urgent
      * @param table               the table version that set them
      */
     public record Deadline(LocalDate transactionDate, LocalDate dueFromTransaction, Optional<LocalDate> detectedOn,
-            Optional<LocalDate> dueFromDetection, String table) {
+            Optional<LocalDate> dueFromDetection, Optional<Instant> urgentDueAt, String table) {
 
         public Deadline {
             Objects.requireNonNull(transactionDate, "transactionDate");
             Objects.requireNonNull(dueFromTransaction, "dueFromTransaction");
             Objects.requireNonNull(detectedOn, "detectedOn");
             Objects.requireNonNull(dueFromDetection, "dueFromDetection");
+            Objects.requireNonNull(urgentDueAt, "urgentDueAt");
             Objects.requireNonNull(table, "table");
         }
 
-        /** The earlier of the two deadlines that are known. */
+        /** The earlier of the two deadlines in working days that are known; see {@link #urgentDueAt} as well. */
         public LocalDate dueBy() {
             return dueFromDetection.filter(due -> due.isBefore(dueFromTransaction)).orElse(dueFromTransaction);
         }
@@ -99,19 +104,22 @@ public final class SuspiciousDeadlines {
                 .asOf(transactionDate).correlationId("str:" + c.id()), Facts.empty());
         int fromTransaction = ((Number) result.output().get("fromTransaction")).intValue();
         int fromDetection = ((Number) result.output().get("fromDetection")).intValue();
+        int urgentHours = ((Number) result.output().get("urgentHours")).intValue();
         Optional<LocalDate> detectedOn = switch (detection) {
             case FIRST_ALERT -> Optional.of(transactionDate);
             case APPROVAL -> approval(c).map(this::date);
         };
         return new Deadline(transactionDate, workingDays.plus(transactionDate, fromTransaction), detectedOn,
                 detectedOn.map(day -> workingDays.plus(day, fromDetection)),
+                c.urgentSince().map(since -> since.plus(Duration.ofHours(urgentHours))),
                 result.decisionId() + "@" + result.ruleVersion());
     }
 
-    /** Whether the case was concluded as reported after the deadline counted from the transaction. */
+    /** Whether the case was concluded as reported after the deadline from the transaction, or its urgent one. */
     public boolean concludedLate(CaseFile c) {
         Deadline deadline = of(c);
-        return approval(c).map(this::date).map(day -> day.isAfter(deadline.dueFromTransaction())).orElse(false);
+        return approval(c).map(at -> date(at).isAfter(deadline.dueFromTransaction())
+                || deadline.urgentDueAt().map(at::isAfter).orElse(false)).orElse(false);
     }
 
     private static Optional<Instant> approval(CaseFile c) {

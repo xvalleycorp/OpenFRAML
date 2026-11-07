@@ -26,6 +26,8 @@ service CaseService {
   // An analyst takes a case for themselves, or a supervisor assigns it to an analyst.
   rpc Assign(AssignRequest) returns (Case);
   rpc AddNote(AddNoteRequest) returns (Case);
+  // An analyst or supervisor marks an open case urgent, with the reason; the first mark starts the clock.
+  rpc MarkUrgent(MarkUrgentRequest) returns (Case);
   // The assigned analyst only.
   rpc ProposeConclusion(ProposeConclusionRequest) returns (Case);
   // A supervisor who did not propose the conclusion; closes the case.
@@ -79,7 +81,7 @@ message Conclusion {
 message Action {
   google.protobuf.Timestamp at = 1;
   string actor = 2;
-  // e.g. "OPENED", "ALERT_ADDED", "ASSIGNED", "NOTE", "PROPOSED", "APPROVED", "RETURNED".
+  // e.g. "OPENED", "ALERT_ADDED", "ASSIGNED", "NOTE", "URGENT", "PROPOSED", "APPROVED", "RETURNED".
   string what = 3;
   string detail = 4;
 }
@@ -123,6 +125,11 @@ message AssignRequest {
 message AddNoteRequest {
   string case_id = 1;
   string text = 2;
+}
+
+message MarkUrgentRequest {
+  string case_id = 1;
+  string reason = 2;
 }
 
 message ProposeConclusionRequest {

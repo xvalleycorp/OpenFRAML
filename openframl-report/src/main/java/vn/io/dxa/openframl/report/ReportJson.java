@@ -101,6 +101,7 @@ public final class ReportJson {
         d.put("dueFromTransaction", deadline.dueFromTransaction().toString());
         deadline.detectedOn().ifPresent(day -> d.put("detectedOn", day.toString()));
         deadline.dueFromDetection().ifPresent(day -> d.put("dueFromDetection", day.toString()));
+        deadline.urgentDueAt().ifPresent(at -> d.put("urgentDueAt", at.toString()));
         d.put("table", deadline.table());
         return json;
     }

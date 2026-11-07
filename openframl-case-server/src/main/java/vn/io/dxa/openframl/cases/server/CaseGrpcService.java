@@ -29,6 +29,7 @@ import vn.io.dxa.openframl.cases.v1.CaseStatus;
 import vn.io.dxa.openframl.cases.v1.GetCaseRequest;
 import vn.io.dxa.openframl.cases.v1.ListCasesRequest;
 import vn.io.dxa.openframl.cases.v1.ListCasesResponse;
+import vn.io.dxa.openframl.cases.v1.MarkUrgentRequest;
 import vn.io.dxa.openframl.cases.v1.Outcome;
 import vn.io.dxa.openframl.cases.v1.ProposeConclusionRequest;
 import vn.io.dxa.openframl.cases.v1.RaiseAlertRequest;
@@ -93,6 +94,11 @@ public final class CaseGrpcService extends CaseServiceGrpc.CaseServiceImplBase {
     @Override
     public void addNote(AddNoteRequest request, StreamObserver<Case> responses) {
         respond(responses, () -> toProto(cases.note(investigator(), request.getCaseId(), request.getText())));
+    }
+
+    @Override
+    public void markUrgent(MarkUrgentRequest request, StreamObserver<Case> responses) {
+        respond(responses, () -> toProto(cases.markUrgent(investigator(), request.getCaseId(), request.getReason())));
     }
 
     @Override

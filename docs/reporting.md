@@ -82,10 +82,16 @@ A report is due by the earlier of the two. A case concluded after the deadline f
 the bank sees which reports were late against it, whatever reading it applies. The Daily Report Job writes both
 deadlines with each report, under `deadline`, and logs a warning for each late case.
 
-Vietnam's table follows Article 37(2) of the Anti-Money Laundering Law 14/2022/QH15: three working days from the
-transaction, or one working day from detection. Article 37(3) sets 24 hours, with a report to the competent
-authority as well, when a transaction a customer requests appears linked to a crime. The table does not cover that
-case, which needs an analyst's judgement. These deadlines are to be confirmed against the official gazette.
+A person can also mark a case urgent, with the reason (`MarkUrgent` in the Case Service). Its report is then also due
+`urgentHours` hours after the first mark, and those hours run through weekends and holidays. No detector marks a case
+urgent, because that takes a person's judgement. The deadline counts against a case that is still open, and the Daily
+Report Job writes reports only once a case closes, so an urgent case must be concluded and approved within those
+hours. The urgent deadline is written as `urgentDueAt`, and a case concluded after it is flagged as late.
+
+Vietnam's table follows Article 37 of the Anti-Money Laundering Law 14/2022/QH15. Clause 2 sets three working days
+from the transaction, or one working day from detection. Clause 3 sets 24 hours, with a report to the competent
+authority as well, when a transaction a customer requests appears linked to a crime. OpenFRAML does not send that
+report to the authority. These deadlines are to be confirmed against the official gazette.
 
 The customer must never learn that a report was made; in Vietnam, Article 40 of the Anti-Money Laundering Law forbids
 disclosing it. Nothing in this module is meant for a channel the customer sees.
@@ -121,7 +127,7 @@ The Vietnam Country Pack (`openframl-vn`) ships version 1 of both tables, in for
 | `LARGE_CASH` | `report_daily` | One customer's cash in one day comes to 400,000,000 VND or more | 1 working day |
 | `ELECTRONIC_TRANSFER` | `report_transaction` | A domestic transfer, out or in, of 500,000,000 VND or more | 1 working day |
 | `INTERNATIONAL_TRANSFER` | `report_transaction` | A transfer to or from another country, out or in, of 1,000 USD or more | 1 working day |
-| Suspicious transaction report | `report_suspicious` | A case concluded as reported | 3 working days from the transaction, 1 from detection |
+| Suspicious transaction report | `report_suspicious` | A case concluded as reported | 3 working days from the transaction, 1 from detection; 24 hours if marked urgent |
 
 The sources are:
 - Decision 11/2023/QĐ-TTg: the 400,000,000 VND threshold, which replaced the 300,000,000 VND of Decision 20/2013/QĐ-TTg.
@@ -151,5 +157,4 @@ Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_d
 
 On the [roadmap](roadmap.md):
 - the authority's forms and electronic submission, as a country pack converter checked against the official templates;
-- the customer identification trigger of Article 5(1)(a) in Vietnam, with its exceptions;
-- the 24-hour report of Article 37(3) in Vietnam.
+- the customer identification trigger of Article 5(1)(a) in Vietnam, with its exceptions.

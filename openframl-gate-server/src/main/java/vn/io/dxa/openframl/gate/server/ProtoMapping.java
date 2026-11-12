@@ -51,13 +51,15 @@ final class ProtoMapping {
                 tx.hasBeneficiary() ? account(tx.getBeneficiary(), "beneficiary") : null,
                 tx.hasSession() ? session(tx.getSession()) : null,
                 tx.getBeneficiaryName(),
-                tx.getCounterpartyCountry());
+                tx.getCounterpartyCountry(),
+                tx.getPurpose());
     }
 
     static DecideResponse response(GateOutcome outcome) {
         return DecideResponse.newBuilder()
                 .setDecision(Decision.valueOf("DECISION_" + outcome.decision().name()))
                 .addAllReasonCodes(outcome.reasonCodes())
+                .setIdentifyCustomer(outcome.identifyCustomer())
                 .setPolicyVersion(outcome.policyVersion())
                 .setFallback(outcome.fallback().map(ProtoMapping::fallback).orElse(Fallback.FALLBACK_UNSPECIFIED))
                 .setReviewLater(outcome.reviewLater())

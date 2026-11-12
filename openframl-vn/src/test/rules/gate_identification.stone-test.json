@@ -1,0 +1,193 @@
+{
+  "decision": "gate_identification",
+  "description": "Vietnam's customer identification trigger, Article 5(1)(a) of Circular 27/2025/TT-NHNN",
+  "cases": [
+    {
+      "name": "a customer with no account reaches 400,000,000 VND over the day",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "100000000 VND",
+          "currency": "VND"
+        },
+        "customer": {
+          "hasAccount": false
+        },
+        "velocity": {
+          "customerAmountToday": "400000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "identify": true
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "IDENTIFY_NO_ACCOUNT"
+        ]
+      }
+    },
+    {
+      "name": "a customer with no account stays below 400,000,000 VND",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "100000000 VND",
+          "currency": "VND"
+        },
+        "customer": {
+          "hasAccount": false
+        },
+        "velocity": {
+          "customerAmountToday": "399999999 VND"
+        }
+      },
+      "expect": {
+        "output": {},
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "an account inactive for six months, one transaction of 400,000,000 VND",
+      "description": "Without the day's total, the transaction's own amount is used",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "400000000 VND",
+          "currency": "VND"
+        },
+        "customer": {
+          "hasAccount": true,
+          "inactiveMonths": 6
+        },
+        "velocity": {}
+      },
+      "expect": {
+        "output": {
+          "identify": true
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "IDENTIFY_INACTIVE_CUSTOMER"
+        ]
+      }
+    },
+    {
+      "name": "an account used five months ago is not covered",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "900000000 VND",
+          "currency": "VND"
+        },
+        "customer": {
+          "hasAccount": true,
+          "inactiveMonths": 5
+        },
+        "velocity": {
+          "customerAmountToday": "900000000 VND"
+        }
+      },
+      "expect": {
+        "output": {},
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "closing a savings account is excepted",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "900000000 VND",
+          "currency": "VND",
+          "purpose": "ACCOUNT_CLOSURE"
+        },
+        "customer": {
+          "hasAccount": true,
+          "inactiveMonths": 12
+        },
+        "velocity": {
+          "customerAmountToday": "900000000 VND"
+        }
+      },
+      "expect": {
+        "output": {
+          "identify": false
+        },
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    },
+    {
+      "name": "a customer the store does not have is treated as having no account",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "500000000 VND",
+          "currency": "VND"
+        },
+        "customer": {},
+        "velocity": {}
+      },
+      "expect": {
+        "output": {
+          "identify": true
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "IDENTIFY_CUSTOMER_UNKNOWN"
+        ]
+      }
+    },
+    {
+      "name": "a foreign-currency transaction of an inactive customer is identified, whatever the amount",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "100 USD",
+          "currency": "USD"
+        },
+        "customer": {
+          "hasAccount": true,
+          "inactiveMonths": 7
+        },
+        "velocity": {
+          "customerAmountToday": "100 USD"
+        }
+      },
+      "expect": {
+        "output": {
+          "identify": true
+        },
+        "exactOutput": true,
+        "reasonCodes": [
+          "IDENTIFY_FOREIGN_CURRENCY"
+        ]
+      }
+    },
+    {
+      "name": "a foreign-currency transaction of an active customer is not covered",
+      "asOf": "2026-11-07",
+      "facts": {
+        "transaction": {
+          "amount": "50000 USD",
+          "currency": "USD"
+        },
+        "customer": {
+          "hasAccount": true,
+          "inactiveMonths": 0
+        },
+        "velocity": {
+          "customerAmountToday": "50000 USD"
+        }
+      },
+      "expect": {
+        "output": {},
+        "exactOutput": true,
+        "reasonCodes": []
+      }
+    }
+  ]
+}

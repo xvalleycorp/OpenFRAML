@@ -5,6 +5,7 @@
 
 package vn.io.dxa.openframl.gate;
 
+import java.time.LocalDate;
 import vn.io.dxa.openframl.model.TransactionEvent;
 
 /**
@@ -22,4 +23,15 @@ public interface VelocityStore {
      * @throws RuntimeException if the store is unavailable; the gate then applies its fallback policy
      */
     VelocitySnapshot recordAttempt(TransactionEvent event);
+
+    /**
+     * Counts this payment attempt, as {@link #recordAttempt(TransactionEvent)} does, and also adds it to the customer's
+     * total for the business day, which the snapshot then carries. The gate calls this one. A store that does not keep
+     * customers' totals leaves the snapshot without one, which is the default.
+     *
+     * @param businessDate the payment's business day, in the country pack's zone
+     */
+    default VelocitySnapshot recordAttempt(TransactionEvent event, LocalDate businessDate) {
+        return recordAttempt(event);
+    }
 }

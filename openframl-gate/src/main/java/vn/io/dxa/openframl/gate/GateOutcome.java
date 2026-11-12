@@ -21,18 +21,28 @@ import vn.io.dxa.openframl.model.Decision;
  * @param policyVersion the decision table version that decided, e.g. {@code gate_decision@1@sha256:...}
  * @param fallback      set when the fallback policy decided instead of the decision table
  * @param reviewLater   the payment was let through without a full decision, and monitoring should look at it again
+ * @param identifyCustomer the customer must be identified, and their information collected or updated, before the
+ *                      transaction is carried out, as the table {@value Gate#IDENTIFICATION_ID} decided; independent
+ *                      of {@code decision}
  */
 public record GateOutcome(
         Decision decision,
         List<String> reasonCodes,
         String policyVersion,
         Optional<GateFailure> fallback,
-        boolean reviewLater) {
+        boolean reviewLater,
+        boolean identifyCustomer) {
 
     public GateOutcome {
         Objects.requireNonNull(decision, "decision");
         reasonCodes = List.copyOf(reasonCodes);
         Objects.requireNonNull(policyVersion, "policyVersion");
         Objects.requireNonNull(fallback, "fallback");
+    }
+
+    /** An outcome that asks for no customer identification. */
+    public GateOutcome(Decision decision, List<String> reasonCodes, String policyVersion,
+            Optional<GateFailure> fallback, boolean reviewLater) {
+        this(decision, reasonCodes, policyVersion, fallback, reviewLater, false);
     }
 }

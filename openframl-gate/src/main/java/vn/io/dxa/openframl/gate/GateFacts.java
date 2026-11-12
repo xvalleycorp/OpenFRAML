@@ -29,13 +29,18 @@ final class GateFacts {
     private final Map<String, Object> device = new LinkedHashMap<>();
     private final Map<String, Object> velocity = new LinkedHashMap<>();
     private final Map<String, Object> score = new LinkedHashMap<>();
+    private final Map<String, Object> customer = new LinkedHashMap<>();
     private GateFailure failure;
 
     GateFacts(TransactionEvent event, LocalDate businessDate) {
         this.businessDate = businessDate;
         transaction.put("amount", money(event.amount()));
+        transaction.put("currency", event.amount().currency());
         transaction.put("type", event.type().name());
         transaction.put("channel", event.channel().name());
+        if (event.purpose() != null) {
+            transaction.put("purpose", event.purpose());
+        }
         if (event.beneficiary() != null) {
             beneficiary.put("sameInstitution",
                     event.beneficiary().institution().equals(event.originator().institution()));
@@ -58,6 +63,11 @@ final class GateFacts {
         if (event.session().deviceId() != null) {
             device.put("known", profiles.deviceKnown());
         }
+        profiles.customer().ifPresent(profile -> {
+            customer.put("hasAccount", profile.hasAccount());
+            profile.lastTransaction().ifPresent(last ->
+                    customer.put("inactiveMonths", ChronoUnit.MONTHS.between(last, businessDate)));
+        });
     }
 
     void velocity(VelocitySnapshot snapshot) {
@@ -65,6 +75,7 @@ final class GateFacts {
         velocity.put("count24h", snapshot.count24h());
         velocity.put("amount24h", money(snapshot.amount24h()));
         velocity.put("distinctBeneficiaries24h", snapshot.distinctBeneficiaries24h());
+        snapshot.customerToday().ifPresent(total -> velocity.put("customerAmountToday", money(total)));
     }
 
     void score(Score scored) {
@@ -88,6 +99,7 @@ final class GateFacts {
         facts.put("device", device);
         facts.put("velocity", velocity);
         facts.put("score", score);
+        facts.put("customer", customer);
         if (failure != null) {
             facts.put("failure", failure.name());
         }

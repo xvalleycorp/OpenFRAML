@@ -17,7 +17,7 @@ not listed here.
 | Profiles | Read the originator, the beneficiary and the device from the profile store, in one call | 3 ms |
 | Velocity | Count this attempt and read the originator's short-term counters | 2 ms |
 | Model | Score the payment; a score that is late is dropped | 5 ms |
-| Rules | Evaluate the decision table `gate_decision` | 2 ms |
+| Rules | Evaluate the decision table `gate_decision`, then `gate_identification` if the policy has it | 2 ms |
 | Reply | Return the decision; the audit record is published asynchronously | 1 ms |
 | Reserve | GC pauses, queueing, bursts | 14 ms |
 
@@ -41,14 +41,15 @@ customers, because AML reasons are confidential.
 
 ## Facts
 
-The gate passes these facts to both of its tables. A table declares the fields it uses; facts it does not declare
+The gate passes these facts to all of its tables. A table declares the fields it uses; facts it does not declare
 are ignored. A field that the gate could not fill (the step did not run, failed, or does not apply) is left unset,
 so tables test optional fields with `has(...)`.
 
 | Fact | Type | Set when |
 | --- | --- | --- |
 | `transaction.amount` | money | Always |
-| `transaction.type`, `transaction.channel` | string | Always |
+| `transaction.currency`, `transaction.type`, `transaction.channel` | string | Always |
+| `transaction.purpose` | string | The event carries a purpose, e.g. `ACCOUNT_CLOSURE` |
 | `originator.accountAgeDays` | int | The profile store has the originating account |
 | `originator.riskRating` | string | The account has an AML risk rating |
 | `beneficiary.watchlisted` | bool | The payment has a beneficiary and the watchlist check ran |
@@ -60,6 +61,9 @@ so tables test optional fields with `has(...)`.
 | `device.known` | bool | The session has a device id and the profile lookup succeeded |
 | `velocity.count10m`, `velocity.count24h`, `velocity.distinctBeneficiaries24h` | int | The velocity step succeeded; counts include this attempt |
 | `velocity.amount24h` | money | The velocity step succeeded; in the currency of this payment |
+| `velocity.customerAmountToday` | money | The velocity store keeps customers' totals: the customer's attempts on the business day, on every account, this one included, in the currency of this payment |
+| `customer.hasAccount` | bool | The profile store has the customer |
+| `customer.inactiveMonths` | int | The profile store has the customer's last transaction before today: whole months from that day to the business date |
 | `score.fraud` | decimal, 0 to 1 | A score arrived in time |
 | `score.modelVersion` | string | A score arrived in time |
 | `failure` | string | Only for `gate_fallback`: `TIMEOUT`, `STORE_UNAVAILABLE` or `POLICY_ERROR` |
@@ -84,6 +88,69 @@ reason code `GATE_FALLBACK_FAILED`.
 
 Both tables are checked when the gate is built. A missing table, a table without the string output `action`, or a
 rule that sets an unknown action stops the build instead of failing a payment.
+
+## Customer identification
+
+Some rules decide not what happens to the payment but whether the customer must be identified first: their
+identity checked, and their information collected or updated, before the transaction is carried out. The optional
+table `gate_identification` holds them, with the bool output `identify`.
+
+- **When it runs.** After `gate_decision`, or after `gate_fallback`, on the same facts. Without the customer's day
+  total (the velocity step did not run), a rule can use the transaction's own amount.
+- **The answer.** `identifyCustomer` in the outcome, and `identify_customer` in the gRPC response, independent of
+  the decision: a payment can be allowed and still need the customer identified. The reason codes of the rule that
+  asked are added to the outcome's. The teller system or the core banking system collects the information before
+  posting the transaction.
+- **When it fails.** The customer must be identified, with reason code `GATE_IDENTIFICATION_FAILED`.
+- **Checked when built.** If the policy has the table, it must declare the bool output `identify`. A policy without it
+  never asks.
+
+The facts it needs come from the stores:
+
+- **The customer.** `CustomerProfile` gives whether the customer holds an account and the day of their last
+  transaction before today, on any account. For an account never used, give the day it was opened.
+- **The day's total.** The velocity store adds each attempt to the customer's total for the business day, on every
+  account, counting an event id once. Like the other counters, it counts attempts, including those later held or
+  refused. The in-memory store keeps the totals of the payments its node decided; when a customer's accounts are
+  routed to different nodes, use the Valkey store.
+- **The purpose.** `purpose` on the event (`purpose` in the gRPC `Transaction`) says what the transaction is for, in
+  codes the country pack names, so that rules can recognise the exceptions.
+
+### Vietnam
+
+The Vietnam pack's table implements Article 5(1)(a) of Circular 27/2025/TT-NHNN, in force from 1 November 2025. A
+customer with no account, or with an account but no transactions for six consecutive months, must be identified
+before carrying out one or more transactions totalling 400,000,000 VND or more, or the equivalent in foreign currency,
+in one day.
+
+| Rule | Identify | Reason code |
+| --- | --- | --- |
+| An excepted purpose | No | |
+| A foreign-currency transaction of a customer the article covers | Yes | `IDENTIFY_FOREIGN_CURRENCY` |
+| No account, and the day reaches 400,000,000 VND | Yes | `IDENTIFY_NO_ACCOUNT` |
+| An account, no transactions for six months or more, and the day reaches 400,000,000 VND | Yes | `IDENTIFY_INACTIVE_CUSTOMER` |
+| A customer the profile store does not have, and the day reaches 400,000,000 VND | Yes | `IDENTIFY_CUSTOMER_UNKNOWN` |
+
+The excepted purposes, which the bank sets on the event:
+
+| Purpose | The circular's exception |
+| --- | --- |
+| `ACCOUNT_CLOSURE` | Closing an account |
+| `SAVINGS_INTEREST_WITHDRAWAL` | Withdrawing savings interest |
+| `CARD_DEBT_REPAYMENT` | Repaying credit card debt |
+| `CREDIT_REPAYMENT` | Repaying credit to a financial institution |
+| `REGISTERED_PERIODIC_PAYMENT` | Periodic or scheduled payments registered with the institution |
+| `INVESTMENT_INTEREST_WITHDRAWAL` | Withdrawing interest on securities or bond investments |
+
+Where the circular is not explicit, the table takes the side that identifies more:
+
+- **The day's total includes excepted transactions.** The circular does not say whether they count towards the
+  400,000,000 VND.
+- **A customer the profile store does not have** is treated as having no account.
+- **Foreign currency.** The gate has no exchange rates, so a foreign-currency transaction of a customer the article
+  covers is always identified, whatever its amount.
+
+The article was read from the circular as republished, not yet against the official gazette.
 
 ## Changing the policy
 
@@ -194,12 +261,18 @@ server, so that they survive a restart and every node sees the same counters.
 - **Profiles: one round trip, or none.** `ValkeyProfileStore` sends every command the cache cannot answer at once.
   A Caffeine cache in the gate's process keeps account profiles, found or not, for 60 seconds by default, and a known
   beneficiary or device once it is seen. A change in Valkey reaches the gate within that time.
+- **Customers.** A customer is a hash (`ofr:cust:<customer id>`, fields `hasAccount` and `lastTransactionOn`),
+  cached like account profiles and read in the same round trip. `ValkeyProfileLoader.customer` writes it.
 - **Velocity: atomic per account.** `ValkeyVelocityStore` sends each attempt with a short script that adds it, trims
   the account's set to 24 hours and 10,000 attempts, and returns the rest; the gate counts them, in exact decimals.
   The script runs atomically, so two nodes deciding payments of one account see each other. An attempt is stored
   under its event id, so a retried call is counted once. Beneficiaries are stored as a truncated SHA-256, not as
   account numbers; that keeps them out of plain sight but is not anonymisation, so access to Valkey must be
   restricted like access to the core banking data.
+- **Customers' day totals.** A hash per customer and business day (`ofr:cday:{<customer id>}:<date>`) holds the
+  event ids already counted and a running total per currency, in units of 1/10,000, for 48 hours. It is sent with the
+  attempt, so both cost one round trip. An amount with more than four decimals cannot be counted, and the gate falls
+  back.
 - **Failures.** One shared connection; a command that takes longer than its timeout (5 ms in the Gate Service) or
   is sent while the connection is down fails at once, and the gate applies its fallback policy.
 
@@ -237,6 +310,11 @@ The Gate Service (`openframl-gate-server`) serves the Payment Gate over gRPC, wi
 - **Country.** `counterparty_country`, optional, is the ISO 3166-1 alpha-2 code of the country of the counterparty's
   institution (`"SG"`). Set it on every payment that crosses the border: Regulatory Reporting uses it for the
   international transfer threshold.
+- **Purpose.** `purpose`, optional, says what the transaction is for, as an upper-case code the country pack names
+  (`"ACCOUNT_CLOSURE"`). Set it when the pack's rules depend on it, such as Vietnam's customer identification
+  exceptions.
+- **Identification.** `identify_customer` in the response asks for the customer to be identified before the
+  transaction is carried out; see [Customer identification](#customer-identification).
 - **Amounts.** Exact decimals as text without an exponent (`"1500000"`, `"12.50"`); floating point never reaches
   the gate.
 

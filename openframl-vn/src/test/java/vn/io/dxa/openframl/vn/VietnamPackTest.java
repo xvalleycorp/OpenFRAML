@@ -6,6 +6,7 @@
 package vn.io.dxa.openframl.vn;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import vn.io.dxa.openframl.gate.AccountProfile;
+import vn.io.dxa.openframl.gate.CustomerProfile;
 import vn.io.dxa.openframl.gate.Gate;
 import vn.io.dxa.openframl.gate.GateOutcome;
 import vn.io.dxa.openframl.gate.WatchlistHit;
@@ -84,6 +86,7 @@ class VietnamPackTest {
         Set<String> codes = new TreeSet<>();
         TABLES.forEach(table -> table.rules().forEach(rule -> rule.reasonCode().ifPresent(codes::add)));
         codes.add(Gate.FALLBACK_FAILED);
+        codes.add(Gate.IDENTIFICATION_FAILED);
         for (String code : codes) {
             Optional<String> english = PACK.reasonMessage(code, Locale.ENGLISH);
             Optional<String> vietnamese = PACK.reasonMessage(code, Locale.forLanguageTag("vi"));
@@ -122,6 +125,33 @@ class VietnamPackTest {
             watchlist.replace(Map.of(MULE, new WatchlistHit("SUSPICIOUS_ACCOUNTS", "2026-10-25.1")));
             assertEquals(Decision.HOLD, gate.decide(scam, Duration.ofMillis(30)).decision());
         }
+    }
+
+    @Test
+    void anInactiveCustomerIsIdentifiedBeforeTheDayReaches400MillionDong() {
+        // Last transaction in March; in November the customer deposits cash at a branch twice in one day
+        InMemoryProfileStore profiles = new InMemoryProfileStore()
+                .customer("cust-9", new CustomerProfile(true, LocalDate.of(2026, 3, 2)));
+        try (Gate gate = Gate.builder(PACK).profiles(profiles).velocity(new InMemoryVelocityStore()).build()) {
+            GateOutcome first = gate.decide(deposit("evt-1", 250_000_000, null), Duration.ofMillis(30));
+            GateOutcome second = gate.decide(deposit("evt-2", 150_000_000, null), Duration.ofMillis(30));
+            GateOutcome closure = gate.decide(deposit("evt-3", 900_000_000, "ACCOUNT_CLOSURE"), Duration.ofMillis(30));
+
+            assertFalse(first.identifyCustomer(), "250,000,000 VND is below the threshold");
+            assertTrue(second.identifyCustomer(), "250,000,000 + 150,000,000 VND reaches it");
+            assertEquals(List.of("IDENTIFY_INACTIVE_CUSTOMER"), second.reasonCodes());
+            assertEquals(Decision.ALLOW, second.decision());
+            assertEquals(Optional.of("Cần nhận biết khách hàng trước: khách hàng không phát sinh giao dịch trong sáu "
+                    + "tháng và giao dịch trong ngày đạt ngưỡng nhận biết"),
+                    PACK.reasonMessage("IDENTIFY_INACTIVE_CUSTOMER", Locale.forLanguageTag("vi")));
+            assertFalse(closure.identifyCustomer(), "closing an account is excepted");
+        }
+    }
+
+    private static TransactionEvent deposit(String id, long amount, String purpose) {
+        return TransactionEvent.builder().eventId(id).occurredAt(Instant.parse("2026-11-12T03:00:00Z"))
+                .channel(Channel.BRANCH).type(TransactionType.CASH_DEPOSIT).amount(Amount.of(amount, "VND"))
+                .customerId("cust-9").originator(CUSTOMER).purpose(purpose).build();
     }
 
     private static List<DecisionTable> readTables(CountryPack pack) {

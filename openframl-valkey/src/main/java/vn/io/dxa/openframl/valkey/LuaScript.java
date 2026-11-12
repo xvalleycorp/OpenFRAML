@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 /** A script shipped with this module, sent by its hash and, the first time a server sees it, in full. */
 final class LuaScript {
@@ -39,12 +40,21 @@ final class LuaScript {
     }
 
     <T> T run(RedisAsyncCommands<String, String> commands, ScriptOutputType type, String[] keys, String... args) {
-        try {
-            return await(commands.<T>evalsha(sha, type, keys, args));
-        } catch (RedisNoScriptException e) {
-            // First call on this server, or after a restart: send the script itself, which also caches it
-            return await(commands.<T>eval(text, type, keys, args));
-        }
+        return this.<T>start(commands, type, keys, args).get();
+    }
+
+    /** Sends the script without waiting, so that another command can be sent meanwhile; {@code get} waits. */
+    <T> Supplier<T> start(RedisAsyncCommands<String, String> commands, ScriptOutputType type, String[] keys,
+            String... args) {
+        RedisFuture<T> sent = commands.evalsha(sha, type, keys, args);
+        return () -> {
+            try {
+                return await(sent);
+            } catch (RedisNoScriptException e) {
+                // First call on this server, or after a restart: send the script itself, which also caches it
+                return await(commands.<T>eval(text, type, keys, args));
+            }
+        };
     }
 
     static <T> T await(RedisFuture<T> future) {

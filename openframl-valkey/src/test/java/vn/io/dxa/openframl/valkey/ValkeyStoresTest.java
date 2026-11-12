@@ -31,10 +31,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import vn.io.dxa.openframl.gate.AccountProfile;
+import vn.io.dxa.openframl.gate.CustomerProfile;
 import vn.io.dxa.openframl.gate.ProfileSnapshot;
 import vn.io.dxa.openframl.gate.VelocitySnapshot;
 import vn.io.dxa.openframl.gate.memory.InMemoryVelocityStore;
 import vn.io.dxa.openframl.model.AccountRef;
+import vn.io.dxa.openframl.model.Amount;
 import vn.io.dxa.openframl.model.SessionSignals;
 import vn.io.dxa.openframl.model.TransactionEvent;
 
@@ -151,5 +153,42 @@ class ValkeyStoresTest {
             }
             assertEquals(200, max);
         }
+    }
+
+    @Test
+    void readsTheCustomerTheLoaderWrote() {
+        ValkeyLayout layout = layout();
+        ValkeyProfileLoader loader = new ValkeyProfileLoader(valkey.connection(), layout);
+        loader.customer("alice", new CustomerProfile(true, LocalDate.of(2026, 3, 2)));
+        ValkeyProfileStore store = new ValkeyProfileStore(valkey.connection(), layout, Duration.ZERO, 1_000);
+        TransactionEvent event = payment("evt-1", BOB, "1", "XTS", NOW);
+
+        assertEquals(Optional.of(new CustomerProfile(true, LocalDate.of(2026, 3, 2))), store.lookup(event).customer());
+        loader.customer("alice", new CustomerProfile(false, null));
+        assertEquals(Optional.of(new CustomerProfile(false, null)), store.lookup(event).customer());
+        TransactionEvent bobs = TransactionEvent.builder().eventId("evt-2").occurredAt(NOW).channel(event.channel())
+                .type(event.type()).amount(event.amount()).customerId("bob").originator(BOB).build();
+        assertEquals(Optional.empty(), store.lookup(bobs).customer());
+    }
+
+    @Test
+    void theCustomersDayAgreesWithTheInMemoryStoreAndCountsARetryOnce() {
+        ValkeyVelocityStore valkeyStore = new ValkeyVelocityStore(valkey.connection(), layout(), 10_000);
+        InMemoryVelocityStore memory = new InMemoryVelocityStore();
+        LocalDate day = LocalDate.of(2026, 10, 25);
+        Random random = new Random(7);
+        for (int i = 0; i < 50; i++) {
+            String amount = random.nextInt(1_000_000) + "." + random.nextInt(100);
+            TransactionEvent event = payment("evt-" + (i % 40), BOB, amount, random.nextInt(5) == 0 ? "XXX" : "XTS",
+                    NOW.plusSeconds(i));
+            Amount expected = memory.recordAttempt(event, day).customerToday().orElseThrow();
+            Amount actual = valkeyStore.recordAttempt(event, day).customerToday().orElseThrow();
+            assertEquals(expected.currency(), actual.currency(), "attempt " + i);
+            assertEquals(0, expected.value().compareTo(actual.value()),
+                    "attempt " + i + ": " + expected + " " + actual);
+        }
+        TransactionEvent tomorrow = payment("evt-next", BOB, "5", "XTS", NOW.plus(Duration.ofDays(1)));
+        assertEquals(Optional.of(Amount.of("5", "XTS")),
+                valkeyStore.recordAttempt(tomorrow, day.plusDays(1)).customerToday());
     }
 }

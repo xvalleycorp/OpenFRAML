@@ -49,7 +49,7 @@ class ModelTest {
         assertSame(SessionSignals.NONE, event.session());
         assertThrows(IllegalArgumentException.class, () -> new TransactionEvent("2", event.eventId(),
                 event.occurredAt(), event.channel(), event.type(), event.amount(), event.customerId(),
-                event.originator(), event.beneficiary(), event.session(), null, null));
+                event.originator(), event.beneficiary(), event.session(), null, null, null));
     }
 
     @Test
@@ -58,6 +58,14 @@ class ModelTest {
         assertNull(event().counterpartyCountry("").build().counterpartyCountry());
         assertThrows(IllegalArgumentException.class, () -> event().counterpartyCountry("sg").build());
         assertThrows(IllegalArgumentException.class, () -> event().counterpartyCountry("SGP").build());
+    }
+
+    @Test
+    void thePurposeIsAnUpperCaseCode() {
+        assertEquals("ACCOUNT_CLOSURE", event().purpose(" ACCOUNT_CLOSURE ").build().purpose());
+        assertNull(event().purpose(" ").build().purpose());
+        assertThrows(IllegalArgumentException.class, () -> event().purpose("account closure").build());
+        assertTrue(event().purpose("CREDIT_REPAYMENT").build().toString().contains("purpose=CREDIT_REPAYMENT"));
     }
 
     @Test

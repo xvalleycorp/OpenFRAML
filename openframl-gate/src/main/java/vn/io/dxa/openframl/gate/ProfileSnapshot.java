@@ -16,15 +16,24 @@ import java.util.Optional;
  *                         accounts profiled from incoming payments)
  * @param beneficiaryKnown the originator has paid this beneficiary before
  * @param deviceKnown      the customer has used this device before; ignored when the session has no device id
+ * @param customer         the customer, if the store has them
  */
 public record ProfileSnapshot(
         Optional<AccountProfile> originator,
         Optional<AccountProfile> beneficiary,
         boolean beneficiaryKnown,
-        boolean deviceKnown) {
+        boolean deviceKnown,
+        Optional<CustomerProfile> customer) {
 
     public ProfileSnapshot {
         Objects.requireNonNull(originator, "originator");
         Objects.requireNonNull(beneficiary, "beneficiary");
+        Objects.requireNonNull(customer, "customer");
+    }
+
+    /** A snapshot without the customer, from a store that does not keep customers. */
+    public ProfileSnapshot(Optional<AccountProfile> originator, Optional<AccountProfile> beneficiary,
+            boolean beneficiaryKnown, boolean deviceKnown) {
+        this(originator, beneficiary, beneficiaryKnown, deviceKnown, Optional.empty());
     }
 }

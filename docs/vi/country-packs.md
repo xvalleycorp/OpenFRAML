@@ -9,6 +9,7 @@ phải gói duy nhất: thêm một nước là thêm một gói, không sửa l
 | --- | --- | --- |
 | Múi giờ nghiệp vụ và đồng tiền quốc gia | Có | |
 | Bảng quyết định cho `gate` (`gate_decision`, `gate_fallback`) | Có | |
+| Ngưỡng nhận biết khách hàng cho `gate` (`gate_identification`, không bắt buộc) | | Giai đoạn 2: đã bắt đầu, xem [Chặn giao dịch](gate.md#nhận-biết-khách-hàng) |
 | Thông điệp lý do bằng tiếng Anh và ngôn ngữ của nước đó | Có | |
 | Ngưỡng pháp lý có ngày hiệu lực (`report_transaction`, `report_daily`) | | Giai đoạn 2: đã bắt đầu, xem [Báo cáo theo quy định](reporting.md) |
 | Kịch bản AML cho giám sát (`monitor_scenarios`), tách riêng khỏi các bảng của `gate` | | Giai đoạn 2: đã bắt đầu, xem [Giám sát giao dịch](monitoring.md) |

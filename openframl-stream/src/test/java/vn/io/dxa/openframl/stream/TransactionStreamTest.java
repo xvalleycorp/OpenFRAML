@@ -42,7 +42,7 @@ class TransactionStreamTest {
                 .channel(Channel.MOBILE).type(TransactionType.TRANSFER_OUT).amount(Amount.of("1500000.50", "VND"))
                 .customerId("cust-1").originator(ACCOUNT).beneficiary(new AccountRef("999902", "5555666677"))
                 .session(new SessionSignals("phone-1", null, false, true, "BIOMETRIC"))
-                .beneficiaryName("Nguyễn Văn Đức").counterpartyCountry("SG").build();
+                .beneficiaryName("Nguyễn Văn Đức").counterpartyCountry("SG").purpose("CREDIT_REPAYMENT").build();
     }
 
     private final MockConsumer<String, String> consumer = new MockConsumer<>("earliest");

@@ -7,7 +7,9 @@ package vn.io.dxa.openframl.valkey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,5 +73,14 @@ class ValkeyVelocityStoreTest {
 
         assertEquals(1, snapshot.count10m());
         assertEquals(0, snapshot.distinctBeneficiaries24h());
+    }
+
+    @Test
+    void theCustomersTotalIsKeptInTenThousandths() {
+        assertEquals("15000000", ValkeyVelocityStore.units(Amount.of("1500", "VND")));
+        assertEquals("125", ValkeyVelocityStore.units(Amount.of("0.0125", "USD")));
+        assertThrows(IllegalArgumentException.class, () -> ValkeyVelocityStore.units(Amount.of("0.00001", "USD")));
+        assertEquals(new BigDecimal("400000000"), ValkeyVelocityStore.fromUnits("4000000000000"));
+        assertEquals(new BigDecimal("0.0125"), ValkeyVelocityStore.fromUnits("125"));
     }
 }

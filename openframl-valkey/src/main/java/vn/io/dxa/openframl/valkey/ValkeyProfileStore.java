@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import vn.io.dxa.openframl.gate.AccountProfile;
+import vn.io.dxa.openframl.gate.CustomerProfile;
 import vn.io.dxa.openframl.gate.ProfileSnapshot;
 import vn.io.dxa.openframl.gate.ProfileStore;
 import vn.io.dxa.openframl.model.AccountRef;
@@ -33,11 +34,14 @@ import vn.io.dxa.openframl.model.TransactionEvent;
 public final class ValkeyProfileStore implements ProfileStore {
 
     private static final List<String> FIELDS = List.of(ValkeyLayout.OPENED_ON, ValkeyLayout.RISK);
+    private static final List<String> CUSTOMER_FIELDS = List.of(ValkeyLayout.HAS_ACCOUNT,
+            ValkeyLayout.LAST_TRANSACTION_ON);
 
     private final RedisAsyncCommands<String, String> commands;
     private final ValkeyLayout layout;
     private final Cache<String, Optional<AccountProfile>> accounts;
     private final Cache<String, Boolean> known;
+    private final Cache<String, Optional<CustomerProfile>> customers;
 
     /** Caches up to a million entries of each kind for 60 seconds. */
     public ValkeyProfileStore(Valkey valkey) {
@@ -54,6 +58,7 @@ public final class ValkeyProfileStore implements ProfileStore {
         this.layout = Objects.requireNonNull(layout, "layout");
         this.accounts = Caffeine.newBuilder().expireAfterWrite(cacheTtl).maximumSize(cacheSize).build();
         this.known = Caffeine.newBuilder().expireAfterWrite(cacheTtl).maximumSize(cacheSize).build();
+        this.customers = Caffeine.newBuilder().expireAfterWrite(cacheTtl).maximumSize(cacheSize).build();
     }
 
     @Override
@@ -69,8 +74,30 @@ public final class ValkeyProfileStore implements ProfileStore {
                 : member(layout.payees(event.originator()), beneficiary.key());
         Pending<Boolean> device = deviceId == null ? Pending.done(false)
                 : member(layout.devices(event.customerId()), deviceId);
+        Pending<Optional<CustomerProfile>> customer = customer(event.customerId());
 
-        return new ProfileSnapshot(originator.get(), beneficiaryProfile.get(), payee.get(), device.get());
+        return new ProfileSnapshot(originator.get(), beneficiaryProfile.get(), payee.get(), device.get(),
+                customer.get());
+    }
+
+    private Pending<Optional<CustomerProfile>> customer(String customerId) {
+        String key = layout.customer(customerId);
+        Optional<CustomerProfile> cached = customers.getIfPresent(key);
+        if (cached != null) {
+            return Pending.done(cached);
+        }
+        RedisFuture<List<KeyValue<String, String>>> reply = commands.hmget(key,
+                CUSTOMER_FIELDS.toArray(String[]::new));
+        return () -> {
+            List<KeyValue<String, String>> fields = LuaScript.await(reply);
+            String hasAccount = fields.get(0).getValueOrElse(null);
+            String last = fields.get(1).getValueOrElse(null);
+            Optional<CustomerProfile> profile = hasAccount == null ? Optional.empty()
+                    : Optional.of(new CustomerProfile(Boolean.parseBoolean(hasAccount),
+                            last == null ? null : LocalDate.parse(last)));
+            customers.put(key, profile);
+            return profile;
+        };
     }
 
     private Pending<Optional<AccountProfile>> account(AccountRef account) {
@@ -114,6 +141,7 @@ public final class ValkeyProfileStore implements ProfileStore {
     public void invalidateCache() {
         accounts.invalidateAll();
         known.invalidateAll();
+        customers.invalidateAll();
     }
 
     @FunctionalInterface

@@ -33,6 +33,9 @@ import java.util.Objects;
  * @param counterpartyCountry the ISO 3166-1 alpha-2 code of the country of the counterparty's institution, e.g.
  *                      {@code SG}, or {@code null} if the bank does not set it; set it for every payment that crosses
  *                      the border, as reporting thresholds for international transfers depend on it
+ * @param purpose       what the transaction is for, as an upper-case code the country pack names (e.g. {@code
+ *                      ACCOUNT_CLOSURE} in Vietnam), or {@code null}; set it when a pack's rules depend on it, such as
+ *                      the exceptions to Vietnam's customer identification trigger
  */
 public record TransactionEvent(
         String schemaVersion,
@@ -46,7 +49,8 @@ public record TransactionEvent(
         AccountRef beneficiary,
         SessionSignals session,
         String beneficiaryName,
-        String counterpartyCountry) {
+        String counterpartyCountry,
+        String purpose) {
 
     /** The current version of this model. */
     public static final String SCHEMA_VERSION = "1";
@@ -72,6 +76,11 @@ public record TransactionEvent(
             throw new IllegalArgumentException("counterpartyCountry must be an upper-case ISO 3166-1 alpha-2 code: "
                     + counterpartyCountry);
         }
+        purpose = purpose == null || purpose.isBlank() ? null : purpose.strip();
+        if (purpose != null && !purpose.matches("[A-Z][A-Z0-9_]{0,63}")) {
+            throw new IllegalArgumentException("purpose must be an upper-case code of letters, digits and _: "
+                    + purpose);
+        }
     }
 
     /** Every field but the beneficiary's name, which is personal data; account numbers are masked. */
@@ -81,7 +90,8 @@ public record TransactionEvent(
                 + occurredAt + ", channel=" + channel + ", type=" + type + ", amount=" + amount + ", customerId="
                 + customerId + ", originator=" + originator + ", beneficiary=" + beneficiary + ", session=" + session
                 + ", beneficiaryName=" + (beneficiaryName == null ? "none" : "redacted") + ", counterpartyCountry="
-                + (counterpartyCountry == null ? "none" : counterpartyCountry) + "]";
+                + (counterpartyCountry == null ? "none" : counterpartyCountry) + ", purpose="
+                + (purpose == null ? "none" : purpose) + "]";
     }
 
     public static Builder builder() {
@@ -102,6 +112,7 @@ public record TransactionEvent(
         private SessionSignals session = SessionSignals.NONE;
         private String beneficiaryName;
         private String counterpartyCountry;
+        private String purpose;
 
         private Builder() {}
 
@@ -160,9 +171,14 @@ public record TransactionEvent(
             return this;
         }
 
+        public Builder purpose(String purpose) {
+            this.purpose = purpose;
+            return this;
+        }
+
         public TransactionEvent build() {
             return new TransactionEvent(SCHEMA_VERSION, eventId, occurredAt, channel, type, amount, customerId,
-                    originator, beneficiary, session, beneficiaryName, counterpartyCountry);
+                    originator, beneficiary, session, beneficiaryName, counterpartyCountry, purpose);
         }
     }
 }

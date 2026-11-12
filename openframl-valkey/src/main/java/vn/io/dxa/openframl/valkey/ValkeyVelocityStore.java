@@ -10,12 +10,15 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.math.RoundingMode;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import vn.io.dxa.openframl.gate.VelocitySnapshot;
 import vn.io.dxa.openframl.gate.VelocityStore;
 import vn.io.dxa.openframl.model.AccountRef;
@@ -33,6 +36,10 @@ import vn.io.dxa.openframl.model.TransactionEvent;
  * <p>Beneficiaries are stored as a truncated SHA-256 of their account, since the counters only need to tell them
  * apart. This keeps account numbers out of plain sight; it is not anonymisation, as account numbers are short enough
  * to guess. Access to Valkey must be restricted like access to the core banking data.
+ *
+ * <p>Each customer's total for the business day is a hash of its own, sent with the attempt so that both cost one
+ * round trip: it holds the event ids already counted and a running total per currency, in units of 1/10,000, kept
+ * for 48 hours. Amounts with more than four decimals cannot be counted, and the call fails.
  */
 public final class ValkeyVelocityStore implements VelocityStore {
 
@@ -41,6 +48,9 @@ public final class ValkeyVelocityStore implements VelocityStore {
     private static final char SEPARATOR = '\u001f';
 
     private static final LuaScript SCRIPT = LuaScript.load("record-attempt.lua");
+    private static final LuaScript CUSTOMER_DAY = LuaScript.load("customer-day.lua");
+    static final int CUSTOMER_DAY_SCALE = 4;
+    static final Duration CUSTOMER_DAY_TTL = Duration.ofHours(48);
 
     private final RedisAsyncCommands<String, String> commands;
     private final ValkeyLayout layout;
@@ -69,6 +79,35 @@ public final class ValkeyVelocityStore implements VelocityStore {
                 Integer.toString(maxAttemptsPerAccount)};
         List<Object> reply = SCRIPT.run(commands, ScriptOutputType.MULTI, keys, args);
         return snapshot(reply, at, event.amount());
+    }
+
+    @Override
+    public VelocitySnapshot recordAttempt(TransactionEvent event, LocalDate businessDate) {
+        long at = event.occurredAt().toEpochMilli();
+        Supplier<List<Object>> attempts = SCRIPT.start(commands, ScriptOutputType.MULTI,
+                new String[] {layout.velocity(event.originator())}, Long.toString(at), member(event),
+                Long.toString(LONG_WINDOW.toMillis()), Integer.toString(maxAttemptsPerAccount));
+        Supplier<String> total = CUSTOMER_DAY.start(commands, ScriptOutputType.VALUE,
+                new String[] {layout.customerDay(event.customerId(), businessDate)}, event.eventId(),
+                event.amount().currency(), units(event.amount()), Long.toString(CUSTOMER_DAY_TTL.toMillis()));
+        VelocitySnapshot snapshot = snapshot(attempts.get(), at, event.amount());
+        return snapshot.withCustomerToday(new Amount(fromUnits(total.get()), event.amount().currency()));
+    }
+
+    /** A total kept in units of 1/10,000, without trailing zeros. */
+    static BigDecimal fromUnits(String units) {
+        BigDecimal value = new BigDecimal(units).movePointLeft(CUSTOMER_DAY_SCALE).stripTrailingZeros();
+        return value.scale() < 0 ? value.setScale(0) : value;
+    }
+
+    /** The amount in units of 1/10,000, as the customer's total keeps it. */
+    static String units(Amount amount) {
+        try {
+            return amount.value().setScale(CUSTOMER_DAY_SCALE, RoundingMode.UNNECESSARY).unscaledValue().toString();
+        } catch (ArithmeticException e) {
+            throw new IllegalArgumentException("an amount with more than " + CUSTOMER_DAY_SCALE
+                    + " decimals cannot be added to the customer's total", e);
+        }
     }
 
     /** The attempt as stored: event id, amount, currency, and a hash of the beneficiary. */

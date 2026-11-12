@@ -156,6 +156,7 @@ nước ngoài mà không ghi nước sẽ bị coi là trong nước, nên ngâ
 sinh giao dịch trong sáu tháng, mà giao dịch từ mức đó trở lên trong một ngày thì phải được nhận biết. Quy định này có
 các ngoại lệ, như tất toán tiết kiệm, rút lãi tiết kiệm và trả nợ thẻ tín dụng. Các ngoại lệ đó thuộc về việc nhận biết
 khách hàng và không làm giảm báo cáo giá trị lớn nói trên, nên hãy đưa mọi giao dịch tiền mặt vào sự kiện của ngày.
+Chặn giao dịch thực hiện ngưỡng nhận biết đó: xem [Nhận biết khách hàng](gate.md#nhận-biết-khách-hàng).
 
 Cả hai phía của mỗi ngưỡng đều có trường hợp kiểm thử trong `openframl-vn/src/test/rules/report_daily.stone-test.json`
 và `report_transaction.stone-test.json`.
@@ -163,5 +164,4 @@ và `report_transaction.stone-test.json`.
 ## Tiếp theo
 
 Trong [lộ trình](roadmap.md):
-- mẫu biểu và kênh nộp điện tử của cơ quan quản lý, dưới dạng bộ chuyển đổi trong gói quốc gia, đối chiếu với mẫu chính thức;
-- ngưỡng nhận biết khách hàng tại điểm a khoản 1 Điều 5 ở Việt Nam, cùng các ngoại lệ của nó.
+- mẫu biểu và kênh nộp điện tử của cơ quan quản lý, dưới dạng bộ chuyển đổi trong gói quốc gia, đối chiếu với mẫu chính thức.

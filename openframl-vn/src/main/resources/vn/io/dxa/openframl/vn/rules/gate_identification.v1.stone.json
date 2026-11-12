@@ -1,0 +1,70 @@
+{
+  "id": "gate_identification",
+  "version": "1",
+  "description": "Vietnam's customer identification trigger, Article 5(1)(a) of Circular 27/2025/TT-NHNN: a customer with no account, or with an account but no transactions for six consecutive months, must be identified, and their information collected or updated, before carrying out one or more transactions totalling 400,000,000 VND or more, or the equivalent in foreign currency, in one day. Excepted: account closure, withdrawal of savings interest, repayment of credit card debt, repayment of credit to a financial institution, periodic or scheduled payments registered with the institution, and withdrawal of interest on securities or bond investments; the bank sets the transaction's purpose for these. The day's total counts every attempt of the customer, excepted ones included, as the circular does not say otherwise. The gate has no exchange rates, so a foreign-currency transaction of such a customer is always identified. A customer the profile store does not have is treated as having no account. Read from the circular as republished; to be confirmed against the official gazette",
+  "effectiveFrom": "2025-11-01",
+  "hitPolicy": "FIRST",
+  "inputs": {
+    "transaction": {
+      "amount": "money",
+      "currency": "string",
+      "purpose": "string"
+    },
+    "customer": {
+      "hasAccount": "bool",
+      "inactiveMonths": "int"
+    },
+    "velocity": {
+      "customerAmountToday": "money"
+    }
+  },
+  "outputs": {
+    "identify": "bool"
+  },
+  "rules": [
+    {
+      "id": "EXCEPTED_PURPOSE",
+      "description": "One of the transactions the article excepts",
+      "when": "has(transaction.purpose) && transaction.purpose in ['ACCOUNT_CLOSURE', 'SAVINGS_INTEREST_WITHDRAWAL', 'CARD_DEBT_REPAYMENT', 'CREDIT_REPAYMENT', 'REGISTERED_PERIODIC_PAYMENT', 'INVESTMENT_INTEREST_WITHDRAWAL']",
+      "then": {
+        "identify": "false"
+      }
+    },
+    {
+      "id": "FOREIGN_CURRENCY",
+      "description": "A foreign-currency transaction of a customer the article covers: without exchange rates the gate cannot tell whether the day's total reaches the equivalent of 400,000,000 VND",
+      "when": "transaction.currency != 'VND' && (!has(customer.hasAccount) || !customer.hasAccount || !has(customer.inactiveMonths) || customer.inactiveMonths >= 6)",
+      "then": {
+        "identify": "true"
+      },
+      "reasonCode": "IDENTIFY_FOREIGN_CURRENCY"
+    },
+    {
+      "id": "NO_ACCOUNT",
+      "description": "A customer with no account, whose transactions today total 400,000,000 VND or more",
+      "when": "has(customer.hasAccount) && !customer.hasAccount && (has(velocity.customerAmountToday) ? velocity.customerAmountToday : transaction.amount) >= money(400000000, 'VND')",
+      "then": {
+        "identify": "true"
+      },
+      "reasonCode": "IDENTIFY_NO_ACCOUNT"
+    },
+    {
+      "id": "INACTIVE_SIX_MONTHS",
+      "description": "A customer with an account but no transactions for six months or more, whose transactions today total 400,000,000 VND or more",
+      "when": "has(customer.hasAccount) && customer.hasAccount && (!has(customer.inactiveMonths) || customer.inactiveMonths >= 6) && (has(velocity.customerAmountToday) ? velocity.customerAmountToday : transaction.amount) >= money(400000000, 'VND')",
+      "then": {
+        "identify": "true"
+      },
+      "reasonCode": "IDENTIFY_INACTIVE_CUSTOMER"
+    },
+    {
+      "id": "CUSTOMER_UNKNOWN",
+      "description": "A customer the profile store does not have, or a lookup that failed, with transactions today of 400,000,000 VND or more: treated as having no account",
+      "when": "!has(customer.hasAccount) && (has(velocity.customerAmountToday) ? velocity.customerAmountToday : transaction.amount) >= money(400000000, 'VND')",
+      "then": {
+        "identify": "true"
+      },
+      "reasonCode": "IDENTIFY_CUSTOMER_UNKNOWN"
+    }
+  ]
+}

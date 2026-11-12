@@ -8,8 +8,12 @@ package vn.io.dxa.openframl.gate.memory;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import vn.io.dxa.openframl.gate.VelocitySnapshot;
@@ -25,6 +29,10 @@ import vn.io.dxa.openframl.model.TransactionEvent;
  * Each account keeps its attempts of the last 24 hours, up to a cap; past the cap the oldest are dropped, so the
  * counters of a very busy account saturate rather than grow without bound. Call {@link #prune(Instant)}
  * periodically to forget idle accounts.
+ *
+ * <p>It also keeps each customer's total for the business day, on every account, counting an event id once; past the
+ * cap on attempts, further ones are still added but no longer checked for repeats. On several nodes the total covers only the payments this node decided; a customer whose accounts are routed to
+ * different nodes needs the Valkey store.
  */
 public final class InMemoryVelocityStore implements VelocityStore {
 
@@ -32,6 +40,7 @@ public final class InMemoryVelocityStore implements VelocityStore {
     static final Duration LONG_WINDOW = Duration.ofHours(24);
 
     private final ConcurrentHashMap<String, Window> windows = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, CustomerDay> customerDays = new ConcurrentHashMap<>();
     private final int maxAttemptsPerAccount;
 
     /** Keeps up to 10,000 attempts per account. */
@@ -53,15 +62,51 @@ public final class InMemoryVelocityStore implements VelocityStore {
         return window.add(event.occurredAt().toEpochMilli(), event.amount(), beneficiary, maxAttemptsPerAccount);
     }
 
-    /** Forgets accounts with no attempt in the 24 hours before {@code now}. */
+    @Override
+    public VelocitySnapshot recordAttempt(TransactionEvent event, LocalDate businessDate) {
+        VelocitySnapshot snapshot = recordAttempt(event);
+        CustomerDay day = customerDays.computeIfAbsent(event.customerId() + '|' + businessDate,
+                key -> new CustomerDay(businessDate));
+        return snapshot.withCustomerToday(day.add(event.eventId(), event.amount(), maxAttemptsPerAccount));
+    }
+
+    /**
+     * Forgets accounts with no attempt in the 24 hours before {@code now}, and customers' totals of the days before
+     * yesterday.
+     */
     public void prune(Instant now) {
         long cutoff = now.toEpochMilli() - LONG_WINDOW.toMillis();
         windows.values().removeIf(window -> window.idleSince(cutoff));
+        LocalDate yesterday = LocalDate.ofInstant(now, ZoneOffset.UTC).minusDays(1);
+        customerDays.values().removeIf(day -> day.date.isBefore(yesterday));
     }
 
     /** Number of accounts with counters. */
     public int accounts() {
         return windows.size();
+    }
+
+    /** A customer's attempts of one business day: their event ids and the totals by currency. */
+    private static final class CustomerDay {
+
+        private final LocalDate date;
+        private final Set<String> events = new HashSet<>();
+        private final Map<String, BigDecimal> totals = new HashMap<>();
+
+        CustomerDay(LocalDate date) {
+            this.date = date;
+        }
+
+        synchronized Amount add(String eventId, Amount amount, int cap) {
+            boolean repeat = events.contains(eventId);
+            if (!repeat && events.size() < cap) {
+                events.add(eventId);
+            }
+            if (!repeat) {
+                totals.merge(amount.currency(), amount.value(), BigDecimal::add);
+            }
+            return new Amount(totals.get(amount.currency()), amount.currency());
+        }
     }
 
     private record Attempt(long atMillis, BigDecimal amount, String currency, String beneficiary) {}

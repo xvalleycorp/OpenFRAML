@@ -1,0 +1,12 @@
+{
+  "id": "gate_identification",
+  "version": "1",
+  "description": "An identification table that fails at evaluation: it compares money in two currencies",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "FIRST",
+  "inputs": { "transaction": { "amount": "money" } },
+  "outputs": { "identify": "bool" },
+  "rules": [
+    { "id": "BROKEN", "when": "transaction.amount > money(1, 'EUR')", "then": { "identify": "false" } }
+  ]
+}

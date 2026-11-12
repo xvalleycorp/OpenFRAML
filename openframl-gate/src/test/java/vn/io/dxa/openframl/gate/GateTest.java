@@ -240,4 +240,70 @@ class GateTest {
 
         assertThrows(IllegalStateException.class, () -> Gate.builder(TestPack.standard()).profiles(profiles).build());
     }
+
+    private static TransactionEvent cash(String id, String customer, long amount, String purpose) {
+        return TransactionEvent.builder().eventId(id).occurredAt(NOW).channel(Channel.BRANCH)
+                .type(TransactionType.CASH_DEPOSIT).amount(Amount.of(amount, TestPack.CURRENCY)).customerId(customer)
+                .originator(new AccountRef("999901", "TELLER-1")).purpose(purpose).build();
+    }
+
+    private Gate identifyingGate(String identificationTable) {
+        return Gate.builder(new TestPack("gate_decision.v1", "gate_fallback.v1", identificationTable))
+                .profiles(profiles).velocity(new InMemoryVelocityStore()).watchlist(watchlist)
+                .recordSink(records::add).build();
+    }
+
+    @Test
+    void aCustomerWithoutAnAccountIsIdentifiedOnceTheDayReachesTheThreshold() {
+        profiles.customer("walk-in", new CustomerProfile(false, null));
+        gate = identifyingGate("gate_identification.v1");
+
+        GateOutcome first = gate.decide(cash("evt-1", "walk-in", 600, null), BUDGET);
+        assertFalse(first.identifyCustomer());
+        GateOutcome second = gate.decide(cash("evt-2", "walk-in", 600, null), BUDGET);
+        assertTrue(second.identifyCustomer(), "600 + 600 reaches 1,000 over the day");
+        assertEquals(List.of("IDENTIFY_CUSTOMER"), second.reasonCodes());
+        assertEquals(Decision.ALLOW, second.decision(), "identification does not change the decision");
+        assertEquals(List.of("watchlist", "profiles", "velocity", "rules", "identification"),
+                List.copyOf(records.getLast().stepNanos().keySet()));
+        assertEquals(2, records.getLast().rules().size());
+
+        assertTrue(gate.decide(cash("evt-2", "walk-in", 600, null), BUDGET).identifyCustomer(),
+                "a retried call is counted once and decided the same way");
+        assertFalse(gate.decide(cash("evt-3", "walk-in", 600, "ACCOUNT_CLOSURE"), BUDGET).identifyCustomer());
+    }
+
+    @Test
+    void aCustomerWithAnAccountIsNotIdentifiedByThisTable() {
+        profiles.customer("alice", new CustomerProfile(true, LocalDate.of(2026, 10, 24)));
+        gate = identifyingGate("gate_identification.v1");
+        assertFalse(gate.decide(payment("evt-1", BOB, 5_000, NOW), BUDGET).identifyCustomer());
+    }
+
+    @Test
+    void withoutTheTableNoIdentificationIsAsked() {
+        gate = builder().build();
+        assertFalse(gate.decide(cash("evt-1", "walk-in", 5_000, null), BUDGET).identifyCustomer());
+    }
+
+    @Test
+    void theFallbackIsFollowedByIdentificationOnTheFactsGathered() {
+        gate = Gate.builder(new TestPack("gate_decision.v1", "gate_fallback.v1", "gate_identification.v1"))
+                .profiles(profiles).velocity(event -> {
+                    throw new IllegalStateException("store down");
+                }).watchlist(watchlist).build();
+        GateOutcome outcome = gate.decide(cash("evt-1", "walk-in", 1_000, null), BUDGET);
+        assertEquals(Optional.of(GateFailure.STORE_UNAVAILABLE), outcome.fallback());
+        assertTrue(outcome.identifyCustomer(), "without the day's total, the transaction's own amount counts");
+        assertTrue(outcome.reasonCodes().contains("IDENTIFY_CUSTOMER"), outcome.reasonCodes().toString());
+    }
+
+    @Test
+    void whenTheIdentificationTableFailsTheCustomerIsIdentified() {
+        gate = identifyingGate("gate_identification_broken.v1");
+        GateOutcome outcome = gate.decide(payment("evt-1", BOB, 100, NOW), BUDGET);
+        assertEquals(Decision.ALLOW, outcome.decision());
+        assertTrue(outcome.identifyCustomer());
+        assertEquals(List.of(Gate.IDENTIFICATION_FAILED), outcome.reasonCodes());
+    }
 }

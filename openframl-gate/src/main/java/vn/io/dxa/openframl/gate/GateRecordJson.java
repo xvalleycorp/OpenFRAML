@@ -41,6 +41,7 @@ public final class GateRecordJson {
         json.put("policyVersion", outcome.policyVersion());
         outcome.fallback().ifPresent(failure -> json.put("fallback", failure.name()));
         json.put("reviewLater", outcome.reviewLater());
+        json.put("identifyCustomer", outcome.identifyCustomer());
 
         record.modelVersion().ifPresent(version -> json.put("modelVersion", version));
         record.score().ifPresent(score -> json.put("score", score));

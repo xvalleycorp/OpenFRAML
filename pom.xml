@@ -88,6 +88,7 @@
     <protobuf.version>4.36.2</protobuf.version>
     <kafka.version>4.4.0</kafka.version>
     <lettuce.version>7.8.0.RELEASE</lettuce.version>
+    <slf4j.version>2.0.20</slf4j.version>
     <caffeine.version>3.3.0</caffeine.version>
     <onnxruntime.version>1.31.0</onnxruntime.version>
   </properties>
@@ -206,11 +207,20 @@
         <artifactId>bcpkix-jdk18on</artifactId>
         <version>1.86</version>
       </dependency>
-      <!-- The SLF4J version the Kafka client is built against -->
+      <!--
+        SLF4J 2. kafka-clients 4.4.0 and Lettuce's redis-authx-core still bring slf4j-api 1.7.36; pinning the API to
+        the binding's version keeps the build convergent. Callers written against 1.7 work unchanged on the 2.x API,
+        and 2.x finds the binding by ServiceLoader, so the JDK binding is used instead of the no-operation logger.
+      -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.7.36</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <!-- Fixes CVE-2026-108106 in the 1.1.10.7 that kafka-clients 4.4.0 brings -->
       <dependency>

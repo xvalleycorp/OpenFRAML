@@ -61,7 +61,9 @@ Bắt đầu trong lúc các lần đo trên máy chủ của giai đoạn 1 ch�
 - [x] Báo cáo theo quy định: thời hạn cho báo cáo giao dịch đáng ngờ, tính từ ngày giao dịch, từ khi phát hiện, và
       tính theo giờ với hồ sơ được người xử lý đánh dấu khẩn
 - [ ] Báo cáo theo quy định: mẫu biểu và kênh nộp điện tử của cơ quan quản lý
-- [ ] Ngưỡng nhận biết khách hàng tại điểm a khoản 1 Điều 5 Thông tư 27/2025/TT-NHNN của Việt Nam, cùng các ngoại lệ
+- [x] Ngưỡng nhận biết khách hàng tại điểm a khoản 1 Điều 5 Thông tư 27/2025/TT-NHNN của Việt Nam, cùng các ngoại lệ,
+      trong Chặn giao dịch (`gate_identification`)
+- [ ] Tỷ giá trong Chặn giao dịch, để giao dịch ngoại tệ được tính vào ngưỡng nhận biết theo giá trị tương đương
 
 ## Chi phí và quyền kiểm soát
 

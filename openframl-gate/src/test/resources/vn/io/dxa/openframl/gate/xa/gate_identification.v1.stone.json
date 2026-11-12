@@ -1,0 +1,26 @@
+{
+  "id": "gate_identification",
+  "version": "1",
+  "description": "Test identification trigger for XA: a customer without an account, or one the store does not have, whose day reaches 1,000 XTS",
+  "effectiveFrom": "2026-01-01",
+  "hitPolicy": "FIRST",
+  "inputs": {
+    "transaction": { "amount": "money", "purpose": "string" },
+    "customer": { "hasAccount": "bool" },
+    "velocity": { "customerAmountToday": "money" }
+  },
+  "outputs": { "identify": "bool" },
+  "rules": [
+    {
+      "id": "EXCEPTED",
+      "when": "has(transaction.purpose) && transaction.purpose == 'ACCOUNT_CLOSURE'",
+      "then": { "identify": "false" }
+    },
+    {
+      "id": "NO_ACCOUNT",
+      "when": "(!has(customer.hasAccount) || !customer.hasAccount) && (has(velocity.customerAmountToday) ? velocity.customerAmountToday : transaction.amount) >= money(1000, 'XTS')",
+      "then": { "identify": "true" },
+      "reasonCode": "IDENTIFY_CUSTOMER"
+    }
+  ]
+}

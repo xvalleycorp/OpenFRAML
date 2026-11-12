@@ -140,6 +140,13 @@ class GatePolicyTest {
         List<DecisionTable> withoutFallback = standard.tables().stream()
                 .filter(table -> !table.id().equals(Gate.FALLBACK_ID)).toList();
         assertThrows(IllegalStateException.class, () -> GatePolicy.compile(pack, withoutFallback));
+
+        GatePolicy identifying = GatePolicy.of(new TestPack("gate_decision.v1", "gate_fallback.v1",
+                "gate_identification.v1"));
+        IllegalStateException noIdentify = assertThrows(IllegalStateException.class,
+                () -> GatePolicy.compile(pack, tables(identifying, "identify", "identified")));
+        assertTrue(noIdentify.getMessage().contains("must declare the bool output 'identify'"),
+                noIdentify.getMessage());
     }
 
     @Test

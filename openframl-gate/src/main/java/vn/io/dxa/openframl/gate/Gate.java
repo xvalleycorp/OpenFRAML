@@ -43,7 +43,10 @@ import vn.io.dxa.rulestone.api.DecisionResult;
  *   <li>score the payment with the {@link ScoreProvider}, if there is one and time is left; a late score is
  *       dropped;</li>
  *   <li>evaluate the decision table {@value #DECISION_ID}; when several rules fire, the most severe action
- *       wins.</li>
+ *       wins;</li>
+ *   <li>if the policy has it, evaluate {@value #IDENTIFICATION_ID}, which says whether the customer must be
+ *       identified before the transaction is carried out. It also runs after the fallback table, with the facts
+ *       gathered so far; if it fails, the customer must be identified ({@value #IDENTIFICATION_FAILED}).</li>
  * </ol>
  *
  * <p>If the deadline passes before the decision table runs, a store fails, or the table fails, the gate evaluates
@@ -73,6 +76,12 @@ public final class Gate implements AutoCloseable {
 
     /** Reason code of the built-in last resort, used only when {@value #FALLBACK_ID} itself fails. */
     public static final String FALLBACK_FAILED = "GATE_FALLBACK_FAILED";
+
+    /** The optional table that says whether the customer must be identified, by its bool output {@code identify}. */
+    public static final String IDENTIFICATION_ID = "gate_identification";
+
+    /** Reason code used when {@value #IDENTIFICATION_ID} fails: the customer must then be identified. */
+    public static final String IDENTIFICATION_FAILED = "GATE_IDENTIFICATION_FAILED";
 
     private static final System.Logger LOG = System.getLogger(Gate.class.getName());
 
@@ -244,7 +253,7 @@ public final class Gate implements AutoCloseable {
 
             VelocitySnapshot velocitySnapshot;
             try {
-                velocitySnapshot = velocity.recordAttempt(event);
+                velocitySnapshot = velocity.recordAttempt(event, businessDate);
                 facts.velocity(velocitySnapshot);
             } catch (RuntimeException e) {
                 return failed("velocity", e, GateFailure.STORE_UNAVAILABLE);
@@ -261,15 +270,41 @@ public final class Gate implements AutoCloseable {
                 return fallback(GateFailure.TIMEOUT);
             }
 
+            GateOutcome decided;
             try {
                 DecisionResult result = evaluate(DECISION_ID);
                 Decision decision = action(result);
                 step("rules");
-                return new GateOutcome(decision, result.reasonCodes().stream().distinct().toList(),
+                decided = new GateOutcome(decision, result.reasonCodes().stream().distinct().toList(),
                         DECISION_ID + "@" + result.ruleVersion(), Optional.empty(), false);
             } catch (RuntimeException e) {
                 return failed("rules", e, GateFailure.POLICY_ERROR);
             }
+            return identification(decided);
+        }
+
+        /** The outcome with the answer of {@value #IDENTIFICATION_ID}, if the policy has that table. */
+        private GateOutcome identification(GateOutcome outcome) {
+            if (!policy.identifies()) {
+                return outcome;
+            }
+            boolean identify;
+            List<String> reasons = new ArrayList<>(outcome.reasonCodes());
+            try {
+                DecisionResult result = evaluate(IDENTIFICATION_ID);
+                identify = Boolean.TRUE.equals(result.output().get("identify"));
+                if (identify) {
+                    result.reasonCodes().stream().filter(code -> !reasons.contains(code)).forEach(reasons::add);
+                }
+            } catch (RuntimeException e) {
+                LOG.log(WARNING, "identification table failed for event {0}: {1}", event.eventId(),
+                        e.getClass().getName());
+                identify = true;
+                reasons.add(IDENTIFICATION_FAILED);
+            }
+            step("identification");
+            return new GateOutcome(outcome.decision(), reasons, outcome.policyVersion(), outcome.fallback(),
+                    outcome.reviewLater(), identify);
         }
 
         private void score(ProfileSnapshot profileSnapshot, VelocitySnapshot velocitySnapshot) {
@@ -315,14 +350,15 @@ public final class Gate implements AutoCloseable {
                 Decision decision = action(result);
                 boolean reviewLater = result.output().get("reviewLater") instanceof Boolean review && review;
                 step("fallback");
-                return new GateOutcome(decision, result.reasonCodes().stream().distinct().toList(),
-                        FALLBACK_ID + "@" + result.ruleVersion(), Optional.of(failure), reviewLater);
+                return identification(new GateOutcome(decision, result.reasonCodes().stream().distinct().toList(),
+                        FALLBACK_ID + "@" + result.ruleVersion(), Optional.of(failure), reviewLater));
             } catch (RuntimeException e) {
                 step("fallback");
                 LOG.log(WARNING, "fallback table failed for event {0}: {1}", event.eventId(),
                         e.getClass().getName());
                 Decision decision = facts.watchlisted() ? Decision.HOLD : Decision.CHALLENGE;
-                return new GateOutcome(decision, List.of(FALLBACK_FAILED), "built-in", Optional.of(failure), false);
+                return identification(new GateOutcome(decision, List.of(FALLBACK_FAILED), "built-in",
+                        Optional.of(failure), false));
             }
         }
 

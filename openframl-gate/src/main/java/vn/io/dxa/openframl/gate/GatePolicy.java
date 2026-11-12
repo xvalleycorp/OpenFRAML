@@ -38,7 +38,9 @@ import vn.io.dxa.rulestone.core.Rule;
  *
  * <p>Compiling checks everything that can be checked before a payment arrives: RuleStone type-checks every rule,
  * and the gate requires {@value Gate#DECISION_ID} and {@value Gate#FALLBACK_ID} with a string output
- * {@code action} whose literal values are known decisions. A policy that fails any check is never built.
+ * {@code action} whose literal values are known decisions. The table {@value Gate#IDENTIFICATION_ID} is optional;
+ * if the policy has it, it must declare the bool output {@code identify}. A policy that fails any check is never
+ * built.
  *
  * <p>A policy holds every version of its tables, past ones included, so a decision of any day can be replayed with
  * the rules in force that day. Its {@link #id()} is a hash of the tables' content.
@@ -50,11 +52,18 @@ public final class GatePolicy {
     private final List<DecisionTable> tables;
     private final RuleStoneEngine engine;
     private final String id;
+    private final boolean identifies;
 
     private GatePolicy(CountryPack pack, List<DecisionTable> tables) {
         this.tables = List.copyOf(tables);
         checkActions(this.tables, Gate.DECISION_ID);
         checkActions(this.tables, Gate.FALLBACK_ID);
+        for (DecisionTable table : this.tables) {
+            if (table.id().equals(Gate.IDENTIFICATION_ID) && !ValueType.BOOL.equals(table.outputs().get("identify"))) {
+                throw new IllegalStateException(table.ref() + " must declare the bool output 'identify'");
+            }
+        }
+        this.identifies = this.tables.stream().anyMatch(table -> table.id().equals(Gate.IDENTIFICATION_ID));
         this.engine = RuleStone.builder().clock(Clock.system(pack.businessZone())).decisions(this.tables).build();
         this.id = hash(this.tables);
     }
@@ -112,6 +121,11 @@ public final class GatePolicy {
 
     RuleStoneEngine engine() {
         return engine;
+    }
+
+    /** The policy has the table {@value Gate#IDENTIFICATION_ID}. */
+    boolean identifies() {
+        return identifies;
     }
 
     @Override

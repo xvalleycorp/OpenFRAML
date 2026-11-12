@@ -9,6 +9,7 @@ pack, not the only one: adding a country means adding a pack, not changing the c
 | --- | --- | --- |
 | Business time zone and national currency | Yes | |
 | Decision tables for the gate (`gate_decision`, `gate_fallback`) | Yes | |
+| Customer identification trigger for the gate (`gate_identification`, optional) | | Phase 2: started, see [Payment Gate](gate.md#customer-identification) |
 | Reason messages in English and the country's languages | Yes | |
 | Legal thresholds with effective dates (`report_transaction`, `report_daily`) | | Phase 2: started, see [Regulatory Reporting](reporting.md) |
 | AML scenarios for monitoring (`monitor_scenarios`), apart from the gate's tables | | Phase 2: started, see [Transaction Monitoring](monitoring.md) |

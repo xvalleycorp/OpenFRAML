@@ -46,6 +46,9 @@ message Transaction {
   // ISO 3166-1 alpha-2 code of the country of the counterparty's institution, e.g. "SG"; optional. Set it for every
   // payment that crosses the border.
   string counterparty_country = 12;
+  // What the transaction is for, as an upper-case code the country pack names, e.g. "ACCOUNT_CLOSURE"; optional. Set
+  // it when the pack's rules depend on it.
+  string purpose = 13;
 }
 
 message Money {
@@ -101,6 +104,9 @@ message DecideResponse {
   Fallback fallback = 4;
   // The payment was let through without a full decision; monitoring looks at it again.
   bool review_later = 5;
+  // Identify the customer, and collect or update their information, before the transaction is carried out, as the
+  // country's rules require (in Vietnam, Article 5(1)(a) of Circular 27/2025/TT-NHNN).
+  bool identify_customer = 6;
 }
 
 enum Decision {

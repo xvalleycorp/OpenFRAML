@@ -5,6 +5,7 @@
 
 package vn.io.dxa.openframl.valkey;
 
+import java.time.LocalDate;
 import java.util.Objects;
 import vn.io.dxa.openframl.model.AccountRef;
 
@@ -44,6 +45,10 @@ public record ValkeyLayout(String prefix) {
     public static final String OPENED_ON = "openedOn";
     /** Field of the account hash: the customer's AML risk rating; absent if unrated. */
     public static final String RISK = "risk";
+    /** Field of the customer hash: {@code true} if the customer holds an account at the bank. */
+    public static final String HAS_ACCOUNT = "hasAccount";
+    /** Field of the customer hash: the day of the customer's last transaction before today; absent if none. */
+    public static final String LAST_TRANSACTION_ON = "lastTransactionOn";
 
     public ValkeyLayout {
         Objects.requireNonNull(prefix, "prefix");
@@ -59,6 +64,15 @@ public record ValkeyLayout(String prefix) {
 
     public String devices(String customerId) {
         return prefix + "devices:" + customerId;
+    }
+
+    public String customer(String customerId) {
+        return prefix + "cust:" + customerId;
+    }
+
+    /** The customer's total of one business day, with a hash tag so that a cluster keeps it on one node. */
+    public String customerDay(String customerId, LocalDate businessDate) {
+        return prefix + "cday:{" + customerId + "}:" + businessDate;
     }
 
     public String policyTables(String policyId) {

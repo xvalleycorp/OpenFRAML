@@ -78,6 +78,9 @@ public final class TransactionEventJson {
         if (event.counterpartyCountry() != null) {
             json.put("counterpartyCountry", event.counterpartyCountry());
         }
+        if (event.purpose() != null) {
+            json.put("purpose", event.purpose());
+        }
         return json;
     }
 
@@ -122,6 +125,7 @@ public final class TransactionEventJson {
         }
         event.beneficiaryName(optional(json, "beneficiaryName"));
         event.counterpartyCountry(optional(json, "counterpartyCountry"));
+        event.purpose(optional(json, "purpose"));
         try {
             return event.build();
         } catch (IllegalArgumentException e) {

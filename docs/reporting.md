@@ -149,6 +149,7 @@ Article 5(1)(a) of the circular has a separate 400,000,000 VND trigger: a custom
 transactions for six months, who moves that much in a day must be identified. It lists exceptions, such as closing a
 savings account, withdrawing savings interest and repaying credit card debt. Those exceptions belong to customer
 identification and do not reduce the large-value report above, so send every cash transaction in the day's events.
+The Payment Gate implements that trigger: see [Customer identification](gate.md#customer-identification).
 
 Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_daily.stone-test.json` and
 `report_transaction.stone-test.json`.
@@ -156,5 +157,4 @@ Both sides of each threshold have cases in `openframl-vn/src/test/rules/report_d
 ## Next
 
 On the [roadmap](roadmap.md):
-- the authority's forms and electronic submission, as a country pack converter checked against the official templates;
-- the customer identification trigger of Article 5(1)(a) in Vietnam, with its exceptions.
+- the authority's forms and electronic submission, as a country pack converter checked against the official templates.

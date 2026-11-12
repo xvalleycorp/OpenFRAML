@@ -23,7 +23,7 @@ under their names in the event model:
 ```
 
 - **Amounts.** Amounts are decimal strings, never JSON numbers.
-- **Optional fields.** `beneficiary`, `session`, `beneficiaryName` and `counterpartyCountry` are optional.
+- **Optional fields.** `beneficiary`, `session`, `beneficiaryName`, `counterpartyCountry` and `purpose` are optional.
 - **Record key.** The record key is the originating account, `<institution>/<account>`. Kafka keeps the order within a partition, so this key is what gives monitoring each account's transactions in order.
 - **Record timestamp.** The record timestamp should be close to `occurredAt`. Kafka's default, the time the record is produced, is close enough. The Daily Report Job reads each partition until the first record past the end of the day and its margin, so a record stamped far in the future stops the day early on its partition.
 - **Retention.** The topic's retention must cover every day that a report may need to be run for again.

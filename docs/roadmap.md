@@ -60,7 +60,10 @@ Started while the phase 1 server measurements wait for hardware.
 - [x] Regulatory Reporting: deadlines for suspicious transaction reports, from the transaction, from detection, and
       within hours for a case a person marks urgent
 - [ ] Regulatory Reporting: the authority's forms and electronic submission
-- [ ] Customer identification trigger of Vietnam's Circular 27/2025/TT-NHNN, Article 5(1)(a), with its exceptions
+- [x] Customer identification trigger of Vietnam's Circular 27/2025/TT-NHNN, Article 5(1)(a), with its exceptions,
+      in the Payment Gate (`gate_identification`)
+- [ ] Exchange rates in the Payment Gate, so that foreign-currency transactions count towards the identification
+      threshold at their equivalent
 
 ## Cost and control
 

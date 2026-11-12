@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import vn.io.dxa.openframl.gate.VelocitySnapshot;
 import vn.io.dxa.openframl.model.AccountRef;
@@ -78,5 +80,44 @@ class InMemoryVelocityStoreTest {
         assertEquals(1, store.accounts());
         store.prune(T0.plus(Duration.ofHours(24)));
         assertEquals(0, store.accounts());
+    }
+
+    @Test
+    void keepsTheCustomersTotalForTheBusinessDayOnEveryAccount() {
+        InMemoryVelocityStore store = new InMemoryVelocityStore();
+        LocalDate day = LocalDate.of(2026, 10, 25);
+        TransactionEvent first = payment(T0, 100, "XTS", "1111");
+        TransactionEvent otherAccount = TransactionEvent.builder().eventId("other").occurredAt(T0.plusSeconds(60))
+                .channel(Channel.BRANCH).type(TransactionType.CASH_WITHDRAWAL).amount(Amount.of(250, "XTS"))
+                .customerId("c1").originator(new AccountRef("999901", "9999")).build();
+
+        assertEquals(Optional.of(Amount.of(100, "XTS")), store.recordAttempt(first, day).customerToday());
+        assertEquals(Optional.of(Amount.of(350, "XTS")), store.recordAttempt(otherAccount, day).customerToday());
+        assertEquals(Optional.of(Amount.of(350, "XTS")), store.recordAttempt(otherAccount, day).customerToday(),
+                "a retried call is counted once");
+        assertEquals(Optional.of(Amount.of(7, "XXX")),
+                store.recordAttempt(payment(T0.plusSeconds(120), 7, "XXX", "1111"), day).customerToday(),
+                "each currency has its own total");
+        assertEquals(Optional.of(Amount.of(100, "XTS")),
+                store.recordAttempt(payment(T0.plus(Duration.ofDays(1)), 100, "XTS", "1111"), day.plusDays(1))
+                        .customerToday(), "a new day starts from zero");
+        assertEquals(Optional.empty(), store.recordAttempt(payment(T0.plusSeconds(180), 1, "XTS", "1111"))
+                .customerToday(), "without the business day there is no total");
+
+        store.prune(T0.plus(Duration.ofDays(3)));
+        assertEquals(Optional.of(Amount.of(100, "XTS")),
+                store.recordAttempt(payment(T0.plusSeconds(240), 100, "XTS", "1111"), day).customerToday(),
+                "old days are forgotten");
+    }
+
+    @Test
+    void pastTheCapACustomersAttemptsAreStillAdded() {
+        InMemoryVelocityStore store = new InMemoryVelocityStore(2);
+        LocalDate day = LocalDate.of(2026, 10, 25);
+        for (int i = 0; i < 3; i++) {
+            store.recordAttempt(payment(T0.plusSeconds(i), 100, "XTS", "1111"), day);
+        }
+        assertEquals(Optional.of(Amount.of(400, "XTS")),
+                store.recordAttempt(payment(T0.plusSeconds(3), 100, "XTS", "1111"), day).customerToday());
     }
 }

@@ -24,11 +24,12 @@ import vn.io.dxa.openframl.pack.ResourceCountryPack;
 public final class VietnamPack extends ResourceCountryPack {
 
     /** Version of the pack's content. */
-    public static final String VERSION = "2026.11.1";
+    public static final String VERSION = "2026.11.2";
 
     public VietnamPack() {
         super("VN", VERSION, ZoneId.of("Asia/Ho_Chi_Minh"), "VND", VietnamPack.class,
-                List.of("rules/gate_decision.v1.stone.json", "rules/gate_fallback.v1.stone.json"),
+                List.of("rules/gate_decision.v1.stone.json", "rules/gate_fallback.v1.stone.json",
+                        "rules/gate_identification.v1.stone.json"),
                 List.of("rules/monitor_scenarios.v1.stone.json"),
                 List.of("rules/report_transaction.v1.stone.json", "rules/report_daily.v1.stone.json",
                         "rules/report_suspicious.v1.stone.json"), "reasons");

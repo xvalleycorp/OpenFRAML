@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import vn.io.dxa.openframl.gate.AccountProfile;
+import vn.io.dxa.openframl.gate.CustomerProfile;
 import vn.io.dxa.openframl.gate.ProfileSnapshot;
 import vn.io.dxa.openframl.gate.ProfileStore;
 import vn.io.dxa.openframl.model.AccountRef;
@@ -20,6 +21,7 @@ public final class InMemoryProfileStore implements ProfileStore {
     private final ConcurrentHashMap<String, AccountProfile> accounts = new ConcurrentHashMap<>();
     private final Set<String> knownBeneficiaries = ConcurrentHashMap.newKeySet();
     private final Set<String> knownDevices = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap<String, CustomerProfile> customers = new ConcurrentHashMap<>();
 
     @Override
     public ProfileSnapshot lookup(TransactionEvent event) {
@@ -29,7 +31,13 @@ public final class InMemoryProfileStore implements ProfileStore {
                 Optional.ofNullable(accounts.get(event.originator().key())),
                 beneficiary == null ? Optional.empty() : Optional.ofNullable(accounts.get(beneficiary.key())),
                 beneficiary != null && knownBeneficiaries.contains(pair(event.originator(), beneficiary)),
-                deviceId != null && knownDevices.contains(event.customerId() + '|' + deviceId));
+                deviceId != null && knownDevices.contains(event.customerId() + '|' + deviceId),
+                Optional.ofNullable(customers.get(event.customerId())));
+    }
+
+    public InMemoryProfileStore customer(String customerId, CustomerProfile profile) {
+        customers.put(customerId, profile);
+        return this;
     }
 
     public InMemoryProfileStore account(AccountRef account, AccountProfile profile) {

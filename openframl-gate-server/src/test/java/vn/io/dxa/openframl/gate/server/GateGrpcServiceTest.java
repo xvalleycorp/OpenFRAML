@@ -25,6 +25,7 @@ import org.junit.jupiter.api.function.Executable;
 import vn.io.dxa.openframl.gate.AccountProfile;
 import vn.io.dxa.openframl.gate.Gate;
 import vn.io.dxa.openframl.gate.GateFailure;
+import vn.io.dxa.openframl.gate.GateOutcome;
 import vn.io.dxa.openframl.gate.ProfileStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryProfileStore;
 import vn.io.dxa.openframl.gate.memory.InMemoryVelocityStore;
@@ -101,6 +102,16 @@ class GateGrpcServiceTest {
         assertEquals("SG", ProtoMapping.event(transfer("100000").setCounterpartyCountry("SG").build())
                 .counterpartyCountry());
         assertEquals(null, ProtoMapping.event(transfer("100000").build()).counterpartyCountry());
+    }
+
+    @Test
+    void thePurposeReachesTheEventAndIdentificationTheResponse() {
+        assertEquals("ACCOUNT_CLOSURE", ProtoMapping.event(transfer("100000").setPurpose("ACCOUNT_CLOSURE").build())
+                .purpose());
+        assertEquals(null, ProtoMapping.event(transfer("100000").build()).purpose());
+        assertTrue(ProtoMapping.response(new GateOutcome(vn.io.dxa.openframl.model.Decision.ALLOW,
+                java.util.List.of("IDENTIFY_NO_ACCOUNT"), "gate_decision@1", java.util.Optional.empty(), false, true))
+                .getIdentifyCustomer());
     }
 
     private static DecideRequest request(Transaction.Builder transaction) {

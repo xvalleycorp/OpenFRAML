@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import vn.io.dxa.openframl.gate.AccountProfile;
+import vn.io.dxa.openframl.gate.CustomerProfile;
 import vn.io.dxa.openframl.model.AccountRef;
 
 /**
@@ -41,6 +42,17 @@ public final class ValkeyProfileLoader {
             fields.put(ValkeyLayout.RISK, profile.riskRating());
         }
         commands.hset(key, fields);
+        return this;
+    }
+
+    public ValkeyProfileLoader customer(String customerId, CustomerProfile profile) {
+        String key = layout.customer(customerId);
+        commands.hset(key, ValkeyLayout.HAS_ACCOUNT, Boolean.toString(profile.hasAccount()));
+        if (profile.lastTransactionOn() == null) {
+            commands.hdel(key, ValkeyLayout.LAST_TRANSACTION_ON);
+        } else {
+            commands.hset(key, ValkeyLayout.LAST_TRANSACTION_ON, profile.lastTransactionOn().toString());
+        }
         return this;
     }
 
